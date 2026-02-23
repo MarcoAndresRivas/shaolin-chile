@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }, observerOptions);
 
     // Give animations to elements not currently in viewport initially
-    const revealElements = document.querySelectorAll('.fade-in, .slide-up, .about-image, .discipline-card, .info-item, .schedule-box');
+    const revealElements = document.querySelectorAll('.fade-in, .slide-up, .about-image, .discipline-card, .location-card, .info-item, .schedule-box');
 
     // Make sure we set the initial states for elements that aren't hardcoded in HTML
     document.querySelectorAll('.about-image, .schedule-box').forEach(el => { el.classList.add('fade-in'); });
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
         el.classList.add('slide-up');
         el.style.transitionDelay = `${index * 0.15}s`;
     });
-    document.querySelectorAll('.discipline-card').forEach((el, index) => {
+    document.querySelectorAll('.discipline-card, .location-card').forEach((el, index) => {
         el.classList.add('slide-up');
         el.style.transitionDelay = `${index * 0.2}s`;
     });

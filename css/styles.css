@@ -562,6 +562,89 @@ section {
 
 
 /* =========================================================================
+   LOCATIONS SECTION
+   ========================================================================= */
+.locations {
+    background-color: var(--color-bg-dark);
+}
+
+.locations-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.location-card {
+    background-color: var(--color-bg-alt);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    text-align: center;
+    transition: all var(--transition-smooth);
+    position: relative;
+    overflow: hidden;
+}
+
+.location-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: transparent;
+    transition: background-color var(--transition-fast);
+}
+
+.location-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.location-card:hover::before {
+    background-color: var(--color-primary);
+}
+
+.main-hq {
+    border-color: rgba(212, 175, 55, 0.2);
+}
+
+.main-hq::before {
+    background-color: var(--color-primary);
+}
+
+.location-icon {
+    font-size: 2.5rem;
+    margin-bottom: var(--spacing-md);
+    color: var(--color-text-muted);
+}
+
+.main-hq .location-icon {
+    color: var(--color-primary);
+}
+
+.location-card h3 {
+    font-size: 1.3rem;
+    margin-bottom: 5px;
+}
+
+.location-city {
+    color: var(--color-primary);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: var(--spacing-sm);
+}
+
+.location-desc {
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+}
+
+
+/* =========================================================================
    CONTACT & SCHEDULE SECTION
    ========================================================================= */
 .contact {
