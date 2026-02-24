@@ -98,10 +98,10 @@ document.addEventListener('DOMContentLoaded', () => {
             repStatus.className = 'form-status text-primary mt-2';
 
             try {
-                // Determine API URL based on environment (local for now)
+                // Determine API URL based on environment
                 const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                     ? 'http://localhost:3000/api/register'
-                    : '/api/register'; // Used if hosted together
+                    : 'https://shaolin-chile-backend.onrender.com/api/register';
 
                 const response = await fetch(apiUrl, {
                     method: 'POST',
@@ -176,7 +176,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                         ? 'http://localhost:3000/api/login'
-                        : '/api/login';
+                        : 'https://shaolin-chile-backend.onrender.com/api/login';
 
                     const response = await fetch(apiUrl, {
                         method: 'POST',

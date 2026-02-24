@@ -239,9 +239,11 @@
                 document.querySelector(`#${tbodyId} tbody`).innerHTML = rowsHTML;
             };
 
+            const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3000' : 'https://shaolin-chile-backend.onrender.com';
+
             // Fetch Usuarios
             try {
-                const resU = await fetch('http://localhost:3000/api/intranet/usuarios', {
+                const resU = await fetch(`${API_BASE_URL}/api/intranet/usuarios`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const users = await resU.json();
@@ -266,7 +268,7 @@
             // Fetch Horarios
             const loadHorarios = async () => {
                 try {
-                    const resH = await fetch('http://localhost:3000/api/intranet/horarios', {
+                    const resH = await fetch(`${API_BASE_URL}/api/intranet/horarios`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const horarios = await resH.json();
@@ -302,7 +304,7 @@
                     cupo_maximo: 20
                 };
                 try {
-                    const res = await fetch('http://localhost:3000/api/intranet/horarios', {
+                    const res = await fetch(`${API_BASE_URL}/api/intranet/horarios`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -322,11 +324,10 @@
                 } catch (err) { console.error(err); }
             });
 
-            // Delete Horario (Global function for onclick)
             window.deleteHorario = async (id) => {
                 if (confirm('¿Eliminar este horario?')) {
                     try {
-                        await fetch(`http://localhost:3000/api/intranet/horarios/${id}`, {
+                        await fetch(`${API_BASE_URL}/api/intranet/horarios/${id}`, {
                             method: 'DELETE',
                             headers: { 'Authorization': `Bearer ${token}` }
                         });

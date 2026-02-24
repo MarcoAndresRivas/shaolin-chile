@@ -146,9 +146,11 @@
                 window.location.href = 'index.html';
             });
 
+            const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' ? 'http://localhost:3000' : 'https://shaolin-chile-backend.onrender.com';
+
             const loadDisponibles = async () => {
                 try {
-                    const res = await fetch('http://localhost:3000/api/intranet/horarios', {
+                    const res = await fetch(`${API_BASE_URL}/api/intranet/horarios`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const horarios = await res.json();
@@ -173,7 +175,7 @@
 
             const loadReservas = async () => {
                 try {
-                    const res = await fetch('http://localhost:3000/api/intranet/mis-reservas', {
+                    const res = await fetch(`${API_BASE_URL}/api/intranet/mis-reservas`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (!res.ok) throw new Error("Could not fetch");
@@ -198,7 +200,7 @@
 
             window.bookClass = async (horarioId) => {
                 try {
-                    const res = await fetch('http://localhost:3000/api/intranet/reservar', {
+                    const res = await fetch(`${API_BASE_URL}/api/intranet/reservar`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
