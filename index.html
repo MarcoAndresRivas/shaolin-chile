@@ -50,6 +50,11 @@
                     <li><a href="#disciplines" class="nav-link">Disciplinas</a></li>
                     <li><a href="#schedule" class="nav-link">Horarios</a></li>
                     <li><a href="#contact" class="nav-link btn-nav">Únete Hoy</a></li>
+                    <li>
+                        <a href="#" class="nav-link login-trigger" id="login-btn" title="Iniciar Sesión">
+                            <i class="fa-solid fa-user-circle"></i>
+                        </a>
+                    </li>
                 </ul>
                 <div class="mobile-menu-toggle" id="mobile-menu">
                     <i class="fa-solid fa-bars"></i>
@@ -92,7 +97,8 @@
                     <span class="section-subtitle">Nuestra Filosofía y Linaje</span>
                     <h2 class="section-title">El Camino del <span class="text-primary">Shaolin</span> en Chile</h2>
                     <p class="mb-4">Formamos parte de una prestigiosa <strong>Asociación Internacional de Kung
-                            Fu</strong>, con sede central para toda Latinoamérica ubicada en Argentina. En Chile, somos
+                            Fu</strong>, con conexión directa a <strong>China</strong> y sede central para toda
+                        Latinoamérica ubicada en Argentina. En Chile, somos
                         los representantes oficiales encargados de preservar y transmitir el aprendizaje tradicional de
                         las artes marciales chinas.</p>
                     <p class="mb-4">Nuestro objetivo principal es forjar el carácter, la disciplina y mejorar
@@ -102,7 +108,8 @@
                     <ul class="features-list">
                         <li><i class="fa-solid fa-check text-primary"></i> Instructores avalados a nivel internacional.
                         </li>
-                        <li><i class="fa-solid fa-check text-primary"></i> Conexión directa con la sede central en
+                        <li><i class="fa-solid fa-check text-primary"></i> Conexión directa con China y la sede central
+                            en
                             Argentina.</li>
                         <li><i class="fa-solid fa-check text-primary"></i> Múltiples sedes a lo largo de Chile
                             (Concepción, Santiago, Talca).</li>
@@ -161,6 +168,19 @@
                             <h3>Tai Chi y Qi Gong</h3>
                             <p>Cultiva tu energía interna (Qi). Los movimientos suaves y fluidos fortalecen las
                                 articulaciones, alivian el estrés y mejoran enormemente la conexión mente-cuerpo.</p>
+                        </div>
+                    </div>
+
+                    <!-- Discipline 4: Cursos Online -->
+                    <div class="discipline-card">
+                        <div class="card-img">
+                            <img src="https://shaolinchan.org/wp-content/uploads/Shaolin-Chan-Concepcion_26-495x400.jpg"
+                                alt="Cursos Online de Artes Marciales">
+                        </div>
+                        <div class="card-content">
+                            <h3>Cursos Online</h3>
+                            <p>Aprende desde cualquier lugar. Programas estructurados y seguimiento personalizado para
+                                que domines las bases del Kung Fu y Tai Chi a tu propio ritmo.</p>
                         </div>
                     </div>
                 </div>
@@ -285,6 +305,52 @@
 
             </div>
         </section>
+
+        <!-- Registro de Representantes Section -->
+        <section id="representantes" class="representantes bg-alt">
+            <div class="container contact-container">
+                <div class="contact-info">
+                    <span class="section-subtitle">Portal Administrativo</span>
+                    <h2 class="section-title">Registro de <span class="text-primary">Representantes</span></h2>
+                    <p class="mb-4">Si formas parte de la administración o eres director de una de las sedes de
+                        <strong>Shaolin Chile</strong>, regístrate aquí para mantener la comunicación oficial con la
+                        Sede Nacional y acceder a los recursos exclusivos.</p>
+                    <ul class="features-list mt-4">
+                        <li><i class="fa-solid fa-id-card text-primary"></i> Registro oficial en la base de datos
+                            nacional.</li>
+                        <li><i class="fa-solid fa-envelope-open-text text-primary"></i> Comunicados directos de la
+                            directiva.</li>
+                        <li><i class="fa-solid fa-shield-halved text-primary"></i> Acceso seguro y verificado.</li>
+                    </ul>
+                </div>
+                <div class="contact-form-wrapper">
+                    <form class="contact-form" id="form-representante">
+                        <h3>Formulario de Representantes</h3>
+                        <div class="form-group">
+                            <label for="rep-name">Nombre Completo</label>
+                            <input type="text" id="rep-name" name="rep-name" placeholder="Tu nombre y apellido"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rep-email">Correo Electrónico Oficial</label>
+                            <input type="email" id="rep-email" name="rep-email" placeholder="director@shaolinchile.cl"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rep-sede">Sede a Cargo / Ciudad</label>
+                            <input type="text" id="rep-sede" name="rep-sede" placeholder="Ej. Sede Concepción" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="rep-message">Información Adicional</label>
+                            <textarea id="rep-message" name="rep-message" rows="3"
+                                placeholder="Cargos o notas importantes..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Registrarse como Representante</button>
+                        <p id="rep-status" class="form-status mt-2"></p>
+                    </form>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->
@@ -303,6 +369,47 @@
             <p>&copy; 2026 Asociación Internacional de Kung Fu Sede Chile. Todos los derechos reservados.</p>
         </div>
     </footer>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content fade-in">
+            <span class="close-modal" id="close-login">&times;</span>
+            <div class="modal-header">
+                <i class="fa-solid fa-user-shield modal-icon"></i>
+                <h2>Acceso Administrativo</h2>
+                <p>Ingresa tus credenciales para continuar</p>
+            </div>
+
+            <form id="form-login" class="contact-form">
+                <div class="form-group">
+                    <label for="login-email">Correo Electrónico</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input type="email" id="login-email" name="login-email" placeholder="tu@email.com" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="login-password">Contraseña</label>
+                    <div class="input-wrapper">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input type="password" id="login-password" name="login-password" placeholder="••••••••"
+                            required>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" name="remember"> Recordarme
+                    </label>
+                    <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Iniciar Sesión</button>
+                <p id="login-status" class="form-status mt-2 text-center"></p>
+            </form>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="js/main.js"></script>

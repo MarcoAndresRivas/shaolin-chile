@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración | Shaolin Chile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .dashboard-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+            padding-top: var(--header-height);
+        }
+
+        .sidebar {
+            background-color: var(--color-bg-alt);
+            padding: var(--spacing-lg);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 10px 15px;
+            color: var(--color-text-muted);
+            border-radius: var(--border-radius-sm);
+            transition: all var(--transition-fast);
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background-color: rgba(212, 175, 55, 0.1);
+            color: var(--color-primary);
+        }
+
+        .main-content {
+            padding: var(--spacing-xl);
+            background-color: var(--color-bg-dark);
+        }
+
+        .panel-section {
+            background-color: var(--color-bg-card);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: var(--spacing-xl);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: var(--spacing-md);
+        }
+
+        .data-table th,
+        .data-table td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .data-table th {
+            color: var(--color-primary);
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--color-text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 10px;
+        }
+
+        .action-btn:hover {
+            color: var(--color-primary);
+        }
+
+        .action-btn.delete:hover {
+            color: var(--color-accent);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Minimalista -->
+    <header class="header" id="header">
+        <div class="container nav-container" style="justify-content: space-between;">
+            <a href="index.html" class="logo">
+                <span class="logo-icon"><i class="fa-solid fa-yin-yang"></i></span>
+                <div class="logo-text">
+                    <h1>Shaolin Chile</h1>
+                    <p>Intranet</p>
+                </div>
+            </a>
+            <div style="display: flex; align-items: center; gap: 20px;">
+                <span id="user-greeting" style="color: var(--color-primary); font-weight: bold;"></span>
+                <a href="#" id="logout-btn" class="btn btn-outline" style="padding: 0.5rem 1rem;">Cerrar Sesión</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h3 style="margin-bottom: 20px; color: white;">Panel Admin</h3>
+            <ul class="sidebar-nav">
+                <li><a href="#usuarios" class="sidebar-link active"><i class="fa-solid fa-users"></i> Gestión
+                        Usuarios</a></li>
+                <li><a href="#horarios" class="sidebar-link"><i class="fa-solid fa-calendar-days"></i> Gestión
+                        Horarios</a></li>
+            </ul>
+        </aside>
+
+        <!-- Contenido Principal -->
+        <main class="main-content">
+
+            <!-- SECCIÓN USUARIOS -->
+            <section id="usuarios" class="panel-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Usuarios del Sistema</h2>
+                    <button class="btn btn-primary" onclick="alert('Funcionalidad de crear usuario en desarrollo.')"><i
+                            class="fa-solid fa-plus"></i> Nuevo Usuario</button>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="tabla-usuarios">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="5" class="text-center">Cargando usuarios...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- SECCIÓN HORARIOS -->
+            <section id="horarios" class="panel-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Horarios de Clases</h2>
+                    <button class="btn btn-primary"
+                        onclick="document.getElementById('form-horario').style.display = 'block';"><i
+                            class="fa-solid fa-plus"></i> Nuevo Horario</button>
+                </div>
+
+                <!-- Formulario Rápido Crear Horario -->
+                <div id="form-horario"
+                    style="display: none; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                    <h3 style="margin-bottom: 15px; color: var(--color-primary);">Crear Nuevo Horario</h3>
+                    <form id="crear-horario-form" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <input type="text" id="h-titulo" placeholder="Título (ej. Clase Avanzados)" required
+                            class="form-group input" style="padding: 10px; width: 100%;">
+                        <select id="h-dia" required style="padding: 10px; width: 100%;" class="form-group select">
+                            <option value="Lunes">Lunes</option>
+                            <option value="Martes">Martes</option>
+                            <option value="Miércoles">Miércoles</option>
+                            <option value="Jueves">Jueves</option>
+                            <option value="Viernes">Viernes</option>
+                            <option value="Sábado">Sábado</option>
+                            <option value="Domingo">Domingo</option>
+                        </select>
+                        <input type="time" id="h-inicio" required style="padding: 10px; width: 100%;">
+                        <input type="time" id="h-fin" required style="padding: 10px; width: 100%;">
+                        <button type="submit" class="btn btn-primary" style="grid-column: span 2;">Guardar
+                            Horario</button>
+                    </form>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="data-table" id="tabla-horarios">
+                        <thead>
+                            <tr>
+                                <th>Título</th>
+                                <th>Día</th>
+                                <th>Hora</th>
+                                <th>Instructor</th>
+                                <th>Cupo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="text-center">Cargando horarios...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Check auth
+            const token = localStorage.getItem('jwt_token');
+            const rol = localStorage.getItem('user_rol');
+            const nombre = localStorage.getItem('user_nombre');
+
+            if (!token || (rol !== '1' && rol !== '2')) {
+                alert('Acceso Denegado. Solo administradores.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('user-greeting').textContent = `Hola, ${nombre}`;
+
+            // Logout
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                localStorage.clear();
+                window.location.href = 'index.html';
+            });
+
+            const renderTable = (tbodyId, rowsHTML) => {
+                document.querySelector(`#${tbodyId} tbody`).innerHTML = rowsHTML;
+            };
+
+            // Fetch Usuarios
+            try {
+                const resU = await fetch('http://localhost:3000/api/intranet/usuarios', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const users = await resU.json();
+
+                let usersHtml = '';
+                users.forEach(u => {
+                    usersHtml += `<tr>
+                        <td>${u.id}</td>
+                        <td>${u.nombre}</td>
+                        <td>${u.email}</td>
+                        <td style="color: var(--color-primary);">${u.rol}</td>
+                        <td>
+                            <button class="action-btn"><i class="fa-solid fa-pen"></i></button>
+                            <button class="action-btn delete"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+                });
+                if (users.length === 0) usersHtml = '<tr><td colspan="5" class="text-center">No hay usuarios.</td></tr>';
+                renderTable('tabla-usuarios', usersHtml);
+            } catch (e) { console.error(e); }
+
+            // Fetch Horarios
+            const loadHorarios = async () => {
+                try {
+                    const resH = await fetch('http://localhost:3000/api/intranet/horarios', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const horarios = await resH.json();
+
+                    let horHtml = '';
+                    horarios.forEach(h => {
+                        horHtml += `<tr>
+                            <td>${h.titulo}</td>
+                            <td>${h.dia_semana}</td>
+                            <td>${h.hora_inicio} - ${h.hora_fin}</td>
+                            <td>${h.profesor}</td>
+                            <td>${h.cupo_maximo}</td>
+                            <td>
+                                <button class="action-btn" onclick="deleteHorario(${h.id})"><i class="fa-solid fa-trash" style="color: red;"></i></button>
+                            </td>
+                        </tr>`;
+                    });
+                    if (horarios.length === 0) horHtml = '<tr><td colspan="6" class="text-center">No hay horarios programados.</td></tr>';
+                    renderTable('tabla-horarios', horHtml);
+                } catch (e) { console.error(e); }
+            };
+            loadHorarios();
+
+            // Create Horario
+            document.getElementById('crear-horario-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const body = {
+                    titulo: document.getElementById('h-titulo').value,
+                    dia_semana: document.getElementById('h-dia').value,
+                    hora_inicio: document.getElementById('h-inicio').value,
+                    hora_fin: document.getElementById('h-fin').value,
+                    descripcion: 'Clase programada',
+                    cupo_maximo: 20
+                };
+                try {
+                    const res = await fetch('http://localhost:3000/api/intranet/horarios', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(body)
+                    });
+                    if (res.ok) {
+                        alert('Horario creado');
+                        document.getElementById('crear-horario-form').reset();
+                        document.getElementById('form-horario').style.display = 'none';
+                        loadHorarios();
+                    } else {
+                        const data = await res.json();
+                        alert('Error: ' + data.error);
+                    }
+                } catch (err) { console.error(err); }
+            });
+
+            // Delete Horario (Global function for onclick)
+            window.deleteHorario = async (id) => {
+                if (confirm('¿Eliminar este horario?')) {
+                    try {
+                        await fetch(`http://localhost:3000/api/intranet/horarios/${id}`, {
+                            method: 'DELETE',
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        loadHorarios();
+                    } catch (e) { console.error(e); }
+                }
+            };
+        });
+    </script>
+</body>
+
+</html>

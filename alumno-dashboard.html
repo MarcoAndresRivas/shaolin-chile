@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Estudiante | Shaolin Chile</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: calc(var(--header-height) + var(--spacing-lg)) var(--spacing-lg) var(--spacing-xxl);
+        }
+
+        .welcome-banner {
+            background-color: var(--color-bg-card);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-lg);
+            border-left: 5px solid var(--color-primary);
+            margin-bottom: var(--spacing-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        .panel {
+            background-color: var(--color-bg-alt);
+            padding: var(--spacing-lg);
+            border-radius: var(--border-radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .list-item {
+            background-color: var(--color-bg-card);
+            padding: 15px;
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .list-title {
+            color: var(--color-primary);
+            font-weight: bold;
+        }
+
+        .list-desc {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .welcome-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="header" id="header">
+        <div class="container nav-container" style="justify-content: space-between;">
+            <a href="index.html" class="logo">
+                <span class="logo-icon"><i class="fa-solid fa-yin-yang"></i></span>
+                <div class="logo-text">
+                    <h1>Shaolin Chile</h1>
+                    <p>Portal Estudiante</p>
+                </div>
+            </a>
+            <a href="#" id="logout-btn" class="btn btn-outline" style="padding: 0.5rem 1rem;">Cerrar Sesión</a>
+        </div>
+    </header>
+
+    <div class="dashboard-container">
+
+        <div class="welcome-banner">
+            <div>
+                <h2 id="greeting">Bienvenido</h2>
+                <p style="color: var(--color-text-muted);">Gestiona tus reservas de clases y asiste puntualmente a tu
+                    entrenamiento.</p>
+            </div>
+            <i class="fa-solid fa-user-graduate"
+                style="font-size: 3rem; color: var(--color-primary); opacity: 0.5;"></i>
+        </div>
+
+        <div class="grid-layout">
+            <!-- Horarios Disponibles -->
+            <div class="panel">
+                <h3 style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                    <i class="fa-solid fa-calendar-plus text-primary"></i> Clases Disponibles
+                </h3>
+                <div id="disponibles-list">
+                    <p class="text-center" style="color: var(--color-text-muted);">Cargando horarios...</p>
+                </div>
+            </div>
+
+            <!-- Mis Reservas -->
+            <div class="panel">
+                <h3 style="margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                    <i class="fa-solid fa-calendar-check text-primary"></i> Mis Reservas
+                </h3>
+                <div id="reservas-list">
+                    <p class="text-center" style="color: var(--color-text-muted);">Cargando tus reservas...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = localStorage.getItem('jwt_token');
+            const rol = localStorage.getItem('user_rol');
+            const nombre = localStorage.getItem('user_nombre');
+
+            // Access control for students (rol 5)
+            if (!token || rol !== '5') {
+                alert('Acceso Denegado. Este portal es solo para estudiantes.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('greeting').textContent = `Bienvenido, ${nombre}`;
+
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                localStorage.clear();
+                window.location.href = 'index.html';
+            });
+
+            const loadDisponibles = async () => {
+                try {
+                    const res = await fetch('http://localhost:3000/api/intranet/horarios', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const horarios = await res.json();
+
+                    let html = '';
+                    horarios.forEach(h => {
+                        html += `
+                        <div class="list-item">
+                            <div>
+                                <div class="list-title">${h.titulo}</div>
+                                <div class="list-desc"><i class="fa-regular fa-clock"></i> ${h.dia_semana} | ${h.hora_inicio} a ${h.hora_fin}</div>
+                                <div class="list-desc" style="font-size: 0.8rem; margin-top:2px;">Instructor: ${h.profesor}</div>
+                            </div>
+                            <button class="btn btn-primary" onclick="bookClass(${h.id})" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Agendar</button>
+                        </div>
+                        `;
+                    });
+                    if (horarios.length === 0) html = '<p class="text-muted text-center">No hay clases programadas.</p>';
+                    document.getElementById('disponibles-list').innerHTML = html;
+                } catch (e) { console.error(e); }
+            };
+
+            const loadReservas = async () => {
+                try {
+                    const res = await fetch('http://localhost:3000/api/intranet/mis-reservas', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!res.ok) throw new Error("Could not fetch");
+                    const reservas = await res.json();
+
+                    let html = '';
+                    reservas.forEach(r => {
+                        html += `
+                        <div class="list-item" style="border-left: 3px solid var(--color-accent);">
+                            <div>
+                                <div class="list-title">${r.titulo}</div>
+                                <div class="list-desc"><i class="fa-regular fa-clock"></i> ${r.dia_semana} | ${r.hora_inicio}</div>
+                            </div>
+                            <span style="color: #2ecc71; font-size: 0.8rem; border: 1px solid #2ecc71; padding: 2px 5px; border-radius: 3px;">CONFIRMADO</span>
+                        </div>
+                        `;
+                    });
+                    if (reservas.length === 0) html = '<p class="text-muted text-center">No tienes reservas activas.</p>';
+                    document.getElementById('reservas-list').innerHTML = html;
+                } catch (e) { console.error(e); }
+            };
+
+            window.bookClass = async (horarioId) => {
+                try {
+                    const res = await fetch('http://localhost:3000/api/intranet/reservar', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ horario_id: horarioId })
+                    });
+                    const data = await res.json();
+
+                    if (res.ok) {
+                        loadReservas(); // Refresh list
+                    } else {
+                        alert(data.error || 'Error al agendar.');
+                    }
+                } catch (e) { console.error(e); }
+            };
+
+            loadDisponibles();
+            loadReservas();
+        });
+    </script>
+</body>
+
+</html>
