@@ -35,7 +35,6 @@ export const hero = {
 export const history = {
   eyebrow: 'Nuestra Filosofía y Linaje',
   title: 'El Camino del Shaolin en Chile',
-  stat: { value: '+15', label: 'Años de Legado' },
   highlights: [
     'Instructores avalados a nivel internacional',
     'Conexión directa con China y la sede central en Argentina',
