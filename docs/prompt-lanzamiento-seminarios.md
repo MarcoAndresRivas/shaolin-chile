@@ -32,13 +32,14 @@ Actúa como Arquitecto de Operaciones y Estratega Digital especializado en autom
 # PRODUCTOS (precios en CLP)
 1. **Clase (Taller de Iniciación):** 2 a 3 horas, sábado en la mañana de cada fin de semana. Público general, Qi Gong básico y filosofía Chan. Precio: **$35.000**. Cupo: **50 por clase**.
 2. **Seminario de fin de semana:** viernes a domingo (3 días). Forma tradicional de mano vacía (ej. Xiao Hong Quan) y Qi Gong (Ba Duan Jin). Para practicantes y artistas marciales. Precio: **$75.000**. Cupo: **50 por fin de semana**.
-3. **Poleras y artículos:** poleras y otros productos de la escuela, que se pueden agregar a la misma compra. Con variantes (talla, color) y control de stock. Catálogo y precios a cargo de Maxi Muñoz: **[DEFINIR: productos y precios]**.
-4. **Clase online:** quien contrata una clase online obtiene acceso privado en la plataforma a los videos de esa clase. Este es el material grabado de las formas enseñadas, que se entrega a través del módulo de cursos online del plan. Precio: **[DEFINIR]**.
+3. **Poleras y artículos:** poleras y otros productos de la escuela, que se pueden agregar a la misma compra. Con variantes (talla, color) y control de stock. Mientras Maxi Muñoz prepara el catálogo definitivo, usa el **catálogo de prueba** del módulo 5 en `docs/plan-maestro.md` (11 productos con códigos, variantes, precios y stock referenciales). Carga los productos como datos editables desde el panel, no escritos en el código.
+4. **Clase online:** quien contrata una clase online obtiene acceso privado en la plataforma a los videos de esa clase. Este es el material grabado de las formas enseñadas, que se entrega a través del módulo de cursos online del plan, **con derecho a descargar el video**. Precio: **$25.000**. Licencia de uso personal: el video no se puede redistribuir. Como el video se puede descargar, el retracto solo aplica antes de verlo o descargarlo, y esto se informa de forma expresa antes del pago.
 5. **Retiro de Inmersión "Estilo China"** (3 a 4 días, alojamiento y comidas): evento aparte, fuera de este lanzamiento salvo indicación. Precio: **[DEFINIR]**.
 
 # REGLAS COMERCIALES
 - **Preventa:** 35 % de descuento para los primeros **15 cupos de cada fin de semana**. Un cupo de preventa queda apartado mientras su transferencia está pendiente; si el plazo vence sin pago, el cupo y su precio de preventa se liberan.
 - **Escuelas Aliadas (kung fu y otras organizaciones):** un representante con cuenta propia y un código de convenio, para delegaciones de 5 personas o más. Beneficio: **10 % de descuento** y **cupos liberados**, cuya cantidad asigna la administración al aprobar cada convenio.
+- **Gestión de convenios:** aún no hay organizaciones definidas. Construye en el panel de administración una sección para agregar, editar, pausar y dar de baja convenios: organización, tipo, representante, código, porcentaje de descuento (10 % por defecto), cupos liberados, vigencia y estado. Dar de baja desactiva el código, pero conserva el historial de compras; nunca se borra.
 - Promociones del plan: alumno de Shaolin Chile, pack de temporada (varios fines de semana) y descuento por grupo.
 - Cupos liberados y descuentos se registran por compra, para poder reportarlos por organización.
 

@@ -66,7 +66,7 @@ El sistema se divide en ocho módulos. Cada uno puede construirse y entregarse p
 | 1. Sitio institucional | Inicio, historia y linaje, lineamientos y código de conducta, disciplinas (Kung Fu Tradicional, Sanda, Tai Chi y Qi Gong, cursos online), sedes con mapa y horarios, planes y precios, reserva de clase de prueba gratuita, directorio oficial de instructores y escuelas acreditadas, política de privacidad, contacto, preguntas frecuentes | Público |
 | 2. Portal del alumno | Perfil y ficha médica, cuenta familiar (un apoderado gestiona y paga por varios alumnos, con descuento familiar), estado de cuenta, pago en línea, clases disponibles, agenda y cancelación, historial de asistencia, grado actual y avance hacia los requisitos del próximo examen, cursos online contratados, solicitud de copia o eliminación de sus datos | Alumno, apoderado |
 | 3. Portal del instructor | Clases asignadas y lista de alumnos, toma de asistencia, disponibilidad semanal, liquidaciones y estado de pagos, alumnos habilitados para rendir examen, registro de avances, nivel de certificación propio | Instructor |
-| 4. Administración | Usuarios y roles, sedes, horarios y cupos, asignación de instructores, planes y cobros, morosidad y recuperación de pagos fallidos (avisos y reintentos automáticos), seguimiento de interesados desde la clase de prueba hasta la inscripción, alerta de alumnos que dejan de asistir, exámenes de grado, certificación de instructores y escuelas afiliadas, reportes, bitácora de cambios | Administrador |
+| 4. Administración | Usuarios y roles, sedes, horarios y cupos, asignación de instructores, planes y cobros, morosidad y recuperación de pagos fallidos (avisos y reintentos automáticos), seguimiento de interesados desde la clase de prueba hasta la inscripción, alerta de alumnos que dejan de asistir, exámenes de grado, certificación de instructores y escuelas afiliadas, gestión de convenios con organizaciones (agregar, editar, pausar o dar de baja), reportes, bitácora de cambios | Administrador |
 | 5. Seminarios por temporada | Temporadas de seminarios por fines de semana (viernes a domingo), compra de uno o varios fines de semana y de varias entradas en una sola compra, promociones para escuelas de kung fu y otras organizaciones (detalle en la sección del módulo 5); ficha con video promocional, fecha, horario, ubicación, instructor invitado y cupos; precio de preventa y descuento para alumnos; venta de entradas con código QR; aceptación de exención de responsabilidad al comprar; control de acceso el día del evento; certificado de participación descargable | Público, alumno, administrador |
 | 6. Tienda | Catálogo por categoría (armas de entrenamiento, vestimenta, decoración, libros y accesorios), tallas y variantes, stock, carro de compra, pago con boleta electrónica, despacho o retiro en sede, seguimiento de pedidos | Público, alumno, encargado de catálogo |
 | 7. Contenido y formación online | Galería de videos y fotos, noticias, avisos internos, correos automáticos (bienvenida, cobro, recordatorio de clase), cursos online pagados por nivel con acceso por alumno | Encargado de contenido, administrador |
@@ -104,7 +104,27 @@ Los seminarios se organizan en temporadas. Por ejemplo, la temporada de diciembr
 | Clase (Taller de Iniciación) | 2 a 3 horas, sábado en la mañana | $35.000 | 50 por clase |
 | Seminario de fin de semana | Viernes a domingo (3 días) | $75.000 | 50 por fin de semana |
 | Poleras y artículos | Venta junto con las entradas | Según catálogo | Según stock |
-| Clase online | Acceso a los videos de la clase contratada | Por definir | Sin límite |
+| Clase online | Acceso a los videos de la clase contratada, con derecho a descarga | $25.000 | Sin límite |
+
+**Catálogo de prueba de la tienda**
+
+Catálogo provisorio para construir y probar la tienda. Los precios y el stock son referenciales y los reemplazará Maxi Muñoz con el catálogo definitivo.
+
+| Código | Producto | Categoría | Variantes | Precio de prueba | Stock de prueba |
+| --- | --- | --- | --- | --- | --- |
+| VES-001 | Polera oficial Shaolin Chile (algodón) | Vestimenta | Tallas S, M, L, XL, XXL · negra o blanca | $15.000 | 10 por variante |
+| VES-002 | Polerón oficial con capucha | Vestimenta | Tallas S, M, L, XL · negro | $28.000 | 5 por variante |
+| VES-003 | Pantalón de entrenamiento | Vestimenta | Tallas S, M, L, XL · negro | $22.000 | 5 por variante |
+| VES-004 | Faja de entrenamiento | Vestimenta | Colores según grado | $8.000 | 10 por color |
+| VES-005 | Zapatillas de entrenamiento de lona | Vestimenta | Tallas 36 a 45 | $25.000 | 3 por talla |
+| ACC-001 | Jockey bordado | Accesorios | Talla única · negro | $10.000 | 15 |
+| ACC-002 | Botella de agua metálica | Accesorios | 750 ml | $9.000 | 15 |
+| ACC-003 | Bolso deportivo | Accesorios | Único | $20.000 | 8 |
+| ARM-001 | Espada de tai chi de madera (entrenamiento) | Armas de entrenamiento | 90 cm | $18.000 | 6 |
+| ARM-002 | Bastón largo de madera (gun) | Armas de entrenamiento | 1,60 m o 1,80 m | $20.000 | 4 por largo |
+| DEC-001 | Cuadro caligrafía "Chan" | Decoración | 30 x 40 cm | $15.000 | 5 |
+
+Las armas de entrenamiento son de madera, sin filo, y se publican con advertencia de uso y edad mínima.
 
 **Promociones**
 
@@ -116,6 +136,18 @@ Los seminarios se organizan en temporadas. Por ejemplo, la temporada de diciembr
 | Escuelas de kung fu | Escuelas de kung fu externas | Convenio con código propio: 10 % de descuento y cupos liberados que la administración asigna en cada convenio, para delegaciones de 5 o más |
 | Otras organizaciones | Escuelas de otras artes marciales, clubes, gimnasios, empresas | Convenio con código propio: 10 % de descuento y cupos liberados que la administración asigna en cada convenio, para delegaciones de 5 o más |
 | Grupo | Cualquier comprador | Descuento por cantidad de entradas en una misma compra (por ejemplo, desde 5) |
+
+**Gestión de convenios:** en este momento no hay organizaciones definidas. La administración tiene una sección de convenios para agregar, editar, pausar o dar de baja organizaciones cuando corresponda. Cada convenio registra:
+
+- organización y tipo (escuela de kung fu u otra organización)
+- representante y datos de contacto
+- código propio
+- porcentaje de descuento (10 % por defecto)
+- cupos liberados asignados
+- vigencia
+- estado (activo, pausado o dado de baja)
+
+Dar de baja un convenio desactiva su código, pero conserva su historial de compras para los reportes; no se borra.
 
 Las organizaciones con convenio tienen un representante con cuenta propia. Ese representante compra un bloque de entradas para su grupo y luego asigna los nombres de los asistentes. Las promociones no se acumulan, salvo que la dirección lo defina, y cada una tiene vigencia y tope de usos.
 
@@ -130,7 +162,7 @@ Basada en la Ley del Consumidor (Ley 19.496, modificada por la Ley 21.398) y en 
 | Cambio de asistente | La entrada nominativa se puede traspasar a otra persona hasta el cierre de inscripciones |
 | Inasistencia | Sin devolución fuera del plazo de retracto; se ofrece cambio a otro fin de semana de la misma temporada, sujeto a cupo |
 | Cancelación o reprogramación por la escuela | El comprador elige entre devolución total o cambio a otra fecha. Se avisa de inmediato por correo e Instagram |
-| Clase online con videos | Retracto dentro de 10 días, solo si aún no se ha accedido al contenido; al acceder, el servicio se considera iniciado |
+| Clase online con videos | Retracto dentro de 10 días, solo si aún no se ha visto ni descargado el video; al verlo o descargarlo, el servicio se considera prestado. Esto se informa de forma expresa antes del pago |
 | Poleras y artículos | Retracto de 10 días desde la recepción, sin uso y con etiquetas. Garantía legal de 6 meses por fallas: el comprador elige cambio, reparación o devolución. Cambio de talla dentro de 30 días, como beneficio de la escuela |
 | Plazo de devolución | Por transferencia a la cuenta del comprador, dentro de 10 días hábiles desde la solicitud aprobada |
 
@@ -417,7 +449,7 @@ Estas definiciones bloquean el inicio de la Fase 1 o de la Fase 3 y corresponden
 - [ ] ¿Qué sedes estarán activas al lanzamiento, además de la Región Metropolitana y la Región del Maule?
 - [ ] ¿Dominio oficial del sitio y correo institucional para el equipo?
 - [ ] ¿La tienda despachará a todo Chile o solo retiro en sede al comienzo?
-- [ ] Seminarios: ¿precio de la clase online y del retiro?, ¿qué organizaciones tendrán convenio en la primera temporada?, ¿validación legal de la política de cambios y devoluciones?
+- [ ] Seminarios: ¿precio del retiro?, ¿catálogo definitivo de la tienda (reemplaza el de prueba)?, ¿validación legal de la política de cambios y devoluciones?
 - [ ] ¿Se mantiene el registro de representantes de sede como función del sitio?
 - [ ] ¿Construir todo el sistema o combinar? Recomendación: construir, porque la base existe y la identidad de la organización es central; la alternativa es arrendar la gestión de clases y cobros (por ejemplo, AgendaPro o Gymdesk) y construir solo sitio, seminarios, tienda y certificación.
 - [ ] ¿Qué política de morosidad se aplica: cuántos días de gracia y cuándo se suspende la reserva de clases?
