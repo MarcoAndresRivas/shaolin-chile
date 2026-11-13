@@ -1,0 +1,41 @@
+# Fase 2 — Portales de alumno, instructor y administración
+
+Objetivo: operar una sede piloto en la plataforma, siguiendo el plan maestro (`docs/plan-maestro.md`, rama `docs/plan-maestro`).
+Rama: `feat/fase2-clases` (sobre `feat/fase1-sitio-astro`) · Entrega: cadena apilada a main, un PR por tarea · Tests: `npm test` en `backend/` y `web/`.
+
+## Specs
+
+- S1 — "Fase 2 — Portales de alumno, instructor y administración (5 a 7 semanas). Sedes, clases y sesiones, reservas, asistencia, disponibilidad, cuentas familiares, estado de cuenta, morosidad, seguimiento de interesados, requisitos de grado, exámenes y asistente virtual en la página web."
+- S2 — Cierre: "una sede piloto opera un mes completo en el sistema, con asistencia, cobros y al menos una ronda de exámenes registrados; validación legal de datos personales aprobada."
+- S3 — Modelo de datos (plan maestro): "Clases | clases (plantilla semanal), sesiones (fecha concreta), reservas, asistencias, disponibilidad_instructor | Separar la plantilla de la sesión permite cancelar o reprogramar un día puntual"; "Escuela | sedes, disciplinas, grados, requisitos_grado, perfiles_alumno, perfiles_instructor".
+- S4 — Permisos: mínimo privilegio. Administración (Director, Administrador, Desarrollador) modifica sedes, clases y sesiones; el resto solo lee. Instructor toma asistencia y fija su disponibilidad; alumno reserva y cancela las suyas.
+- S5 — Las migraciones son re-ejecutables y compatibles con la base de producción (ids INT con signo); `horarios` y `reservas_alumno` no se tocan hasta migrar al alumno al flujo nuevo. Supuesto.
+- S6 — Fechas y horas se guardan como texto `YYYY-MM-DD` y `HH:MM`: iguales en SQLite y MySQL, sin desfases de zona horaria. Supuesto.
+
+## Tasks
+
+| ID | Specs | Ruta | Estado | Commit |
+| --- | --- | --- | --- | --- |
+| T1 | S1, S3, S4, S5, S6 | inline | en curso | — |
+| T2 | S1, S3, S4 | inline | pendiente | — |
+| T3 | S1, S3 | inline | pendiente | — |
+| T4 | S1 | inline | pendiente | — |
+| T5 | S1 | inline | pendiente | — |
+| T6 | S1 | inline | pendiente | — |
+| T7 | S1, S2 | inline | pendiente | — |
+| T8 | S1 | inline | pendiente | — |
+
+- T1: sedes, disciplinas, clases (plantilla semanal) y sesiones; API de administración; pantalla de administración.
+- T2: reservas de sesiones (alumno) y asistencia (instructor).
+- T3: disponibilidad semanal del instructor.
+- T4: interesados y clases de prueba (el formulario del sitio los registra; base del asistente virtual).
+- T5: cuentas familiares (apoderado y alumnos a cargo).
+- T6: estado de cuenta, cargos, pagos por transferencia y morosidad.
+- T7: grados, requisitos y exámenes.
+- T8: asistente virtual en la página web (n8n).
+
+Ruta: todo inline; sin unidades paralelas ni disparador de writer.
+
+## Log
+
+- L1 (2026-11-13): "continua con el plan fase 2" (el usuario eligió seguir el orden estricto del plan antes que adelantar el asistente).
