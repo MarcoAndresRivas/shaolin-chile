@@ -2,6 +2,7 @@
 
 const { hasAnyRole, ADMIN_ROLES } = require('../middleware/authMiddleware');
 const { todayInChile } = require('../src/dates');
+const { isGuardianOf } = require('../src/familia');
 
 const bad = (res, message) => res.status(400).json({ error: message });
 const notFound = (res, message) => res.status(404).json({ error: message });
@@ -21,9 +22,25 @@ async function findSesion(db, id) {
     return rows[0] ?? null;
 }
 
-// ---- Student: book and cancel ----
+// Who the booking is for: the caller (a student) or, with alumno_id, a student in
+// the care of the caller (a guardian). Returns the student id, or null after
+// answering 403.
+async function bookingTarget(req, res, verb) {
+    const requested = req.body?.alumno_id;
+    if (requested == null || Number(requested) === req.user.id) {
+        if (hasAnyRole(req.user, ['Alumno'])) return req.user.id;
+        forbidden(res, `Solo los alumnos pueden ${verb} sus reservas.`);
+        return null;
+    }
+    if (await isGuardianOf(req.db, req.user.id, Number(requested))) return Number(requested);
+    forbidden(res, `No puedes ${verb} reservas de este alumno.`);
+    return null;
+}
+
+// ---- Student (or guardian): book and cancel ----
 exports.reservar = async (req, res) => {
-    if (!hasAnyRole(req.user, ['Alumno'])) return forbidden(res, 'Solo los alumnos pueden reservar clases.');
+    const alumnoId = await bookingTarget(req, res, 'hacer');
+    if (alumnoId === null) return;
 
     let connection;
     try {
@@ -37,7 +54,7 @@ exports.reservar = async (req, res) => {
 
         const [existing] = await connection.execute(
             'SELECT id, estado FROM reservas WHERE sesion_id = ? AND alumno_id = ?',
-            [sesion.id, req.user.id],
+            [sesion.id, alumnoId],
         );
         if (existing[0]?.estado === 'activa') {
             await connection.rollback();
@@ -59,7 +76,7 @@ exports.reservar = async (req, res) => {
         if (existing[0]) {
             await connection.execute("UPDATE reservas SET estado = 'activa', fecha_reserva = CURRENT_TIMESTAMP WHERE id = ?", [existing[0].id]);
         } else {
-            await connection.execute('INSERT INTO reservas (sesion_id, alumno_id) VALUES (?, ?)', [sesion.id, req.user.id]);
+            await connection.execute('INSERT INTO reservas (sesion_id, alumno_id) VALUES (?, ?)', [sesion.id, alumnoId]);
         }
         await connection.commit();
         res.status(201).json({ message: 'Reserva confirmada.' });
@@ -73,7 +90,8 @@ exports.reservar = async (req, res) => {
 };
 
 exports.cancelarReserva = async (req, res) => {
-    if (!hasAnyRole(req.user, ['Alumno'])) return forbidden(res, 'Solo los alumnos pueden cancelar sus reservas.');
+    const alumnoId = await bookingTarget(req, res, 'cancelar');
+    if (alumnoId === null) return;
 
     let connection;
     try {
@@ -81,7 +99,7 @@ exports.cancelarReserva = async (req, res) => {
         await connection.beginTransaction();
         const [result] = await connection.execute(
             "UPDATE reservas SET estado = 'cancelada' WHERE sesion_id = ? AND alumno_id = ? AND estado = 'activa'",
-            [req.params.id, req.user.id],
+            [req.params.id, alumnoId],
         );
         if (result.affectedRows === 0) {
             await connection.rollback();

@@ -50,3 +50,4 @@ export function clearSession(storage = globalThis.localStorage) {
 export const isAdmin = (session) => session.roles.some((role) => ADMIN_ROLES.includes(role));
 export const isStudent = (session) => session.roles.includes('Alumno');
 export const isInstructor = (session) => session.roles.includes('Instructor');
+export const isGuardian = (session) => session.roles.includes('Apoderado');

@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { appPath } from '../../lib/client.js';
-import { clearSession, isAdmin, isInstructor, isStudent, readSession } from '../../lib/session.js';
+import { clearSession, isAdmin, isGuardian, isInstructor, isStudent, readSession } from '../../lib/session.js';
 import AdminPanel from './AdminPanel.jsx';
+import GuardianPanel from './GuardianPanel.jsx';
 import InstructorPanel from './InstructorPanel.jsx';
 import StudentPanel from './StudentPanel.jsx';
 import './portal.css';
@@ -42,8 +43,9 @@ export default function Portal() {
 
       {isAdmin(session) && <AdminPanel onUnauthorized={onUnauthorized} />}
       {isInstructor(session) && <InstructorPanel userId={session.userId} onUnauthorized={onUnauthorized} />}
+      {isGuardian(session) && <GuardianPanel onUnauthorized={onUnauthorized} />}
       {isStudent(session) && <StudentPanel onUnauthorized={onUnauthorized} />}
-      {!isAdmin(session) && !isStudent(session) && !isInstructor(session) && (
+      {!isAdmin(session) && !isStudent(session) && !isInstructor(session) && !isGuardian(session) && (
         <section className="panel">
           <h2>Tu panel está en construcción</h2>
           <p className="muted">

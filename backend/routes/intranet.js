@@ -6,6 +6,7 @@ const escuelaController = require('../controllers/escuelaController');
 const reservasController = require('../controllers/reservasController');
 const disponibilidadController = require('../controllers/disponibilidadController');
 const interesadosController = require('../controllers/interesadosController');
+const familiasController = require('../controllers/familiasController');
 
 // All intranet routes are protected by verifyToken
 router.use(verifyToken);
@@ -51,6 +52,17 @@ router.put('/interesados/:id', isAdmin, interesadosController.updateEstado);
 router.post('/interesados/:id/seguimientos', isAdmin, interesadosController.addSeguimiento);
 router.post('/interesados/:id/clase-prueba', isAdmin, interesadosController.agendarClasePrueba);
 router.put('/clases-prueba/:id', isAdmin, interesadosController.updateClasePrueba);
+
+// --- Families (administration), the guardian's view and consents (the person or their guardian) ---
+router.get('/familias', isAdmin, familiasController.getFamilias);
+router.post('/familias', isAdmin, familiasController.createFamilia);
+router.delete('/familias/:id', isAdmin, familiasController.deleteFamilia);
+router.post('/familias/:id/miembros', isAdmin, familiasController.addMiembro);
+router.delete('/familias/:id/miembros/:usuarioId', isAdmin, familiasController.removeMiembro);
+router.get('/familia/mia', familiasController.miFamilia);
+router.get('/consentimientos', familiasController.getConsentimientos);
+router.post('/consentimientos', familiasController.createConsentimiento);
+router.put('/consentimientos/:id/revocar', familiasController.revocarConsentimiento);
 
 // --- Reservas / Booking (Alumno) ---
 router.post('/reservar', intranetController.bookHorario); // Alumno books a class

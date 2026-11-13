@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createSession, readSession, saveSession, clearSession, isAdmin, isStudent, isInstructor } from '../src/lib/session.js';
+import { createSession, readSession, saveSession, clearSession, isAdmin, isStudent, isInstructor, isGuardian } from '../src/lib/session.js';
 
 function memoryStorage() {
   const data = new Map();
@@ -64,4 +64,9 @@ test('a session without a user id in the token has no userId, and instructors ar
     assert.equal('userId' in createSession({ token, nombre: 'X', roles: [] }), false);
     assert.equal(isInstructor({ roles: ['Instructor'] }), true);
     assert.equal(isInstructor({ roles: ['Alumno'] }), false);
+});
+
+test('guardians are detected', () => {
+    assert.equal(isGuardian({ roles: ['Apoderado', 'Alumno'] }), true);
+    assert.equal(isGuardian({ roles: ['Alumno'] }), false);
 });

@@ -20,7 +20,7 @@ Rama: `feat/fase2-clases` (sobre `feat/fase1-sitio-astro`) · Entrega: cadena ap
 | T2 | S1, S3, S4 | inline | hecho (RED 10/10 fallos → GREEN) | e468671 (backend), commit del portal (web) |
 | T3 | S1, S3 | inline | hecho (RED 6 fallos → GREEN) | commit del backend (T3), commit del portal (T3) |
 | T4 | S1 | inline | hecho (RED 15 fallos → GREEN) | commit del backend (T4), commit del sitio y portal (T4) |
-| T5 | S1 | inline | pendiente | — |
+| T5 | S1 | inline | hecho (RED 8 fallos → GREEN) | b0e6cec (backend), commit del portal (web) |
 | T6 | S1 | inline | pendiente | — |
 | T7 | S1, S2 | inline | pendiente | — |
 | T8 | S1 | inline | pendiente | — |
@@ -43,3 +43,4 @@ Ruta: todo inline; sin unidades paralelas ni disparador de writer.
 - L3: T2 verificado: backend 76/76, web 26/26. En Chrome real con tres personas: el administrador crea una clase para una instructora y genera las sesiones; la alumna reserva (1 de 12 cupos); la instructora ve su sesión, marca Presente y guarda; la alumna ve su asistencia. El cupo se toma con un UPDATE condicionado (reservas_activas < cupo): la prueba de reservas simultáneas corre sobre SQLite, que serializa las transacciones; en MySQL (InnoDB) el bloqueo de fila debería dar el mismo resultado, pero no se probó contra MySQL.
 - L4 (2026-11-13): "continua con t3 y t4". T3 hecho: backend 84/84, web 27/27. Verificación en navegador del editor de disponibilidad: pendiente, junto con T4.
 - L5: T4 hecho y T3 verificado en navegador: backend 101/101, web 32/32. Chrome real: un visitante envía el formulario público (sin consentimiento no envía; con consentimiento queda registrado); el administrador crea una clase, abre al interesado, cambia el estado, agrega una nota y agenda la clase de prueba (el sistema deja las notas automáticas); la instructora guarda su disponibilidad y persiste al recargar. Decisiones: el formulario cae a WhatsApp si el servidor no responde (así no se pierde la persona; hoy el backend de Render está suspendido); el limitador es de 5 envíos por hora por IP y cuenta también los inválidos; `trust proxy` en 1 salto por Render. Pendiente: la política de privacidad se actualizó pero sigue en revisión legal.
+- L6 (2026-11-13): "si continua con t5 y t6 y t7". T5 hecho: backend 109/109, web 34/34. Verificación en navegador del panel del apoderado y de familias: pendiente (se hace junto con T6 y T7). Las autorizaciones (consentimientos) quedan solo en la API: no existen textos legales aprobados para mostrarle al apoderado, y no se inventan.

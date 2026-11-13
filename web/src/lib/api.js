@@ -72,8 +72,15 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
       if (hasta) query.set('hasta', hasta);
       return request('GET', '/api/intranet/sesiones' + (query.size ? `?${query}` : ''));
     },
-    reservarSesion: (id) => request('POST', `/api/intranet/sesiones/${id}/reservar`),
-    cancelarReservaSesion: (id) => request('DELETE', `/api/intranet/sesiones/${id}/reservar`),
+    // With alumnoId, a guardian books or cancels for a student in their care.
+    reservarSesion: (id, alumnoId) => request('POST', `/api/intranet/sesiones/${id}/reservar`, alumnoId ? { alumno_id: alumnoId } : undefined),
+    cancelarReservaSesion: (id, alumnoId) => request('DELETE', `/api/intranet/sesiones/${id}/reservar`, alumnoId ? { alumno_id: alumnoId } : undefined),
+    miFamilia: () => request('GET', '/api/intranet/familia/mia'),
+    familias: () => request('GET', '/api/intranet/familias'),
+    crearFamilia: (nombre) => request('POST', '/api/intranet/familias', { nombre }),
+    eliminarFamilia: (id) => request('DELETE', `/api/intranet/familias/${id}`),
+    agregarMiembro: (id, usuarioId, rol) => request('POST', `/api/intranet/familias/${id}/miembros`, { usuario_id: usuarioId, rol_en_familia: rol }),
+    quitarMiembro: (id, usuarioId) => request('DELETE', `/api/intranet/familias/${id}/miembros/${usuarioId}`),
     misReservasSesiones: () => request('GET', '/api/intranet/reservas/mias'),
     asistencia: (id) => request('GET', `/api/intranet/sesiones/${id}/asistencia`),
     guardarAsistencia: (id, asistencias) => request('PUT', `/api/intranet/sesiones/${id}/asistencia`, { asistencias }),

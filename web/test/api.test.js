@@ -204,3 +204,29 @@ test('the follow-up endpoints use their routes and methods', async () => {
         ],
     );
 });
+
+test('booking for a student in your care sends alumno_id, and the family endpoints use their routes', async () => {
+    const { fetchImpl, calls } = fakeFetch(200, {});
+    const api = createApi({ baseUrl: '', fetchImpl, getToken: () => 'abc' });
+    await api.reservarSesion(4, 7);
+    await api.cancelarReservaSesion(4, 7);
+    await api.miFamilia();
+    await api.familias();
+    await api.crearFamilia('Familia Soto');
+    await api.eliminarFamilia(2);
+    await api.agregarMiembro(2, 7, 'alumno');
+    await api.quitarMiembro(2, 7);
+    assert.deepEqual(
+        calls.map((c) => `${c.options.method} ${c.url} ${c.options.body ?? ''}`.trim()),
+        [
+            'POST /api/intranet/sesiones/4/reservar {"alumno_id":7}',
+            'DELETE /api/intranet/sesiones/4/reservar {"alumno_id":7}',
+            'GET /api/intranet/familia/mia',
+            'GET /api/intranet/familias',
+            'POST /api/intranet/familias {"nombre":"Familia Soto"}',
+            'DELETE /api/intranet/familias/2',
+            'POST /api/intranet/familias/2/miembros {"usuario_id":7,"rol_en_familia":"alumno"}',
+            'DELETE /api/intranet/familias/2/miembros/7',
+        ],
+    );
+});
