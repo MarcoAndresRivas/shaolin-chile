@@ -5,7 +5,13 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "migrate": "knex migrate:latest --knexfile knexfile.js",
+    "migrate:status": "knex migrate:status --knexfile knexfile.js",
+    "migrate:rollback": "knex migrate:rollback --knexfile knexfile.js",
+    "seed:admin": "node seed_admin.js",
+    "seed:alumno": "node seed_alumno.js",
+    "seed:team": "node seed_custom_admins.js"
   },
   "keywords": [],
   "author": "",
