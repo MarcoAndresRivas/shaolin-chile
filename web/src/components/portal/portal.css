@@ -173,6 +173,27 @@
   font: inherit;
 }
 
+.availability-row--two {
+  grid-template-columns: 1fr auto;
+  margin-top: 10px;
+}
+
+.lead {
+  display: grid;
+  gap: 14px;
+  margin-top: 10px;
+}
+
+.lead select,
+.lead input[type="text"] {
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
 .list__actions--start {
   justify-content: flex-start;
   margin-top: 16px;

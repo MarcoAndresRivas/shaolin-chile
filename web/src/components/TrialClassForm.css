@@ -71,3 +71,38 @@
     grid-template-columns: 1fr;
   }
 }
+
+.trial__trap {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.trial__consent {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.trial__consent input {
+  width: auto;
+  margin-top: 4px;
+}
+
+.trial__consent a {
+  color: var(--gold);
+}
+
+.trial--done {
+  text-align: center;
+  justify-items: center;
+}
+
+.trial--done h3 {
+  color: var(--gold);
+}
