@@ -1,0 +1,125 @@
+---
+import Base from '../layouts/Base.astro';
+import { instructors } from '../data/site.js';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const initials = (name) =>
+  name
+    .replace(/^Laoshi\s+/i, '')
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join('');
+---
+
+<Base title="Instructores" description="Equipo de instructores de Shaolin Chile, encabezado por Laoshi José Cuevas B.">
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Nuestro equipo</p>
+        <h1>Instructores</h1>
+        <p>Instructores avalados por la Asociación Internacional de Kung Fu. Pronto publicaremos el perfil completo de cada uno.</p>
+      </div>
+
+      <div class="instructors">
+        {
+          instructors.map((instructor) => (
+            <article class="instructor">
+              <div class="instructor__avatar" aria-hidden="true">{initials(instructor.name)}</div>
+              <div>
+                <p class="instructor__role">{instructor.role}</p>
+                <h2>{instructor.name}</h2>
+                <dl>
+                  <dt>Grado</dt>
+                  <dd class={instructor.rank ? '' : 'pending'}>{instructor.rank ?? 'Por confirmar'}</dd>
+                  <dt>Especialidad</dt>
+                  <dd class={instructor.specialty ? '' : 'pending'}>{instructor.specialty ?? 'Por confirmar'}</dd>
+                </dl>
+                <p class={instructor.bio ? 'instructor__bio' : 'instructor__bio pending'}>
+                  {instructor.bio ?? 'Biografía en preparación.'}
+                </p>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+
+      <p class="back">
+        <a class="btn btn--gold" href={`${base}/#clase-de-prueba`}>Reserva tu clase de prueba</a>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+  }
+  .instructors {
+    display: grid;
+    gap: 22px;
+  }
+  .instructor {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: 28px;
+    padding: 32px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .instructor__avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--red);
+    color: var(--gold-soft);
+    font-family: var(--font-display);
+    font-size: 2.2rem;
+    font-weight: 800;
+  }
+  .instructor__role {
+    color: var(--gold);
+    font-family: var(--font-display);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+  }
+  .instructor h2 {
+    font-size: 1.6rem;
+  }
+  dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 4px 16px;
+    margin: 0 0 14px;
+  }
+  dt {
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  dd {
+    margin: 0;
+  }
+  .instructor__bio {
+    margin: 0;
+  }
+  .back {
+    margin-top: 40px;
+  }
+  @media (max-width: 560px) {
+    .instructor {
+      grid-template-columns: 1fr;
+      padding: 24px;
+    }
+    .instructor__avatar {
+      width: 88px;
+      height: 88px;
+      font-size: 1.6rem;
+    }
+  }
+</style>
