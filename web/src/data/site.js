@@ -10,7 +10,7 @@ export const brand = {
   name: 'Shaolin Chile',
   legalName: 'Club Deportivo Shaolin Guan Chile',
   legalBasis: 'Ley N° 19.712 del Deporte',
-  constituted: false,
+  constituted: true,
 };
 
 export const contact = {
