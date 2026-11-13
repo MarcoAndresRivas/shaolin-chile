@@ -45,7 +45,7 @@ export default function AccountPanel({ alumnoId, title = 'Mi estado de cuenta', 
       <h2>{title}</h2>
       {resumen.moroso && (
         <p className="alert" role="alert">
-          Tienes cargos vencidos. Informa tu pago o coordina con la administración.
+          {alumnoId ? 'Hay cargos vencidos.' : 'Tienes cargos vencidos.'} Informa el pago o coordina con la administración.
         </p>
       )}
       {notice.text && (
@@ -58,7 +58,7 @@ export default function AccountPanel({ alumnoId, title = 'Mi estado de cuenta', 
         saldo por pagar · cargado {formatPesos(resumen.cargado)} · pagado {formatPesos(resumen.pagado)}
       </p>
 
-      {cargos.length === 0 && <p className="muted">No tienes cargos.</p>}
+      {cargos.length === 0 && <p className="muted">{alumnoId ? 'No hay cargos.' : 'No tienes cargos.'}</p>}
       <ul className="list">
         {cargos.map((cargo) => (
           <li key={cargo.id} className="list__item list__item--stack">

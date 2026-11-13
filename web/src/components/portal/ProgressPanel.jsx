@@ -22,6 +22,8 @@ function Requirement({ label, done, needed, met }) {
 // Current grade, the next one and how far the student is from taking it.
 export default function ProgressPanel({ alumnoId, title = 'Mi grado', onUnauthorized }) {
   const progress = useApi(useCallback(() => api.progreso(alumnoId), [alumnoId]), onUnauthorized);
+  // With alumnoId a guardian is reading about a student in their care.
+  const own = !alumnoId;
 
   if (progress.loading && !progress.data) return <section className="panel"><h2>{title}</h2><p className="muted">Cargando…</p></section>;
   if (progress.error) return <section className="panel"><h2>{title}</h2><p className="alert">{progress.error}</p></section>;
@@ -34,16 +36,16 @@ export default function ProgressPanel({ alumnoId, title = 'Mi grado', onUnauthor
       {disciplinas.map((d) => (
         <div key={d.disciplina_id} className="progress">
           <p className="list__title">{d.disciplina}</p>
-          <p className="muted">{d.actual ? `Grado actual: ${d.actual.nombre} (desde ${d.actual.fecha})` : 'Aún no tienes un grado registrado.'}</p>
+          <p className="muted">{d.actual ? `Grado actual: ${d.actual.nombre} (desde ${d.actual.fecha})` : own ? 'Aún no tienes un grado registrado.' : 'Aún no tiene un grado registrado.'}</p>
           {d.siguiente ? (
             <>
               <p>Próximo grado: {d.siguiente.nombre}</p>
               <Requirement label="Clases asistidas" done={d.requisitos.clases.asistidas} needed={d.requisitos.clases.minimas} met={d.requisitos.clases.cumple} />
               <Requirement label="Meses en el grado" done={d.requisitos.meses.transcurridos ?? 0} needed={d.requisitos.meses.minimos} met={d.requisitos.meses.cumple} />
-              {d.habilitado && <p className="success">Cumples los requisitos: tu instructor puede nominarte al próximo examen.</p>}
+              {d.habilitado && <p className="success">{own ? 'Cumples' : 'Cumple'} los requisitos: {own ? 'tu instructor puede nominarte' : 'su instructor puede nominarlo'} al próximo examen.</p>}
             </>
           ) : (
-            <p className="muted">Estás en el último grado definido.</p>
+            <p className="muted">{own ? 'Estás' : 'Está'} en el último grado definido.</p>
           )}
         </div>
       ))}
