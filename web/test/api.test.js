@@ -266,3 +266,41 @@ test('the finance endpoints use their routes and methods', async () => {
         ],
     );
 });
+
+test('the grades and exams endpoints use their routes and methods', async () => {
+    const { fetchImpl, calls } = fakeFetch(200, {});
+    const api = createApi({ baseUrl: '', fetchImpl, getToken: () => 'abc' });
+    await api.grados();
+    await api.grados(2);
+    await api.crearGrado({ disciplina_id: 2, orden: 1, nombre: 'Blanco' });
+    await api.ubicarAlumno(7, 3, '2026-11-01');
+    await api.progreso();
+    await api.progreso(7);
+    await api.habilitados();
+    await api.examenes();
+    await api.examen(5);
+    await api.crearExamen({ fecha: '2026-12-05' });
+    await api.actualizarExamen(5, 'cancelado');
+    await api.nominar(5, 7, 2);
+    await api.confirmarNominacion(5, 7);
+    await api.guardarResultados(5, [{ alumno_id: 7, resultado: 'aprobado' }]);
+    assert.deepEqual(
+        calls.map((c) => `${c.options.method} ${c.url} ${c.options.body ?? ''}`.trim()),
+        [
+            'GET /api/intranet/grados',
+            'GET /api/intranet/grados?disciplina_id=2',
+            'POST /api/intranet/grados {"disciplina_id":2,"orden":1,"nombre":"Blanco"}',
+            'POST /api/intranet/alumnos/7/grados {"grado_id":3,"fecha":"2026-11-01"}',
+            'GET /api/intranet/progreso/mio',
+            'GET /api/intranet/progreso/mio?alumno_id=7',
+            'GET /api/intranet/habilitados',
+            'GET /api/intranet/examenes',
+            'GET /api/intranet/examenes/5',
+            'POST /api/intranet/examenes {"fecha":"2026-12-05"}',
+            'PUT /api/intranet/examenes/5 {"estado":"cancelado"}',
+            'POST /api/intranet/examenes/5/nominaciones {"alumno_id":7,"disciplina_id":2}',
+            'PUT /api/intranet/examenes/5/nominaciones/7/confirmar',
+            'PUT /api/intranet/examenes/5/resultados {"resultados":[{"alumno_id":7,"resultado":"aprobado"}]}',
+        ],
+    );
+});

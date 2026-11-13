@@ -104,6 +104,18 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
     validarPago: (id) => request('PUT', `/api/intranet/pagos/${id}/validar`),
     rechazarPago: (id) => request('PUT', `/api/intranet/pagos/${id}/rechazar`),
     morosidad: (diasGracia) => request('GET', '/api/intranet/morosidad' + (diasGracia ? `?dias_gracia=${diasGracia}` : '')),
+    grados: (disciplinaId) => request('GET', '/api/intranet/grados' + (disciplinaId ? `?disciplina_id=${disciplinaId}` : '')),
+    crearGrado: (grado) => request('POST', '/api/intranet/grados', grado),
+    ubicarAlumno: (alumnoId, gradoId, fecha) => request('POST', `/api/intranet/alumnos/${alumnoId}/grados`, { grado_id: gradoId, fecha }),
+    progreso: (alumnoId) => request('GET', '/api/intranet/progreso/mio' + (alumnoId ? `?alumno_id=${alumnoId}` : '')),
+    habilitados: () => request('GET', '/api/intranet/habilitados'),
+    examenes: () => request('GET', '/api/intranet/examenes'),
+    examen: (id) => request('GET', `/api/intranet/examenes/${id}`),
+    crearExamen: (examen) => request('POST', '/api/intranet/examenes', examen),
+    actualizarExamen: (id, estado) => request('PUT', `/api/intranet/examenes/${id}`, { estado }),
+    nominar: (examenId, alumnoId, disciplinaId) => request('POST', `/api/intranet/examenes/${examenId}/nominaciones`, { alumno_id: alumnoId, disciplina_id: disciplinaId }),
+    confirmarNominacion: (examenId, alumnoId) => request('PUT', `/api/intranet/examenes/${examenId}/nominaciones/${alumnoId}/confirmar`),
+    guardarResultados: (examenId, resultados) => request('PUT', `/api/intranet/examenes/${examenId}/resultados`, { resultados }),
     cancelarSesion: (id, motivo) => request('POST', `/api/intranet/sesiones/${id}/cancelar`, { motivo }),
   };
 }
