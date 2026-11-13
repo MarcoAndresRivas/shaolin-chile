@@ -39,6 +39,7 @@ flowchart TB
         M5[Seminarios]
         M6[Tienda]
         M7[Contenido y cursos online]
+        M8[Asistente virtual · n8n]
     end
     subgraph S[Servicios]
         API[API Node/Express · Render]
@@ -51,13 +52,14 @@ flowchart TB
     API --> DB
     API --> PAY
     P --> YT
+    IG[Instagram · ManyChat] --> M8
 ```
 
 Todos los módulos comparten una sola API y una sola base de datos, con acceso controlado por rol. Así, un alumno que compra en la tienda o una entrada a un seminario usa la misma cuenta y el mismo medio de pago que para su mensualidad.
 
 ## Módulos y funcionalidades
 
-El sistema se divide en siete módulos. Cada uno puede construirse y entregarse por separado, en el orden de la hoja de ruta.
+El sistema se divide en ocho módulos. Cada uno puede construirse y entregarse por separado, en el orden de la hoja de ruta.
 
 | Módulo | Funcionalidades principales | Usuarios |
 | --- | --- | --- |
@@ -72,6 +74,46 @@ El sistema se divide en siete módulos. Cada uno puede construirse y entregarse 
 **Pagos:** se recomienda una pasarela chilena (Webpay de Transbank, Mercado Pago o Flow) compartida por mensualidades, entradas y tienda, para tener una sola conciliación de ingresos.
 
 **Grados y certificación:** es la funcionalidad que distingue a los sistemas especializados en artes marciales de un sistema de reservas genérico. Cada grado define requisitos (clases mínimas, tiempo mínimo en el grado y técnicas exigidas); el sistema calcula quién está habilitado, José Cuevas aprueba la nominación, se cobra el derecho a examen y, una vez aprobado, el grado queda registrado en la ficha del alumno. La certificación de instructores y escuelas afiliadas sigue el mismo modelo, por niveles.
+
+## Módulo 8 — Asistente virtual
+
+Un agente de inteligencia artificial atiende las consultas del público en la página web y en Instagram, asesora, agenda clases de prueba y envía correos. Así, José Cuevas deja de responder consultas y se concentra en la enseñanza; los casos que el agente no puede resolver pasan a la administración.
+
+**Qué hace**
+
+- Responde sobre lineamientos, disciplinas, sedes, horarios, precios, seminarios y tienda, usando solo una base de conocimiento validada por José Cuevas.
+- Muestra clases disponibles y reserva la clase de prueba, registrando al interesado con su origen (web o Instagram).
+- Envía correos de confirmación, recordatorio y bienvenida.
+- Deriva a la administración cuando no sabe la respuesta, hay un reclamo, un tema médico o la persona pide hablar con alguien.
+
+**Herramienta elegida: n8n**
+
+| Criterio | n8n | Hermes Agent |
+| --- | --- | --- |
+| Propósito | Automatizar procesos de un negocio | Asistente personal de una persona |
+| Instagram (conversación) | Sí, vía API de Meta o ManyChat | Sin conexión disponible; solo publicación |
+| Agendar y correos | Nodos incluidos (agente de IA, Gmail, llamadas a la API) | Requiere programar integraciones |
+| Mantenimiento | Flujos visuales, ajustables sin programar | Requiere programar |
+| Costo | Gratis en servidor propio (unos USD 3 a 7 al mes) más el modelo de IA | Gratis más el modelo de IA |
+
+**Arquitectura**
+
+1. Canales: chat insertado en la página web e Instagram; al comienzo vía ManyChat, ya aprobado por Meta, y luego con la API directa de Meta.
+2. Cerebro: agente en n8n con la base de conocimiento de la escuela.
+3. Acciones: el agente llama a la API propia de Shaolin Chile (clases disponibles, reservas, interesados), no a un calendario externo, para que todo quede en un solo sistema.
+4. Registro: cada conversación queda guardada y vinculada al interesado.
+
+**Reglas del agente**
+
+- Se presenta como asistente virtual, como exige Meta.
+- No inventa precios, horarios ni datos; si no los tiene, deriva.
+- No entrega consejos médicos ni de lesiones.
+- Pide consentimiento antes de guardar datos personales (Ley 21.719).
+- En Instagram responde solo dentro de las 24 horas posteriores al último mensaje de la persona; fuera de ese plazo responde un humano.
+
+**Requisitos de Instagram:** cuenta profesional vinculada a una página de Facebook; para usar la API directa, revisión de la aplicación y verificación de la empresa por parte de Meta.
+
+**Indicadores:** porcentaje de consultas resueltas sin intervención humana, clases de prueba agendadas por el asistente y tiempo de respuesta.
 
 ## Roles y permisos
 
@@ -98,7 +140,7 @@ La base actual tiene seis tablas (roles, usuarios, detalles\_alumno, horarios, r
 | Identidad | usuarios, roles, usuario\_roles, familias, familia\_miembros | Muchos a muchos para acumular roles; la familia agrupa al apoderado y sus alumnos |
 | Escuela | sedes, disciplinas, grados, requisitos\_grado, perfiles\_alumno, perfiles\_instructor | Cada alumno pertenece a una sede y tiene un grado vigente |
 | Grados y certificación | examenes, inscripciones\_examen, historial\_grados, niveles\_certificacion, certificaciones\_instructor, escuelas\_afiliadas | La habilitación se calcula cruzando requisitos\_grado con asistencias |
-| Captación | interesados, clases\_prueba, seguimientos | Registra el origen del interesado (redes, sitio, referido) para medir campañas |
+| Captación | interesados, clases\_prueba, seguimientos, conversaciones\_asistente | Registra el origen del interesado (redes, sitio, referido) para medir campañas |
 | Clases | clases (plantilla semanal), sesiones (fecha concreta), reservas, asistencias, disponibilidad\_instructor | Separar la plantilla de la sesión permite cancelar o reprogramar un día puntual |
 | Finanzas | planes, descuentos, suscripciones, cargos, pagos, intentos\_cobro, liquidaciones\_instructor, boletas | El estado de cuenta se calcula como cargos menos pagos; intentos\_cobro sostiene la recuperación de pagos fallidos |
 | Seminarios | seminarios, tipos\_entrada (preventa, general, alumno), entradas, exenciones\_firmadas, certificados\_participacion | Cada entrada lleva un código único para el QR |
@@ -162,9 +204,9 @@ Se proponen cinco fases secuenciales. Una fase se da por cerrada solo cuando cum
    - Cierre: ninguna credencial en el repositorio, claves rotadas y la base creada desde migraciones.
 2. **Fase 1 — Sitio institucional (2 a 3 semanas).** Inicio, lineamientos, disciplinas, sedes, planes, reserva de clase de prueba, política de privacidad, contacto y galería básica.
    - Cierre: contenido aprobado por la dirección y por José Cuevas; sitio publicado en el dominio oficial y recibiendo solicitudes de clase de prueba.
-3. **Fase 2 — Portales de alumno, instructor y administración (5 a 7 semanas).** Sedes, clases y sesiones, reservas, asistencia, disponibilidad, cuentas familiares, estado de cuenta, morosidad, seguimiento de interesados, requisitos de grado y exámenes.
+3. **Fase 2 — Portales de alumno, instructor y administración (5 a 7 semanas).** Sedes, clases y sesiones, reservas, asistencia, disponibilidad, cuentas familiares, estado de cuenta, morosidad, seguimiento de interesados, requisitos de grado, exámenes y asistente virtual en la página web.
    - Cierre: una sede piloto opera un mes completo en el sistema, con asistencia, cobros y al menos una ronda de exámenes registrados; validación legal de datos personales aprobada.
-4. **Fase 3 — Pagos, tienda y seminarios (4 a 6 semanas).** Pasarela de pago con boleta electrónica, recuperación de pagos fallidos, catálogo, pedidos, seminarios con preventa, descuento para alumnos, exención firmada, entradas con QR y certificado de participación.
+4. **Fase 3 — Pagos, tienda y seminarios (4 a 6 semanas).** Pasarela de pago con boleta electrónica, recuperación de pagos fallidos, catálogo, pedidos, seminarios con preventa, descuento para alumnos, exención firmada, entradas con QR, certificado de participación y asistente virtual en Instagram.
    - Cierre: primera venta real de un producto y de una entrada, conciliadas con la pasarela y con su boleta emitida.
 5. **Fase 4 — Crecimiento (permanente).** Certificación de instructores y escuelas afiliadas con directorio público, cursos online pagados, reportes, liquidaciones automáticas y notificaciones.
    - Cierre: revisión trimestral de indicadores con el equipo.
@@ -257,6 +299,7 @@ Benja tiene un rol doble: es la voz visual de la escuela en redes sociales y, a 
 - [ ] Preparar el calendario de contenidos del primer mes.
 - [ ] Grabar material base: clases por disciplina, sedes y entrevistas breves a instructores.
 - [ ] Producir un video de presentación de la escuela de 60 a 90 segundos para el sitio institucional.
+- [ ] Convertir la cuenta de Instagram en profesional, vincularla a la página de Facebook y conectarla al asistente virtual mediante ManyChat.
 
 **Indicadores**
 
@@ -286,6 +329,7 @@ José es la autoridad técnica de la escuela: define qué se enseña, cómo se e
 - [ ] Revisar y aprobar el texto de lineamientos y código de conducta para el sitio.
 - [ ] Definir el calendario anual de exámenes de grado y la propuesta de seminarios del próximo semestre.
 - [ ] Diseñar la certificación de instructores en niveles (por ejemplo, asistente, instructor y maestro), con requisitos, evaluación y renovación, como base del directorio oficial y de las escuelas afiliadas.
+- [ ] Validar la base de conocimiento del asistente virtual (preguntas frecuentes, lineamientos, criterios de derivación) y revisar cada mes una muestra de conversaciones.
 - [ ] Entregar o validar sus textos publicados en shaolinguan.cl (filosofía, lineamientos, historia) para integrarlos al sitio como contenido oficial, con su autoría.
 
 **Indicadores**
@@ -310,6 +354,7 @@ Estas definiciones bloquean el inicio de la Fase 1 o de la Fase 3 y corresponden
 - [ ] ¿Descuento familiar y descuento de alumno en seminarios: qué porcentajes?
 - [ ] ¿Niveles de certificación de instructores y escuelas afiliadas, y su costo?
 - [ ] ¿Quién asesora en ley de datos personales y quién en boleta electrónica (abogado y contador)?
+- [ ] Asistente virtual: ¿n8n en Render junto al backend o en un servidor aparte?, ¿qué modelo de IA usar?, ¿ManyChat al inicio o API directa de Meta? Confirmar con n8n que la licencia gratuita cubre un chat de atención en el sitio propio.
 
 ## Fuentes
 
@@ -317,4 +362,5 @@ Referentes revisados para completar este plan:
 
 - Software para escuelas de artes marciales: [Gymdesk, seguimiento de grados](https://gymdesk.com/blog/martial-arts-belt-tracking-software), [Zen Planner](https://zenplanner.com/?p=31871), [BlackBeltCRM](https://blackbeltcrm.com/?p=14480), [Classcard, comparativa 2026](https://www.classcardapp.com/blog/martial-arts-school-management), [AgendaPro Chile](https://agendapro.com/cl/centro-deportivo/software-para-centro-deportivo)
 - Organizaciones Shaolin: [certificación de instructores, Shaolin Yanxu](https://www.shaolinyanxu.com/instructor-certification), [curso online, Shaolin Yanxu](https://shaolinyanxu.com/course/shaolin-beginner-program), [USA Shaolin Temple](https://usashaolintemple.com/shaolintraining)
+- Asistente virtual: [plantilla n8n Instagram + agenda](https://n8n.io/workflows/11771-book-beauty-appointments-and-answer-faqs-with-gpt-4-google-calendar-gmail-and-instagram/), [Meta: Instagram Messaging](https://developers.facebook.com/docs/messenger-platform/instagram), [precios n8n](https://n8n.io/pricing/?selfHosted=true), [documentación de Hermes Agent](https://hermes-agent.nousresearch.com/docs/user-stories)
 - Ley 21.719: [Garrigues](https://www.garrigues.com/es_ES/noticia/chile-redefine-marco-privacidad-ciberseguridad-nuevas-reglas-cumplimiento-cambios.md), [Diario Constitucional](https://www.diarioconstitucional.cl/2026/06/12/la-ley-21-719-entra-en-vigor-el-1-de-diciembre-y-expone-vacios-en-regulacion-de-pequenas-empresas/)
