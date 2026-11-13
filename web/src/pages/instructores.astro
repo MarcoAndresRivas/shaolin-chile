@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { instructors } from '../data/site.js';
+import { instructors, instructorsHead } from '../data/site.js';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const initials = (name) =>
@@ -16,8 +16,8 @@ const initials = (name) =>
   <section class="section">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Nuestro equipo</p>
-        <h1>Instructores</h1>
+        <p class="eyebrow">{instructorsHead.eyebrow}</p>
+        <h1>{instructorsHead.title}</h1>
         <p>Instructores avalados por la Asociación Internacional de Kung Fu. Pronto publicaremos el perfil completo de cada uno.</p>
       </div>
 

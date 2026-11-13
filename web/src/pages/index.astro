@@ -6,11 +6,16 @@ import {
   hero,
   history,
   disciplines,
+  disciplinesHead,
   disciplinesIntro,
   benefits,
+  benefitsHead,
   benefitsIntro,
   locations,
+  locationsHead,
+  schedules,
   gallery,
+  galleryHead,
   cta,
   contact,
 } from '../data/site.js';
@@ -48,8 +53,12 @@ const historyImage = instagramImage('Bppn2h8lX4g');
         <p class="eyebrow">{history.eyebrow}</p>
         <h2 class="split__title">{history.title}</h2>
         {history.paragraphs.map((text) => <p class="split__text">{text}</p>)}
+        <ul class="highlights">
+          {history.highlights.map((text) => <li>{text}</li>)}
+        </ul>
       </div>
       <figure class="split__media">
+        <div class="stat"><strong>{history.stat.value}</strong><span>{history.stat.label}</span></div>
         <Image src={historyImage} alt="Practicante junto a un monje con túnica naranja" widths={[400, 682]} sizes="(max-width: 860px) 100vw, 45vw" />
       </figure>
     </div>
@@ -58,8 +67,8 @@ const historyImage = instagramImage('Bppn2h8lX4g');
   <section id="disciplinas" class="section section--alt">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Nuestras artes</p>
-        <h2>Disciplinas</h2>
+        <p class="eyebrow">{disciplinesHead.eyebrow}</p>
+        <h2>{disciplinesHead.title}</h2>
         <p>{disciplinesIntro}</p>
       </div>
       <div class="cards">
@@ -87,12 +96,12 @@ const historyImage = instagramImage('Bppn2h8lX4g');
   <section id="beneficios" class="section">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Beneficios</p>
-        <h2>Por qué entrenar con nosotros</h2>
+        <p class="eyebrow">{benefitsHead.eyebrow}</p>
+        <h2>{benefitsHead.title}</h2>
         <p>{benefitsIntro}</p>
       </div>
       <ol class="benefits">
-        {benefits.map((text) => <li>{text}</li>)}
+        {benefits.map((benefit) => <li><h3>{benefit.title}</h3><p>{benefit.text}</p></li>)}
       </ol>
     </div>
   </section>
@@ -100,9 +109,8 @@ const historyImage = instagramImage('Bppn2h8lX4g');
   <section id="sedes" class="section section--alt">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Presentes en todo el país</p>
-        <h2>Nuestras sedes</h2>
-        <p>Horarios y direcciones se coordinan por WhatsApp mientras publicamos el detalle de cada sede.</p>
+        <p class="eyebrow">{locationsHead.eyebrow}</p>
+        <h2>{locationsHead.title}</h2>
       </div>
       <div class="locations">
         {
@@ -118,15 +126,29 @@ const historyImage = instagramImage('Bppn2h8lX4g');
           ))
         }
       </div>
+
+      <h3 class="schedules__title">Horarios de clases</h3>
+      <div class="schedules">
+        {
+          schedules.map((item) => (
+            <article class="schedule">
+              <p class="schedule__discipline">{item.discipline}</p>
+              <p class="schedule__days">{item.days}</p>
+              <p class="schedule__time">{item.time}</p>
+            </article>
+          ))
+        }
+      </div>
+      <p class="schedules__note">Consulta por WhatsApp la sede y el horario que más te acomoden.</p>
     </div>
   </section>
 
   <section id="galeria" class="section">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">Galería</p>
-        <h2>Nuestra escuela en imágenes</h2>
-        <p>Entrenamientos, seminarios y momentos de nuestra comunidad, directo desde {contact.instagramHandle}.</p>
+        <p class="eyebrow">{contact.instagramHandle}</p>
+        <h2>{galleryHead.title}</h2>
+        <p>{galleryHead.intro}</p>
       </div>
       <div class="gallery">
         {
@@ -228,6 +250,86 @@ const historyImage = instagramImage('Bppn2h8lX4g');
     width: 100%;
   }
 
+  .highlights {
+    list-style: none;
+    margin: 24px 0 0;
+    padding: 0;
+    display: grid;
+    gap: 10px;
+  }
+  .highlights li {
+    position: relative;
+    padding-left: 28px;
+  }
+  .highlights li::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 14px;
+    height: 2px;
+    background: var(--gold);
+  }
+  .split__media {
+    position: relative;
+  }
+  .stat {
+    position: absolute;
+    left: -18px;
+    bottom: -18px;
+    z-index: 1;
+    display: grid;
+    padding: 18px 22px;
+    border-radius: var(--radius);
+    background: var(--red);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  }
+  .stat strong {
+    font-family: var(--font-display);
+    font-size: 2.4rem;
+    line-height: 1;
+    color: var(--gold-soft);
+  }
+  .stat span {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .schedules__title {
+    margin-top: 56px;
+    font-size: 1.4rem;
+  }
+  .schedules {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+  }
+  .schedule {
+    padding: 22px 24px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg);
+  }
+  .schedule p {
+    margin: 0;
+  }
+  .schedule__discipline {
+    font-family: var(--font-display);
+    color: var(--gold);
+    font-size: 1.05rem;
+  }
+  .schedule__days {
+    color: var(--muted);
+  }
+  .schedule__time {
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+  .schedules__note {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
   .cards {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -276,6 +378,16 @@ const historyImage = instagramImage('Bppn2h8lX4g');
     border-radius: var(--radius);
     background: var(--surface);
     font-size: 1.02rem;
+  }
+  .benefits h3 {
+    font-size: 1.1rem;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .benefits p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
   }
   .benefits li::before {
     content: counter(benefit, decimal-leading-zero);
@@ -372,7 +484,8 @@ const historyImage = instagramImage('Bppn2h8lX4g');
   @media (max-width: 860px) {
     .split,
     .benefits,
-    .locations {
+    .locations,
+    .schedules {
       grid-template-columns: 1fr;
     }
     .gallery {

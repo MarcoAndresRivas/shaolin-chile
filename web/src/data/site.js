@@ -1,5 +1,6 @@
 // Official site content.
-// Source: Jose Cuevas' content panel (shaolinguan.cl), read on 2026-11-13.
+// Source: Jose Cuevas' content panel (shaolinguan.cl), from screenshots
+// in capturas/ taken on 2026-11-13.
 // Fields Jose has not provided yet are left as null and the UI hides them
 // or shows "Por confirmar". Never fill them with invented data.
 
@@ -13,23 +14,32 @@ export const contact = {
 };
 
 export const hero = {
-  eyebrow: 'Tradición y disciplina en Chile',
+  eyebrow: 'Tradición & Disciplina en Chile',
   titleLine1: 'Domina tu cuerpo',
   titleLine2: 'y tu mente',
   description:
     'Descubre el poder del auténtico Kung Fu. Entrenamiento físico y mental para todas las edades.',
-  primaryCta: 'Reserva tu clase de prueba',
+  primaryCta: 'Comienza tu viaje',
   secondaryCta: 'Ver disciplinas',
 };
 
 export const history = {
-  eyebrow: 'Nuestra filosofía y linaje',
-  title: 'El camino Shaolin en Chile',
+  eyebrow: 'Nuestra Filosofía y Linaje',
+  title: 'El Camino del Shaolin en Chile',
+  stat: { value: '+15', label: 'Años de Legado' },
+  highlights: [
+    'Instructores avalados a nivel internacional',
+    'Conexión directa con China y la sede central en Argentina',
+    'Múltiples sedes a lo largo de Chile',
+    'Clases adaptadas para todas las edades y niveles',
+  ],
   paragraphs: [
     'Formamos parte de una prestigiosa Asociación Internacional de Kung Fu, con conexión directa a China y sede central para toda Latinoamérica ubicada en Argentina. Somos los representantes oficiales encargados de preservar y transmitir el aprendizaje tradicional de las artes marciales chinas.',
     'Nuestro objetivo principal es forjar el carácter, la disciplina y mejorar integralmente la salud física y mental de nuestros alumnos bajo estándares internacionales. Ya sea que busques dominar técnicas de defensa personal o encontrar un equilibrio interior, nuestro linaje de maestros te guiará paso a paso.',
   ],
 };
+
+export const disciplinesHead = { eyebrow: 'Nuestras Artes', title: 'Disciplinas Impartidas' };
 
 export const disciplinesIntro =
   'Ofrecemos un currículo completo que abarca diferentes aspectos del sistema marcial chino antiguo adaptado a las necesidades modernas.';
@@ -44,7 +54,7 @@ export const disciplines = [
   },
   {
     slug: 'sanda',
-    name: 'Sanda',
+    name: 'Sanda (Boxeo Chino)',
     image: 'B-7ePjpJ3oS',
     description:
       'El aspecto deportivo y de combate libre. Combinación letal de golpes, patadas y proyecciones. Ideal para defensa personal y acondicionamiento intenso.',
@@ -65,19 +75,25 @@ export const disciplines = [
   },
 ];
 
+export const benefitsHead = { eyebrow: 'Tu Entrenamiento', title: 'Beneficios de la Práctica' };
+
 export const benefitsIntro =
   'Más que un deporte: una formación integral respaldada por la tradición marcial china.';
 
+// Titles come from the panel screenshots; texts from the earlier panel read,
+// in the same order.
 export const benefits = [
-  'Mejora integral de tu condición bajo estándares internacionales.',
-  'Técnicas reales de combate y defensa, desde las bases.',
-  'Forja el carácter y fortalece la concentración y la mente.',
-  'Una gran familia marcial con presencia nacional e internacional.',
-  'Clases adaptadas para niños, jóvenes y adultos, sin experiencia previa.',
-  'Energía, coordinación y conexión mente-cuerpo mediante el Qi Gong.',
+  { title: 'Salud física y mental', text: 'Mejora integral de tu condición bajo estándares internacionales.' },
+  { title: 'Defensa personal', text: 'Técnicas reales de combate y defensa, desde las bases.' },
+  { title: 'Disciplina y foco', text: 'Forja el carácter y fortalece la concentración y la mente.' },
+  { title: 'Comunidad', text: 'Una gran familia marcial con presencia nacional e internacional.' },
+  { title: 'Todas las edades', text: 'Clases adaptadas para niños, jóvenes y adultos, sin experiencia previa.' },
+  { title: 'Equilibrio interior', text: 'Energía, coordinación y conexión mente-cuerpo mediante el Qi Gong.' },
 ];
 
-// Addresses and schedules are pending from Jose: keep them null.
+export const locationsHead = { eyebrow: 'Presentes en Todo el País', title: 'Nuestras Sedes en Chile' };
+
+// Street addresses are still pending from Jose: keep them null.
 export const locations = [
   {
     name: 'Sede Administrativa Nacional',
@@ -87,7 +103,7 @@ export const locations = [
   },
   {
     name: 'Sede Región Metropolitana',
-    city: 'Santiago',
+    city: 'Santiago Centro',
     address: null,
     description: 'Acercando el arte marcial tradicional a la capital del país.',
   },
@@ -99,7 +115,17 @@ export const locations = [
   },
 ];
 
-// Profiles 2 and 3 exist in Jose's panel but their content is pending.
+// The panel lists these schedules without assigning them to a location.
+export const schedules = [
+  { days: 'Lunes, Miércoles y Viernes', time: '19:00 – 20:30', discipline: 'Kung Fu Tradicional' },
+  { days: 'Martes y Jueves', time: '18:30 – 20:00', discipline: 'Sanda' },
+  { days: 'Sábados', time: '10:00 – 11:30', discipline: 'Tai Chi' },
+];
+
+export const instructorsHead = { eyebrow: 'Nuestro Equipo', title: 'Instructores' };
+
+// Profiles 2 and 3 are empty in Jose's panel ("leave a profile empty so it is
+// not published"), so only profile 1 is shown. Cargo comes from the master plan.
 export const instructors = [
   {
     name: 'Laoshi José Cuevas B.',
@@ -121,8 +147,11 @@ export const gallery = [
   { id: 'Bppn2h8lX4g', kind: 'p', alt: 'Practicante junto a un monje con túnica naranja' },
 ];
 
+export const galleryHead = { title: 'Galería', intro: 'Momentos de entrenamiento en nuestra escuela.' };
+
 export const cta = {
-  title: 'Comienza tu entrenamiento',
+  title: '¿Listo para comenzar tu entrenamiento?',
+  button: 'Solicita tu clase de prueba',
   description:
     'Visítanos en nuestra sede. Estamos listos para recibirte sin importar tu nivel de experiencia previa.',
 };
@@ -130,4 +159,5 @@ export const cta = {
 export const footer = {
   description:
     'Preservando el legado del Kung Fu tradicional combinando técnicas milenarias con metodologías modernas.',
+  copyright: 'Shaolin Guan — Escuela de Artes Marciales Chinas. Todos los derechos reservados.',
 };
