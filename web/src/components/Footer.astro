@@ -1,0 +1,81 @@
+---
+import { contact, footer } from '../data/site.js';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div>
+      <p class="footer__brand">Shaolin Chile</p>
+      <p class="footer__text">{footer.description}</p>
+    </div>
+    <div>
+      <p class="footer__title">Contacto</p>
+      <ul>
+        <li>{contact.city}</li>
+        <li><a href={`https://wa.me/${contact.whatsapp}`} rel="noopener" target="_blank">WhatsApp {contact.whatsappLabel}</a></li>
+        <li><a href={`mailto:${contact.email}`}>{contact.email}</a></li>
+        <li><a href={contact.instagram} rel="noopener" target="_blank">Instagram {contact.instagramHandle}</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="container footer__legal">
+    <p>© {year} Asociación Internacional de Kung Fu, Sede Chile.</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 56px 0 24px;
+    background: #080809;
+  }
+  .footer__grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 40px;
+  }
+  .footer__brand {
+    font-family: var(--font-display);
+    color: var(--gold);
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+  .footer__text {
+    color: var(--muted);
+    max-width: 440px;
+  }
+  .footer__title {
+    font-family: var(--font-display);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    color: var(--gold);
+  }
+  .footer ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 6px;
+    color: var(--muted);
+  }
+  .footer a {
+    text-decoration: none;
+  }
+  .footer a:hover {
+    color: var(--gold);
+  }
+  .footer__legal {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  @media (max-width: 720px) {
+    .footer__grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

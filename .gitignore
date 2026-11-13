@@ -27,3 +27,7 @@ Thumbs.db
 
 # Local SQLite database
 backend/data/
+
+# Astro
+web/dist/
+web/.astro/
