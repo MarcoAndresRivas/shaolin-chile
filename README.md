@@ -14,7 +14,7 @@ Plataforma web de la Asociación Internacional de Kung Fu, sede Chile: sitio ins
 
 ## Backend en local
 
-Requisitos: Node.js 18 o superior y un servidor MySQL.
+Requisitos: Node.js 18 o superior. No hace falta instalar MySQL: en local la API usa un archivo SQLite (`backend/data/shaolin.db`, excluido del repositorio).
 
 1. Instalar dependencias:
 
@@ -29,11 +29,9 @@ Requisitos: Node.js 18 o superior y un servidor MySQL.
    node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
    ```
 
-3. Crear la base de datos vacía (las migraciones crean las tablas, no la base):
-
-   ```sql
-   CREATE DATABASE shaolin_chile CHARACTER SET utf8mb4;
-   ```
+3. Elegir la base de datos en `.env`:
+   - **SQLite (local, recomendado por ahora):** `DB_CLIENT=sqlite` y `DB_SERVER` vacío. El archivo se crea solo.
+   - **MySQL (producción, Aiven):** `DB_CLIENT=mysql` y los valores `DB_*`. La base vacía se crea antes, una sola vez: `CREATE DATABASE shaolin_chile CHARACTER SET utf8mb4;`
 
 4. Crear o actualizar las tablas:
 
@@ -64,7 +62,7 @@ cd backend
 npm test
 ```
 
-Las pruebas usan SQLite en memoria, así que no necesitan MySQL.
+Las pruebas usan SQLite (en memoria y en un archivo temporal), así que no necesitan MySQL. Incluyen un recorrido completo por la API: migraciones, login, horarios y reservas.
 
 ## Base de datos y migraciones
 

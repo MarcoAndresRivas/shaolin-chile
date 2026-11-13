@@ -24,3 +24,6 @@ Thumbs.db
 
 # Local tool indexes
 .codegraph/
+
+# Local SQLite database
+backend/data/

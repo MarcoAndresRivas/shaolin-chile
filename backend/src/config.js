@@ -1,6 +1,8 @@
 // Central configuration. Every setting the server needs is read here, once,
 // so a missing or unsafe value stops the server at startup instead of later.
 
+const path = require('node:path');
+
 const DEFAULT_CORS_ORIGINS = ['https://marcoandresrivas.github.io'];
 
 // The secret the old code used when JWT_SECRET was missing. It is public
@@ -36,6 +38,24 @@ function buildDbConfig(env) {
     return db;
 }
 
+const DB_CLIENTS = ['sqlite', 'mysql'];
+const DEFAULT_SQLITE_FILE = path.join(__dirname, '..', 'data', 'shaolin.db');
+
+// Database settings only (no JWT_SECRET needed), shared by the server,
+// the migrations and the seed scripts. Without DB_SERVER the backend uses a
+// local SQLite file; DB_CLIENT forces either one.
+function loadDbConfig(env = process.env) {
+    const dbClient = env.DB_CLIENT || (env.DB_SERVER ? 'mysql' : 'sqlite');
+    if (!DB_CLIENTS.includes(dbClient)) {
+        throw new ConfigError(`DB_CLIENT must be one of: ${DB_CLIENTS.join(', ')}.`);
+    }
+    return {
+        dbClient,
+        sqliteFile: env.SQLITE_FILE || DEFAULT_SQLITE_FILE,
+        db: buildDbConfig(env),
+    };
+}
+
 function loadConfig(env = process.env) {
     // Used verbatim: trimming would change the signing key of a deployed secret.
     const jwtSecret = env.JWT_SECRET || '';
@@ -50,8 +70,8 @@ function loadConfig(env = process.env) {
         port: Number(env.PORT) || 3000,
         jwtSecret,
         corsOrigins: parseOrigins(env.CORS_ORIGINS),
-        db: buildDbConfig(env),
+        ...loadDbConfig(env),
     };
 }
 
-module.exports = { loadConfig, buildDbConfig, ConfigError, DEFAULT_CORS_ORIGINS };
+module.exports = { loadConfig, loadDbConfig, buildDbConfig, ConfigError, DEFAULT_CORS_ORIGINS };
