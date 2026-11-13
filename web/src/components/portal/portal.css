@@ -156,6 +156,34 @@
   gap: 14px;
 }
 
+.availability-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 10px;
+  flex: 1;
+}
+
+.availability-row select,
+.availability-row input {
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.list__actions--start {
+  justify-content: flex-start;
+  margin-top: 16px;
+}
+
+@media (max-width: 560px) {
+  .availability-row {
+    grid-template-columns: 1fr;
+  }
+}
+
 .attendance {
   margin-top: 6px;
   display: grid;

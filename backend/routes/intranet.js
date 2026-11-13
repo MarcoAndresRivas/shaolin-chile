@@ -4,6 +4,7 @@ const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 const intranetController = require('../controllers/intranetController');
 const escuelaController = require('../controllers/escuelaController');
 const reservasController = require('../controllers/reservasController');
+const disponibilidadController = require('../controllers/disponibilidadController');
 
 // All intranet routes are protected by verifyToken
 router.use(verifyToken);
@@ -37,6 +38,10 @@ router.get('/reservas/mias', reservasController.misReservas);
 router.get('/sesiones/:id/asistencia', reservasController.getAsistencia);
 router.put('/sesiones/:id/asistencia', reservasController.saveAsistencia);
 router.get('/asistencia/mia', reservasController.miAsistencia);
+
+// --- Weekly availability of instructors (the instructor, or administration) ---
+router.get('/disponibilidad', disponibilidadController.getDisponibilidad);
+router.put('/disponibilidad', disponibilidadController.saveDisponibilidad);
 
 // --- Reservas / Booking (Alumno) ---
 router.post('/reservar', intranetController.bookHorario); // Alumno books a class
