@@ -52,6 +52,8 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
 
   return {
     login: (email, password) => request('POST', '/api/login', { email, password }, { auth: false }),
+    catalogo: () => request('GET', '/api/catalogo', undefined, { auth: false }),
+    registrarInteresado: (data) => request('POST', '/api/interesados', data, { auth: false }),
     usuarios: () => request('GET', '/api/intranet/usuarios'),
     horarios: () => request('GET', '/api/intranet/horarios'),
     misReservas: () => request('GET', '/api/intranet/mis-reservas'),
@@ -79,6 +81,12 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
     disponibilidad: (instructorId) => request('GET', '/api/intranet/disponibilidad' + (instructorId ? `?instructor_id=${instructorId}` : '')),
     guardarDisponibilidad: (bloques, instructorId) =>
       request('PUT', '/api/intranet/disponibilidad', { bloques, ...(instructorId && { instructor_id: instructorId }) }),
+    interesados: (estado) => request('GET', '/api/intranet/interesados' + (estado ? `?estado=${estado}` : '')),
+    interesado: (id) => request('GET', `/api/intranet/interesados/${id}`),
+    cambiarEstadoInteresado: (id, estado) => request('PUT', `/api/intranet/interesados/${id}`, { estado }),
+    agregarSeguimiento: (id, nota) => request('POST', `/api/intranet/interesados/${id}/seguimientos`, { nota }),
+    agendarClasePrueba: (id, sesionId) => request('POST', `/api/intranet/interesados/${id}/clase-prueba`, { sesion_id: sesionId }),
+    resultadoClasePrueba: (id, estado) => request('PUT', `/api/intranet/clases-prueba/${id}`, { estado }),
     cancelarSesion: (id, motivo) => request('POST', `/api/intranet/sesiones/${id}/cancelar`, { motivo }),
   };
 }

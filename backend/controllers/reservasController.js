@@ -1,6 +1,7 @@
 // Fase 2, T2: bookings of sesiones (students) and attendance (instructors).
 
 const { hasAnyRole, ADMIN_ROLES } = require('../middleware/authMiddleware');
+const { todayInChile } = require('../src/dates');
 
 const bad = (res, message) => res.status(400).json({ error: message });
 const notFound = (res, message) => res.status(404).json({ error: message });
@@ -10,9 +11,6 @@ const serverError = (label, error, res) => {
     console.error(label, error);
     res.status(500).json({ error: 'Error del servidor.' });
 };
-
-// Today in Chile as YYYY-MM-DD, so "past" does not depend on the server's zone.
-const todayInChile = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Santiago' }).format(new Date());
 
 async function findSesion(db, id) {
     const [rows] = await db.execute(

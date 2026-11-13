@@ -5,6 +5,7 @@ const intranetController = require('../controllers/intranetController');
 const escuelaController = require('../controllers/escuelaController');
 const reservasController = require('../controllers/reservasController');
 const disponibilidadController = require('../controllers/disponibilidadController');
+const interesadosController = require('../controllers/interesadosController');
 
 // All intranet routes are protected by verifyToken
 router.use(verifyToken);
@@ -42,6 +43,14 @@ router.get('/asistencia/mia', reservasController.miAsistencia);
 // --- Weekly availability of instructors (the instructor, or administration) ---
 router.get('/disponibilidad', disponibilidadController.getDisponibilidad);
 router.put('/disponibilidad', disponibilidadController.saveDisponibilidad);
+
+// --- Interested people, follow-up and trial classes (administration) ---
+router.get('/interesados', isAdmin, interesadosController.getInteresados);
+router.get('/interesados/:id', isAdmin, interesadosController.getInteresado);
+router.put('/interesados/:id', isAdmin, interesadosController.updateEstado);
+router.post('/interesados/:id/seguimientos', isAdmin, interesadosController.addSeguimiento);
+router.post('/interesados/:id/clase-prueba', isAdmin, interesadosController.agendarClasePrueba);
+router.put('/clases-prueba/:id', isAdmin, interesadosController.updateClasePrueba);
 
 // --- Reservas / Booking (Alumno) ---
 router.post('/reservar', intranetController.bookHorario); // Alumno books a class

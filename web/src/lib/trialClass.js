@@ -1,7 +1,9 @@
-// Trial-class request: validation and the WhatsApp message it produces.
-// Until the leads API exists (Fase 2), the request is sent through WhatsApp.
+// Trial-class request: validation, the body sent to the API and the WhatsApp
+// message used as a fallback when the server cannot be reached, so the person
+// is never lost.
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_PATTERN = /^[+\d][\d\s()-]{5,24}$/;
 
 const REQUIRED = {
   name: 'Ingresa tu nombre.',
@@ -18,7 +20,30 @@ export function validateTrialRequest(request) {
   if (!errors.email && !EMAIL_PATTERN.test(request.email.trim())) {
     errors.email = 'Ingresa un correo válido.';
   }
+  const phone = String(request.telefono ?? '').trim();
+  if (phone && !PHONE_PATTERN.test(phone)) errors.telefono = 'Ingresa un teléfono válido.';
+  if (request.consent !== true) errors.consent = 'Debes aceptar que guardemos tus datos para contactarte.';
   return errors;
+}
+
+// Body for POST /api/interesados. The visitor picks names; the API wants ids,
+// which come from the public catalog. Entries missing from the catalog are
+// left out instead of failing the whole request.
+export function buildLeadPayload({ name, email, telefono, discipline, location, message }, catalog) {
+  const sede = catalog?.sedes?.find((s) => s.ciudad === location);
+  const disciplina = catalog?.disciplinas?.find((d) => d.nombre === discipline);
+  const phone = String(telefono ?? '').trim();
+  const comment = String(message ?? '').trim();
+  return {
+    nombre: name.trim(),
+    email: email.trim(),
+    ...(phone && { telefono: phone }),
+    ...(sede && { sede_id: sede.id }),
+    ...(disciplina && { disciplina_id: disciplina.id }),
+    ...(comment && { mensaje: comment }),
+    consentimiento: true,
+    origen: 'sitio',
+  };
 }
 
 export function buildTrialMessage({ name, email, discipline, location, message }) {

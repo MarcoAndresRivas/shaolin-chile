@@ -19,7 +19,7 @@ Rama: `feat/fase2-clases` (sobre `feat/fase1-sitio-astro`) · Entrega: cadena ap
 | T1 | S1, S3, S4, S5, S6 | inline | hecho (RED 9 fallos → GREEN 10/10) | 5051c41 (backend), commit de la pantalla (web) |
 | T2 | S1, S3, S4 | inline | hecho (RED 10/10 fallos → GREEN) | e468671 (backend), commit del portal (web) |
 | T3 | S1, S3 | inline | hecho (RED 6 fallos → GREEN) | commit del backend (T3), commit del portal (T3) |
-| T4 | S1 | inline | pendiente | — |
+| T4 | S1 | inline | hecho (RED 15 fallos → GREEN) | commit del backend (T4), commit del sitio y portal (T4) |
 | T5 | S1 | inline | pendiente | — |
 | T6 | S1 | inline | pendiente | — |
 | T7 | S1, S2 | inline | pendiente | — |
@@ -42,3 +42,4 @@ Ruta: todo inline; sin unidades paralelas ni disparador de writer.
 - L2: T1 verificado: backend 63/63 (10 tests nuevos de la API y 3 de la migración), web 21/21. En Chrome real: ingreso como administrador, crear clase semanal de lunes, generar sesiones de noviembre de 2026 (2, 9, 16, 23 y 30). Defecto de mis pruebas locales: TaskStop no mata el proceso de Node en Windows, por lo que un backend viejo siguió ocupando el puerto; se usó un puerto nuevo.
 - L3: T2 verificado: backend 76/76, web 26/26. En Chrome real con tres personas: el administrador crea una clase para una instructora y genera las sesiones; la alumna reserva (1 de 12 cupos); la instructora ve su sesión, marca Presente y guarda; la alumna ve su asistencia. El cupo se toma con un UPDATE condicionado (reservas_activas < cupo): la prueba de reservas simultáneas corre sobre SQLite, que serializa las transacciones; en MySQL (InnoDB) el bloqueo de fila debería dar el mismo resultado, pero no se probó contra MySQL.
 - L4 (2026-11-13): "continua con t3 y t4". T3 hecho: backend 84/84, web 27/27. Verificación en navegador del editor de disponibilidad: pendiente, junto con T4.
+- L5: T4 hecho y T3 verificado en navegador: backend 101/101, web 32/32. Chrome real: un visitante envía el formulario público (sin consentimiento no envía; con consentimiento queda registrado); el administrador crea una clase, abre al interesado, cambia el estado, agrega una nota y agenda la clase de prueba (el sistema deja las notas automáticas); la instructora guarda su disponibilidad y persiste al recargar. Decisiones: el formulario cae a WhatsApp si el servidor no responde (así no se pierde la persona; hoy el backend de Render está suspendido); el limitador es de 5 envíos por hora por IP y cuenta también los inválidos; `trust proxy` en 1 salto por Render. Pendiente: la política de privacidad se actualizó pero sigue en revisión legal.

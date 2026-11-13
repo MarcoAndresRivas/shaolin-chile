@@ -168,3 +168,39 @@ test('the availability endpoints use their routes and methods', async () => {
         ],
     );
 });
+
+test('the public form and its catalog are called without a token', async () => {
+    const { fetchImpl, calls } = fakeFetch(200, {});
+    const api = createApi({ baseUrl: '', fetchImpl, getToken: () => null });
+    await api.catalogo();
+    await api.registrarInteresado({ nombre: 'Ana', consentimiento: true });
+    assert.deepEqual(
+        calls.map((c) => `${c.options.method} ${c.url} ${c.options.body ?? ''}`.trim()),
+        ['GET /api/catalogo', 'POST /api/interesados {"nombre":"Ana","consentimiento":true}'],
+    );
+    assert.equal(calls[1].options.headers.Authorization, undefined);
+});
+
+test('the follow-up endpoints use their routes and methods', async () => {
+    const { fetchImpl, calls } = fakeFetch(200, {});
+    const api = createApi({ baseUrl: '', fetchImpl, getToken: () => 'abc' });
+    await api.interesados();
+    await api.interesados('nuevo');
+    await api.interesado(3);
+    await api.cambiarEstadoInteresado(3, 'contactado');
+    await api.agregarSeguimiento(3, 'Llamé');
+    await api.agendarClasePrueba(3, 9);
+    await api.resultadoClasePrueba(5, 'asistio');
+    assert.deepEqual(
+        calls.map((c) => `${c.options.method} ${c.url} ${c.options.body ?? ''}`.trim()),
+        [
+            'GET /api/intranet/interesados',
+            'GET /api/intranet/interesados?estado=nuevo',
+            'GET /api/intranet/interesados/3',
+            'PUT /api/intranet/interesados/3 {"estado":"contactado"}',
+            'POST /api/intranet/interesados/3/seguimientos {"nota":"Llamé"}',
+            'POST /api/intranet/interesados/3/clase-prueba {"sesion_id":9}',
+            'PUT /api/intranet/clases-prueba/5 {"estado":"asistio"}',
+        ],
+    );
+});
