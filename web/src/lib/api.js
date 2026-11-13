@@ -18,11 +18,14 @@ export function apiBaseUrl({ configured, hostname }) {
 }
 
 export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = () => null }) {
-  async function request(method, path, body) {
+  // Intranet routes need a token. Without one the backend answers 403, so
+  // fail early as 401 and let the portal send the user back to the login.
+  async function request(method, path, body, { auth = true } = {}) {
     const headers = {};
     if (body !== undefined) headers['Content-Type'] = 'application/json';
     const token = getToken();
     if (token) headers.Authorization = `Bearer ${token}`;
+    else if (auth) throw new ApiError('Tu sesión expiró. Ingresa de nuevo.', 401);
 
     let response;
     try {
@@ -48,7 +51,7 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
   }
 
   return {
-    login: (email, password) => request('POST', '/api/login', { email, password }),
+    login: (email, password) => request('POST', '/api/login', { email, password }, { auth: false }),
     usuarios: () => request('GET', '/api/intranet/usuarios'),
     horarios: () => request('GET', '/api/intranet/horarios'),
     misReservas: () => request('GET', '/api/intranet/mis-reservas'),

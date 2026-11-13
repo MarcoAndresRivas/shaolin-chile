@@ -57,6 +57,13 @@ test('each endpoint uses its route and method', async () => {
   );
 });
 
+test('an intranet call without a session fails as 401 without reaching the server', async () => {
+  const { fetchImpl, calls } = fakeFetch(403, { error: 'Se requiere un token de autenticación.' });
+  const api = createApi({ baseUrl: '', fetchImpl, getToken: () => null });
+  await assert.rejects(api.reservar(1), { status: 401, message: 'Tu sesión expiró. Ingresa de nuevo.' });
+  assert.equal(calls.length, 0);
+});
+
 test('an error response raises ApiError with the server message and status', async () => {
   const { fetchImpl } = fakeFetch(401, { error: 'Credenciales inválidas.' });
   const api = createApi({ baseUrl: '', fetchImpl });
@@ -70,13 +77,14 @@ test('an error response raises ApiError with the server message and status', asy
 
 test('an error without a JSON body gets a generic message', async () => {
   const { fetchImpl } = fakeFetch(500, undefined);
-  const api = createApi({ baseUrl: '', fetchImpl });
+  const api = createApi({ baseUrl: '', fetchImpl, getToken: () => 'abc' });
   await assert.rejects(api.horarios(), { status: 500, message: 'Error del servidor (500).' });
 });
 
 test('a network failure raises ApiError with status 0', async () => {
   const api = createApi({
     baseUrl: '',
+    getToken: () => 'abc',
     fetchImpl: async () => {
       throw new TypeError('Failed to fetch');
     },
