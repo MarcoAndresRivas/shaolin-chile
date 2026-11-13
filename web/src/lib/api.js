@@ -58,5 +58,18 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
     reservar: (horarioId) => request('POST', '/api/intranet/reservar', { horario_id: horarioId }),
     crearHorario: (horario) => request('POST', '/api/intranet/horarios', horario),
     eliminarHorario: (id) => request('DELETE', `/api/intranet/horarios/${id}`),
+    sedes: () => request('GET', '/api/intranet/sedes'),
+    disciplinas: () => request('GET', '/api/intranet/disciplinas'),
+    clases: (sedeId) => request('GET', '/api/intranet/clases' + (sedeId ? `?sede_id=${sedeId}` : '')),
+    crearClase: (clase) => request('POST', '/api/intranet/clases', clase),
+    eliminarClase: (id) => request('DELETE', `/api/intranet/clases/${id}`),
+    generarSesiones: (claseId, desde, hasta) => request('POST', `/api/intranet/clases/${claseId}/sesiones`, { desde, hasta }),
+    sesiones: ({ desde, hasta } = {}) => {
+      const query = new URLSearchParams();
+      if (desde) query.set('desde', desde);
+      if (hasta) query.set('hasta', hasta);
+      return request('GET', '/api/intranet/sesiones' + (query.size ? `?${query}` : ''));
+    },
+    cancelarSesion: (id, motivo) => request('POST', `/api/intranet/sesiones/${id}/cancelar`, { motivo }),
   };
 }

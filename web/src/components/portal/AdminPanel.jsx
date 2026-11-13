@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { api } from '../../lib/client.js';
+import SchoolPanel from './SchoolPanel.jsx';
 import { formatTime, useApi } from './useApi.js';
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
@@ -54,6 +55,7 @@ export default function AdminPanel({ onUnauthorized }) {
 
   return (
     <div className="portal__grid">
+      <SchoolPanel onUnauthorized={onUnauthorized} />
       <section className="panel">
         <h2>Clases</h2>
         {notice.text && (
