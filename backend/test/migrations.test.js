@@ -78,6 +78,34 @@ test('the baseline keeps existing tables and data, and backfills usuario_roles',
     }
 });
 
+test('the roles migration can be re-run after a partial failure', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.up(); // baseline only
+        await knex('usuarios').insert({ id: 10, nombre: 'Admin', email: 'admin@x.cl', password_hash: 'h', rol_id: 2 });
+        // MySQL commits DDL immediately, so a failed run can leave a table and
+        // some rows behind without recording the migration.
+        await knex.schema.createTable('usuario_roles', (t) => {
+            t.integer('usuario_id').notNullable();
+            t.integer('rol_id').notNullable();
+            t.primary(['usuario_id', 'rol_id']);
+        });
+        await knex('usuario_roles').insert({ usuario_id: 10, rol_id: 2 });
+        await knex('roles').insert({ nombre: 'Director' });
+
+        await knex.migrate.latest();
+
+        assert.deepEqual(
+            (await knex('usuario_roles')).map((l) => [l.usuario_id, l.rol_id]),
+            [[10, 2]],
+        );
+        assert.equal((await knex('roles').where({ nombre: 'Director' })).length, 1);
+        assert.ok(await knex.schema.hasTable('consentimientos'));
+    } finally {
+        await knex.destroy();
+    }
+});
+
 test('a user can hold several roles, but not the same role twice', async () => {
     const knex = memoryDb();
     try {
