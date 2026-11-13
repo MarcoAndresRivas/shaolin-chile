@@ -1,6 +1,27 @@
 const nodemailer = require('nodemailer');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { rolesOf } = require('../middleware/authMiddleware');
+
+// Roles del usuario (puede tener varios). If the migrations have not run yet,
+// usuario_roles does not exist and the legacy single role is used instead.
+async function loadRoles(db, usuario) {
+    try {
+        const [rows] = await db.execute(
+            `SELECT r.nombre FROM usuario_roles ur
+             JOIN roles r ON r.id = ur.rol_id
+             WHERE ur.usuario_id = ?
+             ORDER BY r.id`,
+            [usuario.id]
+        );
+        // A user with no rows (created by the old backend after the migration)
+        // keeps the role stored in usuarios.rol_id.
+        return rows.length ? rows.map((r) => r.nombre) : rolesOf({ rol_id: usuario.rol_id });
+    } catch (error) {
+        if (error.code === 'ER_NO_SUCH_TABLE') return rolesOf({ rol_id: usuario.rol_id });
+        throw error;
+    }
+}
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
@@ -27,9 +48,11 @@ exports.login = async (req, res) => {
             return res.status(401).json({ error: 'Credenciales inválidas.' });
         }
 
+        const roles = await loadRoles(db, usuario);
+
         // Generar JWT
         const token = jwt.sign(
-            { id: usuario.id, rol_id: usuario.rol_id },
+            { id: usuario.id, rol_id: usuario.rol_id, roles },
             req.app.locals.config.jwtSecret,
             { expiresIn: '8h' }
         );
@@ -38,6 +61,7 @@ exports.login = async (req, res) => {
             success: true,
             token,
             rol_id: usuario.rol_id,
+            roles,
             nombre: usuario.nombre
         });
 

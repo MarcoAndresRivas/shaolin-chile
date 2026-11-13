@@ -37,11 +37,12 @@ function buildDbConfig(env) {
 }
 
 function loadConfig(env = process.env) {
-    const jwtSecret = (env.JWT_SECRET || '').trim();
-    if (!jwtSecret) {
+    // Used verbatim: trimming would change the signing key of a deployed secret.
+    const jwtSecret = env.JWT_SECRET || '';
+    if (!jwtSecret.trim()) {
         throw new ConfigError('JWT_SECRET is not set. The server refuses to start without it.');
     }
-    if (KNOWN_INSECURE_SECRETS.has(jwtSecret)) {
+    if (KNOWN_INSECURE_SECRETS.has(jwtSecret.trim())) {
         throw new ConfigError('JWT_SECRET uses a known public value. Set a new random secret.');
     }
 

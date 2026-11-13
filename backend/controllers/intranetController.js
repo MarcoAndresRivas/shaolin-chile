@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const { hasAnyRole } = require('../middleware/authMiddleware');
 
 // ---- ADMINISTRADOR: Gestión de Usuarios ----
 exports.getUsuarios = async (req, res) => {
@@ -23,20 +24,29 @@ exports.createUsuario = async (req, res) => {
         return res.status(400).json({ error: 'Faltan datos obligatorios.' });
     }
 
+    let connection;
     try {
         const salt = 10;
         const hash = await bcrypt.hash(password, salt);
 
+        // The user and its role are written together, or not at all.
+        connection = await req.db.getConnection();
+        await connection.beginTransaction();
         const query = 'INSERT INTO usuarios (nombre, email, password_hash, rol_id) VALUES (?, ?, ?, ?)';
-        const [result] = await req.db.execute(query, [nombre, email, hash, rol_id]);
+        const [result] = await connection.execute(query, [nombre, email, hash, rol_id]);
+        await connection.execute('INSERT INTO usuario_roles (usuario_id, rol_id) VALUES (?, ?)', [result.insertId, rol_id]);
+        await connection.commit();
 
         res.status(201).json({ message: 'Usuario creado exitosamente', id: result.insertId });
     } catch (error) {
+        if (connection) await connection.rollback().catch(() => {});
         console.error('Error creating user:', error);
         if (error.code === 'ER_DUP_ENTRY') {
             return res.status(409).json({ error: 'El email ya está registrado.' });
         }
         res.status(500).json({ error: 'Error del servidor.' });
+    } finally {
+        if (connection) connection.release();
     }
 };
 
@@ -88,8 +98,8 @@ exports.deleteHorario = async (req, res) => {
 
 // ---- ALUMNOS: Reservas ----
 exports.bookHorario = async (req, res) => {
-    // Un alumno agenda una clase (su id viene del token, rol 5)
-    if (req.user.rol_id !== 5) {
+    // Un alumno agenda una clase (su id viene del token)
+    if (!hasAnyRole(req.user, ['Alumno'])) {
         return res.status(403).json({ error: 'Solo los alumnos pueden reservar horarios.' });
     }
 
