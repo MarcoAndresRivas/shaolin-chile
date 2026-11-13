@@ -8,6 +8,7 @@ const disponibilidadController = require('../controllers/disponibilidadControlle
 const interesadosController = require('../controllers/interesadosController');
 const familiasController = require('../controllers/familiasController');
 const finanzasController = require('../controllers/finanzasController');
+const gradosController = require('../controllers/gradosController');
 
 // All intranet routes are protected by verifyToken
 router.use(verifyToken);
@@ -81,6 +82,20 @@ router.put('/pagos/:id/validar', isAdmin, finanzasController.validarPago);
 router.put('/pagos/:id/rechazar', isAdmin, finanzasController.rechazarPago);
 router.get('/cuenta/mia', finanzasController.miCuenta);
 router.get('/morosidad', isAdmin, finanzasController.getMorosidad);
+
+// --- Grades, progress, exams, nominations (instructor or admin) and results (admin) ---
+router.get('/grados', gradosController.getGrados);
+router.post('/grados', isAdmin, gradosController.createGrado);
+router.post('/alumnos/:id/grados', isAdmin, gradosController.placeAlumno);
+router.get('/progreso/mio', gradosController.miProgreso);
+router.get('/habilitados', gradosController.habilitados);
+router.get('/examenes', gradosController.getExamenes);
+router.post('/examenes', isAdmin, gradosController.createExamen);
+router.get('/examenes/:id', gradosController.getExamen);
+router.put('/examenes/:id', isAdmin, gradosController.updateExamen);
+router.post('/examenes/:id/nominaciones', gradosController.nominar);
+router.put('/examenes/:id/nominaciones/:alumnoId/confirmar', isAdmin, gradosController.confirmar);
+router.put('/examenes/:id/resultados', isAdmin, gradosController.resultados);
 
 // --- Reservas / Booking (Alumno) ---
 router.post('/reservar', intranetController.bookHorario); // Alumno books a class
