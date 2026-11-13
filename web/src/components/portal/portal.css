@@ -178,6 +178,12 @@
   margin-top: 10px;
 }
 
+.panel--nested {
+  margin-top: 14px;
+  padding: 18px;
+  background: var(--bg);
+}
+
 .lead {
   display: grid;
   gap: 14px;
