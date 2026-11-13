@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { createSession, readSession, saveSession, clearSession, isAdmin, isStudent } from '../src/lib/session.js';
+import { createSession, readSession, saveSession, clearSession, isAdmin, isStudent, isInstructor } from '../src/lib/session.js';
 
 function memoryStorage() {
   const data = new Map();
@@ -21,7 +21,7 @@ const NOW = 1_800_000_000_000;
 test('a login response becomes a session with roles and token expiry', () => {
   const token = tokenWith({ id: 7, exp: NOW / 1000 + 3600 });
   const session = createSession({ token, nombre: 'Ana', roles: ['Alumno'], rol_id: 5 });
-  assert.deepEqual(session, { token, name: 'Ana', roles: ['Alumno'], expiresAt: NOW + 3_600_000 });
+  assert.deepEqual(session, { token, name: 'Ana', roles: ['Alumno'], expiresAt: NOW + 3_600_000, userId: 7 });
 });
 
 test('a legacy response without roles maps rol_id to its role', () => {
@@ -57,4 +57,11 @@ test('admin roles match the backend list; students are detected', () => {
   assert.equal(isAdmin({ roles: ['Instructor'] }), false);
   assert.equal(isStudent({ roles: ['Alumno'] }), true);
   assert.equal(isStudent({ roles: ['Administrador'] }), false);
+});
+
+test('a session without a user id in the token has no userId, and instructors are detected', () => {
+    const token = tokenWith({ exp: NOW / 1000 + 60 });
+    assert.equal('userId' in createSession({ token, nombre: 'X', roles: [] }), false);
+    assert.equal(isInstructor({ roles: ['Instructor'] }), true);
+    assert.equal(isInstructor({ roles: ['Alumno'] }), false);
 });

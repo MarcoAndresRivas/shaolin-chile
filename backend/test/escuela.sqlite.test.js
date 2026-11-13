@@ -158,6 +158,7 @@ test('generating sesiones creates one per matching weekday and can be repeated',
         const sesiones = (await call('GET', `${BASE}/sesiones?desde=2026-12-01&hasta=2026-12-31`, admin)).body;
         assert.deepEqual(sesiones.map((s) => s.fecha), ['2026-12-07', '2026-12-14', '2026-12-21', '2026-12-28']);
         assert.ok(sesiones.every((s) => s.estado === 'programada' && s.hora_inicio === '19:00' && s.disciplina));
+        assert.ok(sesiones.every((s) => s.instructor_id === null), 'the instructor id is listed so instructors can find their sesiones');
 
         const again = await call('POST', `${BASE}/clases/${clase.id}/sesiones`, admin, { desde: '2026-12-01', hasta: '2027-01-12' });
         assert.deepEqual(again.body, { creadas: 2 }, 'only the new dates are created');

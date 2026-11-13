@@ -128,3 +128,25 @@ test('the school endpoints use their routes, methods and query strings', async (
         ],
     );
 });
+
+test('the booking and attendance endpoints use their routes and methods', async () => {
+    const { fetchImpl, calls } = fakeFetch(200, {});
+    const api = createApi({ baseUrl: '', fetchImpl, getToken: () => 'abc' });
+    await api.reservarSesion(4);
+    await api.cancelarReservaSesion(4);
+    await api.misReservasSesiones();
+    await api.asistencia(4);
+    await api.guardarAsistencia(4, [{ alumno_id: 7, presente: true }]);
+    await api.miAsistencia();
+    assert.deepEqual(
+        calls.map((c) => `${c.options.method} ${c.url} ${c.options.body ?? ''}`.trim()),
+        [
+            'POST /api/intranet/sesiones/4/reservar',
+            'DELETE /api/intranet/sesiones/4/reservar',
+            'GET /api/intranet/reservas/mias',
+            'GET /api/intranet/sesiones/4/asistencia',
+            'PUT /api/intranet/sesiones/4/asistencia {"asistencias":[{"alumno_id":7,"presente":true}]}',
+            'GET /api/intranet/asistencia/mia',
+        ],
+    );
+});

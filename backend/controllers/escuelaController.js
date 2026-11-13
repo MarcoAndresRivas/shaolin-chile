@@ -192,7 +192,7 @@ exports.getSesiones = async (req, res) => {
         const [rows] = await req.db.execute(
             `SELECT se.id, se.clase_id, se.fecha, se.estado, se.motivo, se.reservas_activas AS reservas,
                     (SELECT COUNT(*) FROM reservas r WHERE r.sesion_id = se.id AND r.alumno_id = ? AND r.estado = 'activa') AS reservada,
-                    c.hora_inicio, c.hora_fin, c.cupo, s.ciudad AS sede, d.nombre AS disciplina, u.nombre AS instructor
+                    c.hora_inicio, c.hora_fin, c.cupo, c.instructor_id, s.ciudad AS sede, d.nombre AS disciplina, u.nombre AS instructor
              FROM sesiones se
              JOIN clases c ON c.id = se.clase_id
              JOIN sedes s ON s.id = c.sede_id

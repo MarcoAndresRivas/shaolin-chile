@@ -17,7 +17,7 @@ Rama: `feat/fase2-clases` (sobre `feat/fase1-sitio-astro`) · Entrega: cadena ap
 | ID | Specs | Ruta | Estado | Commit |
 | --- | --- | --- | --- | --- |
 | T1 | S1, S3, S4, S5, S6 | inline | hecho (RED 9 fallos → GREEN 10/10) | 5051c41 (backend), commit de la pantalla (web) |
-| T2 | S1, S3, S4 | inline | pendiente | — |
+| T2 | S1, S3, S4 | inline | hecho (RED 10/10 fallos → GREEN) | e468671 (backend), commit del portal (web) |
 | T3 | S1, S3 | inline | pendiente | — |
 | T4 | S1 | inline | pendiente | — |
 | T5 | S1 | inline | pendiente | — |
@@ -40,3 +40,4 @@ Ruta: todo inline; sin unidades paralelas ni disparador de writer.
 
 - L1 (2026-11-13): "continua con el plan fase 2" (el usuario eligió seguir el orden estricto del plan antes que adelantar el asistente).
 - L2: T1 verificado: backend 63/63 (10 tests nuevos de la API y 3 de la migración), web 21/21. En Chrome real: ingreso como administrador, crear clase semanal de lunes, generar sesiones de noviembre de 2026 (2, 9, 16, 23 y 30). Defecto de mis pruebas locales: TaskStop no mata el proceso de Node en Windows, por lo que un backend viejo siguió ocupando el puerto; se usó un puerto nuevo.
+- L3: T2 verificado: backend 76/76, web 26/26. En Chrome real con tres personas: el administrador crea una clase para una instructora y genera las sesiones; la alumna reserva (1 de 12 cupos); la instructora ve su sesión, marca Presente y guarda; la alumna ve su asistencia. El cupo se toma con un UPDATE condicionado (reservas_activas < cupo): la prueba de reservas simultáneas corre sobre SQLite, que serializa las transacciones; en MySQL (InnoDB) el bloqueo de fila debería dar el mismo resultado, pero no se probó contra MySQL.
