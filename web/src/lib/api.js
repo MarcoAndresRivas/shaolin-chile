@@ -76,6 +76,9 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
     asistencia: (id) => request('GET', `/api/intranet/sesiones/${id}/asistencia`),
     guardarAsistencia: (id, asistencias) => request('PUT', `/api/intranet/sesiones/${id}/asistencia`, { asistencias }),
     miAsistencia: () => request('GET', '/api/intranet/asistencia/mia'),
+    disponibilidad: (instructorId) => request('GET', '/api/intranet/disponibilidad' + (instructorId ? `?instructor_id=${instructorId}` : '')),
+    guardarDisponibilidad: (bloques, instructorId) =>
+      request('PUT', '/api/intranet/disponibilidad', { bloques, ...(instructorId && { instructor_id: instructorId }) }),
     cancelarSesion: (id, motivo) => request('POST', `/api/intranet/sesiones/${id}/cancelar`, { motivo }),
   };
 }

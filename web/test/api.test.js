@@ -150,3 +150,21 @@ test('the booking and attendance endpoints use their routes and methods', async 
         ],
     );
 });
+
+test('the availability endpoints use their routes and methods', async () => {
+    const { fetchImpl, calls } = fakeFetch(200, {});
+    const api = createApi({ baseUrl: '', fetchImpl, getToken: () => 'abc' });
+    await api.disponibilidad();
+    await api.disponibilidad(7);
+    await api.guardarDisponibilidad([{ dia_semana: 1, hora_inicio: '09:00', hora_fin: '12:00' }]);
+    await api.guardarDisponibilidad([], 7);
+    assert.deepEqual(
+        calls.map((c) => `${c.options.method} ${c.url} ${c.options.body ?? ''}`.trim()),
+        [
+            'GET /api/intranet/disponibilidad',
+            'GET /api/intranet/disponibilidad?instructor_id=7',
+            'PUT /api/intranet/disponibilidad {"bloques":[{"dia_semana":1,"hora_inicio":"09:00","hora_fin":"12:00"}]}',
+            'PUT /api/intranet/disponibilidad {"bloques":[],"instructor_id":7}',
+        ],
+    );
+});

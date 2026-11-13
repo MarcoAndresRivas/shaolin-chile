@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { api } from '../../lib/client.js';
 import { addDays, todayInChile } from '../../lib/dates.js';
 import AttendanceList from './AttendanceList.jsx';
+import AvailabilityEditor from './AvailabilityEditor.jsx';
 import { formatTime, useApi } from './useApi.js';
 
 // The instructor's own sesiones: the last week and the next two.
@@ -14,6 +15,7 @@ export default function InstructorPanel({ userId, onUnauthorized }) {
   const mine = sesiones.data?.filter((s) => s.instructor_id === userId && s.estado === 'programada') ?? [];
 
   return (
+    <>
     <section className="panel panel--wide">
       <h2>Mis clases</h2>
       {sesiones.loading && <p className="muted">Cargando…</p>}
@@ -42,5 +44,7 @@ export default function InstructorPanel({ userId, onUnauthorized }) {
         ))}
       </ul>
     </section>
+    <AvailabilityEditor onUnauthorized={onUnauthorized} />
+    </>
   );
 }
