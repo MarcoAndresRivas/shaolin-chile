@@ -1,12 +1,12 @@
 ---
-import { contact, footer } from '../data/site.js';
+import { brand, contact, footer } from '../data/site.js';
 const year = new Date().getFullYear();
 ---
 
 <footer class="footer">
   <div class="container footer__grid">
     <div>
-      <p class="footer__brand">Shaolin Chile</p>
+      <p class="footer__brand">{brand.name}</p>
       <p class="footer__text">{footer.description}</p>
     </div>
     <div>
@@ -21,6 +21,7 @@ const year = new Date().getFullYear();
   </div>
   <div class="container footer__legal">
     <p>© {year} {footer.copyright}</p>
+    {brand.constituted && <p>{brand.legalName}, constituido bajo la {brand.legalBasis}.</p>}
   </div>
 </footer>
 

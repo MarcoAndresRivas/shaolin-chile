@@ -4,6 +4,15 @@
 // Fields Jose has not provided yet are left as null and the UI hides them
 // or shows "Por confirmar". Never fill them with invented data.
 
+// Public brand vs legal entity. The legal name is shown only once the club
+// is actually constituted, so the site never claims a status it does not have.
+export const brand = {
+  name: 'Shaolin Chile',
+  legalName: 'Club Deportivo Shaolin Guan Chile',
+  legalBasis: 'Ley N° 19.712 del Deporte',
+  constituted: false,
+};
+
 export const contact = {
   city: 'Concepción, Chile',
   whatsapp: '56986157545',
@@ -159,5 +168,5 @@ export const cta = {
 export const footer = {
   description:
     'Preservando el legado del Kung Fu tradicional combinando técnicas milenarias con metodologías modernas.',
-  copyright: 'Shaolin Guan — Escuela de Artes Marciales Chinas. Todos los derechos reservados.',
+  copyright: 'Shaolin Chile — Escuela de Artes Marciales Chinas. Todos los derechos reservados.',
 };
