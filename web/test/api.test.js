@@ -230,3 +230,39 @@ test('booking for a student in your care sends alumno_id, and the family endpoin
         ],
     );
 });
+
+test('the finance endpoints use their routes and methods', async () => {
+    const { fetchImpl, calls } = fakeFetch(200, {});
+    const api = createApi({ baseUrl: '', fetchImpl, getToken: () => 'abc' });
+    await api.planes();
+    await api.planes(true);
+    await api.crearPlan({ nombre: 'Mensual', monto: 30000, periodicidad: 'mensual' });
+    await api.suscribir({ alumno_id: 3, plan_id: 1, fecha_inicio: '2026-11-01' });
+    await api.generarCargos('2026-11', 10);
+    await api.cuenta();
+    await api.cuenta(7);
+    await api.informarPago(4, 30000, 'TR-1');
+    await api.pagos('por_validar');
+    await api.validarPago(9);
+    await api.rechazarPago(9);
+    await api.morosidad();
+    await api.morosidad(10);
+    assert.deepEqual(
+        calls.map((c) => `${c.options.method} ${c.url} ${c.options.body ?? ''}`.trim()),
+        [
+            'GET /api/intranet/planes',
+            'GET /api/intranet/planes?todos=1',
+            'POST /api/intranet/planes {"nombre":"Mensual","monto":30000,"periodicidad":"mensual"}',
+            'POST /api/intranet/suscripciones {"alumno_id":3,"plan_id":1,"fecha_inicio":"2026-11-01"}',
+            'POST /api/intranet/cargos/generar {"periodo":"2026-11","dia_vencimiento":10}',
+            'GET /api/intranet/cuenta/mia',
+            'GET /api/intranet/cuenta/mia?alumno_id=7',
+            'POST /api/intranet/cargos/4/pagos {"monto":30000,"referencia":"TR-1"}',
+            'GET /api/intranet/pagos?estado=por_validar',
+            'PUT /api/intranet/pagos/9/validar',
+            'PUT /api/intranet/pagos/9/rechazar',
+            'GET /api/intranet/morosidad',
+            'GET /api/intranet/morosidad?dias_gracia=10',
+        ],
+    );
+});

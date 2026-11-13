@@ -21,7 +21,7 @@ Rama: `feat/fase2-clases` (sobre `feat/fase1-sitio-astro`) · Entrega: cadena ap
 | T3 | S1, S3 | inline | hecho (RED 6 fallos → GREEN) | commit del backend (T3), commit del portal (T3) |
 | T4 | S1 | inline | hecho (RED 15 fallos → GREEN) | commit del backend (T4), commit del sitio y portal (T4) |
 | T5 | S1 | inline | hecho (RED 8 fallos → GREEN) | b0e6cec (backend), commit del portal (web) |
-| T6 | S1 | inline | pendiente | — |
+| T6 | S1 | inline | hecho (RED 12 fallos → GREEN) | 4f1f293 (backend), commit del portal (web) |
 | T7 | S1, S2 | inline | pendiente | — |
 | T8 | S1 | inline | pendiente | — |
 
@@ -44,3 +44,4 @@ Ruta: todo inline; sin unidades paralelas ni disparador de writer.
 - L4 (2026-11-13): "continua con t3 y t4". T3 hecho: backend 84/84, web 27/27. Verificación en navegador del editor de disponibilidad: pendiente, junto con T4.
 - L5: T4 hecho y T3 verificado en navegador: backend 101/101, web 32/32. Chrome real: un visitante envía el formulario público (sin consentimiento no envía; con consentimiento queda registrado); el administrador crea una clase, abre al interesado, cambia el estado, agrega una nota y agenda la clase de prueba (el sistema deja las notas automáticas); la instructora guarda su disponibilidad y persiste al recargar. Decisiones: el formulario cae a WhatsApp si el servidor no responde (así no se pierde la persona; hoy el backend de Render está suspendido); el limitador es de 5 envíos por hora por IP y cuenta también los inválidos; `trust proxy` en 1 salto por Render. Pendiente: la política de privacidad se actualizó pero sigue en revisión legal.
 - L6 (2026-11-13): "si continua con t5 y t6 y t7". T5 hecho: backend 109/109, web 34/34. Verificación en navegador del panel del apoderado y de familias: pendiente (se hace junto con T6 y T7). Las autorizaciones (consentimientos) quedan solo en la API: no existen textos legales aprobados para mostrarle al apoderado, y no se inventan.
+- L7: T6 hecho: backend 124/124, web 38/38. Decisiones del plan que siguen abiertas y por eso NO se inventaron: precios de los planes (los crea la dirección), porcentajes de descuento familiar, días de gracia y suspensión de reservas por morosidad (el reporte acepta `dias_gracia`; no se bloquea nada), datos bancarios para transferir (los entrega la administración), comprobante como archivo (hoy es una referencia de texto).
