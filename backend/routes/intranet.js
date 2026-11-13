@@ -3,6 +3,7 @@ const router = express.Router();
 const { verifyToken, isAdmin } = require('../middleware/authMiddleware');
 const intranetController = require('../controllers/intranetController');
 const escuelaController = require('../controllers/escuelaController');
+const reservasController = require('../controllers/reservasController');
 
 // All intranet routes are protected by verifyToken
 router.use(verifyToken);
@@ -28,6 +29,14 @@ router.delete('/clases/:id', isAdmin, escuelaController.deleteClase);
 router.post('/clases/:id/sesiones', isAdmin, escuelaController.generateSesiones);
 router.get('/sesiones', escuelaController.getSesiones);
 router.post('/sesiones/:id/cancelar', isAdmin, escuelaController.cancelSesion);
+
+// --- Reservas of sesiones (student) and attendance (instructor of the clase or admin) ---
+router.post('/sesiones/:id/reservar', reservasController.reservar);
+router.delete('/sesiones/:id/reservar', reservasController.cancelarReserva);
+router.get('/reservas/mias', reservasController.misReservas);
+router.get('/sesiones/:id/asistencia', reservasController.getAsistencia);
+router.put('/sesiones/:id/asistencia', reservasController.saveAsistencia);
+router.get('/asistencia/mia', reservasController.miAsistencia);
 
 // --- Reservas / Booking (Alumno) ---
 router.post('/reservar', intranetController.bookHorario); // Alumno books a class

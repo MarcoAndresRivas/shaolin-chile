@@ -148,13 +148,21 @@ test('families group a guardian and students, and consents record who accepted w
     }
 });
 
+// knex.migrate.down() undoes only the latest migration: repeat until `name` is undone.
+async function rollBackThrough(knex, name) {
+    for (;;) {
+        const [, undone] = await knex.migrate.down();
+        if (!undone.length) throw new Error(`${name} was never rolled back`);
+        if (undone.some((file) => file.endsWith(name))) return;
+    }
+}
+
 test('rolling back the roles migration removes its tables but keeps users', async () => {
     const knex = memoryDb();
     try {
         await knex.migrate.latest();
         await knex('usuarios').insert({ nombre: 'Admin', email: 'admin@x.cl', password_hash: 'h', rol_id: 2 });
-        await knex.migrate.down(); // the school migration, which comes after the roles one
-        await knex.migrate.down();
+        await rollBackThrough(knex, '20261113000002_roles_familias_consentimientos.js');
         assert.equal(await knex.schema.hasTable('usuario_roles'), false);
         assert.equal(await knex.schema.hasTable('consentimientos'), false);
         assert.equal((await knex('usuarios')).length, 1);
@@ -187,7 +195,7 @@ test('rolling back the roles migration refuses when consents or families exist',
         await knex.migrate.latest();
         const [userId] = await knex('usuarios').insert({ nombre: 'A', email: 'a@x.cl', password_hash: 'h', rol_id: 5 });
         await knex('consentimientos').insert({ usuario_id: userId, tipo: 'comunicaciones', version_texto: 'v1', aceptado: true });
-        await knex.migrate.down(); // the school migration
+        await rollBackThrough(knex, '20261113000003_escuela_clases.js');
         await assert.rejects(knex.migrate.down(), /consentimientos/);
         assert.ok(await knex.schema.hasTable('consentimientos'));
         assert.equal((await knex('consentimientos')).length, 1);
@@ -274,7 +282,7 @@ test('rolling back the school migration removes its tables', async () => {
     const knex = memoryDb();
     try {
         await knex.migrate.latest();
-        await knex.migrate.down();
+        await rollBackThrough(knex, '20261113000003_escuela_clases.js');
         for (const table of ['sedes', 'disciplinas', 'clases', 'sesiones']) {
             assert.equal(await knex.schema.hasTable(table), false, table);
         }
@@ -291,6 +299,7 @@ test('rolling back the school migration refuses when clases exist', async () => 
         const [sedeId] = await knex('sedes').pluck('id');
         const [disciplinaId] = await knex('disciplinas').pluck('id');
         await knex('clases').insert({ sede_id: sedeId, disciplina_id: disciplinaId, dia_semana: 1, hora_inicio: '19:00', hora_fin: '20:30' });
+        await knex.migrate.down(); // reservas and asistencias, which come after and are empty
         await assert.rejects(knex.migrate.down(), /clases/);
         assert.ok(await knex.schema.hasTable('clases'));
     } finally {
@@ -302,10 +311,55 @@ test('running the school migration again does not duplicate sedes or disciplinas
     const knex = memoryDb();
     try {
         await knex.migrate.latest();
-        await knex.migrate.down();
-        await knex.migrate.up();
+        await rollBackThrough(knex, '20261113000003_escuela_clases.js');
+        await knex.migrate.latest();
         assert.equal((await knex('sedes')).length, 3);
         assert.equal((await knex('disciplinas')).length, 3);
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('rolling back the bookings migration removes its tables and the counter column', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        await knex.migrate.down();
+        assert.equal(await knex.schema.hasTable('reservas'), false);
+        assert.equal(await knex.schema.hasTable('asistencias'), false);
+        assert.equal(await knex.schema.hasColumn('sesiones', 'reservas_activas'), false);
+        assert.ok(await knex.schema.hasTable('sesiones'), 'the school migration stays');
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('rolling back the bookings migration refuses when bookings exist', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [alumno] = await knex('usuarios').insert({ nombre: 'A', email: 'a@x.cl', password_hash: 'h', rol_id: 5 });
+        const [sedeId] = await knex('sedes').pluck('id');
+        const [disciplinaId] = await knex('disciplinas').pluck('id');
+        const [claseId] = await knex('clases').insert({ sede_id: sedeId, disciplina_id: disciplinaId, dia_semana: 1, hora_inicio: '19:00', hora_fin: '20:30' });
+        const [sesionId] = await knex('sesiones').insert({ clase_id: claseId, fecha: '2026-12-07' });
+        await knex('reservas').insert({ sesion_id: sesionId, alumno_id: alumno });
+        await assert.rejects(knex.migrate.down(), /reservas/);
+        assert.equal((await knex('reservas')).length, 1);
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('a sesion starts with no bookings counted', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [sedeId] = await knex('sedes').pluck('id');
+        const [disciplinaId] = await knex('disciplinas').pluck('id');
+        const [claseId] = await knex('clases').insert({ sede_id: sedeId, disciplina_id: disciplinaId, dia_semana: 1, hora_inicio: '19:00', hora_fin: '20:30' });
+        await knex('sesiones').insert({ clase_id: claseId, fecha: '2026-12-07' });
+        assert.equal((await knex('sesiones').first()).reservas_activas, 0);
     } finally {
         await knex.destroy();
     }

@@ -185,12 +185,13 @@ exports.getSesiones = async (req, res) => {
     }
     try {
         const where = [];
-        const values = [];
+        const values = [req.user.id];
         if (desde) { where.push('se.fecha >= ?'); values.push(desde); }
         if (hasta) { where.push('se.fecha <= ?'); values.push(hasta); }
         if (sede_id) { where.push('c.sede_id = ?'); values.push(sede_id); }
         const [rows] = await req.db.execute(
-            `SELECT se.id, se.clase_id, se.fecha, se.estado, se.motivo,
+            `SELECT se.id, se.clase_id, se.fecha, se.estado, se.motivo, se.reservas_activas AS reservas,
+                    (SELECT COUNT(*) FROM reservas r WHERE r.sesion_id = se.id AND r.alumno_id = ? AND r.estado = 'activa') AS reservada,
                     c.hora_inicio, c.hora_fin, c.cupo, s.ciudad AS sede, d.nombre AS disciplina, u.nombre AS instructor
              FROM sesiones se
              JOIN clases c ON c.id = se.clase_id
@@ -201,7 +202,7 @@ exports.getSesiones = async (req, res) => {
              ORDER BY se.fecha, c.hora_inicio, se.id`,
             values,
         );
-        res.json(rows);
+        res.json(rows.map((row) => ({ ...row, reservada: Boolean(row.reservada) })));
     } catch (error) {
         serverError('Error fetching sesiones:', error, res);
     }
