@@ -299,7 +299,7 @@ test('rolling back the school migration refuses when clases exist', async () => 
         const [sedeId] = await knex('sedes').pluck('id');
         const [disciplinaId] = await knex('disciplinas').pluck('id');
         await knex('clases').insert({ sede_id: sedeId, disciplina_id: disciplinaId, dia_semana: 1, hora_inicio: '19:00', hora_fin: '20:30' });
-        await knex.migrate.down(); // reservas and asistencias, which come after and are empty
+        await rollBackThrough(knex, '20261113000004_reservas_asistencias.js');
         await assert.rejects(knex.migrate.down(), /clases/);
         assert.ok(await knex.schema.hasTable('clases'));
     } finally {
@@ -324,7 +324,7 @@ test('rolling back the bookings migration removes its tables and the counter col
     const knex = memoryDb();
     try {
         await knex.migrate.latest();
-        await knex.migrate.down();
+        await rollBackThrough(knex, '20261113000004_reservas_asistencias.js');
         assert.equal(await knex.schema.hasTable('reservas'), false);
         assert.equal(await knex.schema.hasTable('asistencias'), false);
         assert.equal(await knex.schema.hasColumn('sesiones', 'reservas_activas'), false);
@@ -344,6 +344,7 @@ test('rolling back the bookings migration refuses when bookings exist', async ()
         const [claseId] = await knex('clases').insert({ sede_id: sedeId, disciplina_id: disciplinaId, dia_semana: 1, hora_inicio: '19:00', hora_fin: '20:30' });
         const [sesionId] = await knex('sesiones').insert({ clase_id: claseId, fecha: '2026-12-07' });
         await knex('reservas').insert({ sesion_id: sesionId, alumno_id: alumno });
+        await knex.migrate.down(); // availability, which comes after and is empty
         await assert.rejects(knex.migrate.down(), /reservas/);
         assert.equal((await knex('reservas')).length, 1);
     } finally {
@@ -360,6 +361,31 @@ test('a sesion starts with no bookings counted', async () => {
         const [claseId] = await knex('clases').insert({ sede_id: sedeId, disciplina_id: disciplinaId, dia_semana: 1, hora_inicio: '19:00', hora_fin: '20:30' });
         await knex('sesiones').insert({ clase_id: claseId, fecha: '2026-12-07' });
         assert.equal((await knex('sesiones').first()).reservas_activas, 0);
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('rolling back the availability migration removes its table', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        await knex.migrate.down();
+        assert.equal(await knex.schema.hasTable('disponibilidad_instructor'), false);
+        assert.ok(await knex.schema.hasTable('reservas'), 'the bookings migration stays');
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('rolling back the availability migration refuses when blocks exist', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [userId] = await knex('usuarios').insert({ nombre: 'I', email: 'i@x.cl', password_hash: 'h', rol_id: 3 });
+        await knex('disponibilidad_instructor').insert({ instructor_id: userId, dia_semana: 1, hora_inicio: '09:00', hora_fin: '12:00' });
+        await assert.rejects(knex.migrate.down(), /disponibilidad_instructor/);
+        assert.equal((await knex('disponibilidad_instructor')).length, 1);
     } finally {
         await knex.destroy();
     }
