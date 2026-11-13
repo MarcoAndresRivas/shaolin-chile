@@ -1,14 +1,8 @@
 // Knex configuration used by `npm run migrate` and the seed scripts.
-// It reads the same DB_* variables as the server (see env.example).
+// It reads the same variables as the server (see .env.example): a local
+// SQLite file by default, or MySQL when DB_SERVER is set.
 require('dotenv').config({ quiet: true });
-const path = require('node:path');
-const { buildDbConfig } = require('./src/config');
+const { loadDbConfig } = require('./src/config');
+const { buildKnexConfig } = require('./src/db');
 
-module.exports = {
-    client: 'mysql2',
-    connection: { ...buildDbConfig(process.env), charset: 'utf8mb4' },
-    migrations: {
-        directory: path.join(__dirname, 'migrations'),
-        tableName: 'knex_migrations',
-    },
-};
+module.exports = buildKnexConfig(loadDbConfig(process.env));

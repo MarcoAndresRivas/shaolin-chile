@@ -34,6 +34,23 @@ test('CORS origins are read from CORS_ORIGINS as a trimmed comma-separated list'
     assert.deepEqual(config.corsOrigins, ['https://shaolinchile.cl', 'http://localhost:5500']);
 });
 
+test('without a MySQL server configured, the database is a local SQLite file', () => {
+    const config = loadConfig({ JWT_SECRET: VALID_SECRET });
+    assert.equal(config.dbClient, 'sqlite');
+    assert.match(config.sqliteFile, /data[\\/]shaolin\.db$/);
+    assert.equal(loadConfig({ JWT_SECRET: VALID_SECRET, SQLITE_FILE: '/tmp/x.db' }).sqliteFile, '/tmp/x.db');
+});
+
+test('with DB_SERVER set, the database is MySQL, as in production', () => {
+    assert.equal(loadConfig({ JWT_SECRET: VALID_SECRET, DB_SERVER: 'x.aivencloud.com' }).dbClient, 'mysql');
+});
+
+test('DB_CLIENT overrides the detection and rejects unknown values', () => {
+    assert.equal(loadConfig({ JWT_SECRET: VALID_SECRET, DB_CLIENT: 'mysql' }).dbClient, 'mysql');
+    assert.equal(loadConfig({ JWT_SECRET: VALID_SECRET, DB_SERVER: 'h', DB_CLIENT: 'sqlite' }).dbClient, 'sqlite');
+    assert.throws(() => loadConfig({ JWT_SECRET: VALID_SECRET, DB_CLIENT: 'postgres' }), /DB_CLIENT/);
+});
+
 test('database settings keep the previous defaults and enable SSL for Aiven', () => {
     const local = loadConfig({ JWT_SECRET: VALID_SECRET }).db;
     assert.equal(local.host, 'localhost');

@@ -8,6 +8,8 @@ services:
     envVars:
       - key: NODE_VERSION
         value: 18.18.0
+      - key: DB_CLIENT
+        value: mysql
       - key: DB_SERVER
         sync: false
       - key: DB_USER

@@ -57,7 +57,9 @@ exports.getHorarios = async (req, res) => {
             SELECT h.*, u.nombre as profesor 
             FROM horarios h
             LEFT JOIN usuarios u ON h.creador_id = u.id
-            ORDER BY FIELD(dia_semana, 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'), hora_inicio
+            ORDER BY CASE h.dia_semana
+                WHEN 'Lunes' THEN 1 WHEN 'Martes' THEN 2 WHEN 'Miércoles' THEN 3 WHEN 'Jueves' THEN 4
+                WHEN 'Viernes' THEN 5 WHEN 'Sábado' THEN 6 WHEN 'Domingo' THEN 7 END, h.hora_inicio
         `;
         const [rows] = await req.db.execute(query);
         res.json(rows);
