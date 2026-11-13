@@ -1,16 +1,40 @@
 const bcrypt = require('bcrypt');
-const { hasAnyRole } = require('../middleware/authMiddleware');
+const { hasAnyRole, rolesOf } = require('../middleware/authMiddleware');
+
+// Roles per user from usuario_roles. Before the roles migration runs the table
+// does not exist, and each user only has the legacy rol_id.
+async function loadRolesByUser(db) {
+    let rows;
+    try {
+        [rows] = await db.execute(
+            `SELECT ur.usuario_id, r.nombre FROM usuario_roles ur
+             JOIN roles r ON r.id = ur.rol_id
+             ORDER BY ur.usuario_id, r.id`
+        );
+    } catch (error) {
+        if (error.code !== 'ER_NO_SUCH_TABLE') throw error;
+        rows = [];
+    }
+    const byUser = new Map();
+    for (const row of rows) {
+        if (!byUser.has(row.usuario_id)) byUser.set(row.usuario_id, []);
+        byUser.get(row.usuario_id).push(row.nombre);
+    }
+    return (user) => byUser.get(user.id) ?? rolesOf({ rol_id: user.rol_id });
+}
 
 // ---- ADMINISTRADOR: Gestión de Usuarios ----
 exports.getUsuarios = async (req, res) => {
     try {
-        const query = `
-            SELECT u.id, u.nombre, u.email, u.fecha_creacion, r.nombre as rol
+        // LEFT JOIN so a user whose legacy rol_id has no role is still listed.
+        const [users] = await req.db.execute(`
+            SELECT u.id, u.nombre, u.email, u.fecha_creacion, u.rol_id, r.nombre AS rol
             FROM usuarios u
-            JOIN roles r ON u.rol_id = r.id
-        `;
-        const [rows] = await req.db.execute(query);
-        res.json(rows);
+            LEFT JOIN roles r ON u.rol_id = r.id
+            ORDER BY u.id
+        `);
+        const rolesFor = await loadRolesByUser(req.db);
+        res.json(users.map(({ rol_id, ...user }) => ({ ...user, roles: rolesFor({ ...user, rol_id }) })));
     } catch (error) {
         console.error('Error fetching users:', error);
         res.status(500).json({ error: 'Error del servidor.' });
@@ -91,7 +115,11 @@ exports.updateHorario = async (req, res) => {
 exports.deleteHorario = async (req, res) => {
     const { id } = req.params;
     try {
-        await req.db.execute('DELETE FROM horarios WHERE id = ?', [id]);
+        // Bookings of the class are removed with it (ON DELETE CASCADE).
+        const [result] = await req.db.execute('DELETE FROM horarios WHERE id = ?', [id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Horario no encontrado.' });
+        }
         res.json({ message: 'Horario eliminado con éxito.' });
     } catch (error) {
         res.status(500).json({ error: 'Error al eliminar el horario.' });
