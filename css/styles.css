@@ -568,6 +568,25 @@ section {
     background-color: var(--color-bg-dark);
 }
 
+/* Gallery (Instagram embeds) */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+    align-items: start;
+}
+
+.gallery-grid .instagram-media {
+    min-width: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+.gallery-more {
+    margin-top: var(--spacing-lg);
+}
+
 .locations-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
