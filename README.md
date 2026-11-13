@@ -23,7 +23,7 @@ Requisitos: Node.js 18 o superior y un servidor MySQL.
    npm install
    ```
 
-2. Copiar `backend/env.example` a `backend/.env` y completar los valores. `JWT_SECRET` es obligatorio: sin él el servidor no arranca. Para generarlo:
+2. Copiar `backend/.env.example` a `backend/.env` y completar los valores. `JWT_SECRET` es obligatorio: sin él el servidor no arranca. Para generarlo:
 
    ```sh
    node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"

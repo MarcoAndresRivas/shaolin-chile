@@ -31,7 +31,7 @@ docs: actualizar instrucciones de instalación
 
 - `cd backend && npm test` pasa sin errores.
 - Si cambiaste el esquema, agregaste una migración nueva y la probaste.
-- Si agregaste una variable de entorno, la documentaste en `backend/env.example`.
+- Si agregaste una variable de entorno, la documentaste en `backend/.env.example`.
 
 ## Secretos
 

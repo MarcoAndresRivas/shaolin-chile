@@ -1,5 +1,5 @@
 // Knex configuration used by `npm run migrate` and the seed scripts.
-// It reads the same DB_* variables as the server (see env.example).
+// It reads the same DB_* variables as the server (see .env.example).
 require('dotenv').config({ quiet: true });
 const path = require('node:path');
 const { buildDbConfig } = require('./src/config');
