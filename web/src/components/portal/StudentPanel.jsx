@@ -3,14 +3,13 @@ import { api } from '../../lib/client.js';
 import { addDays, todayInChile } from '../../lib/dates.js';
 import AccountPanel from './AccountPanel.jsx';
 import ProgressPanel from './ProgressPanel.jsx';
-import Tabs from './Tabs.jsx';
 import { formatTime, useApi } from './useApi.js';
 
-export default function StudentPanel({ onUnauthorized }) {
+// Upcoming sessions to book, and the schedules of the previous system.
+function ClassesTab({ onUnauthorized }) {
   const today = todayInChile();
   const range = { desde: today, hasta: addDays(today, 21) };
   const sesiones = useApi(useCallback(() => api.sesiones(range), [range.desde, range.hasta]), onUnauthorized); // eslint-disable-line react-hooks/exhaustive-deps
-  const attendance = useApi(useCallback(() => api.miAsistencia(), []), onUnauthorized);
   // Schedules of the previous system, kept until the school moves to sessions.
   const schedules = useApi(useCallback(() => api.horarios(), []), onUnauthorized);
   const bookings = useApi(useCallback(() => api.misReservas(), []), onUnauthorized);
@@ -42,12 +41,8 @@ export default function StudentPanel({ onUnauthorized }) {
 
   const upcoming = sesiones.data?.filter((s) => s.estado === 'programada') ?? [];
 
-  const tabs = [
-    {
-      id: 'clases',
-      label: 'Clases',
-      content: (
-        <>
+  return (
+    <>
       <section className="panel panel--wide">
         <h2>Próximas clases</h2>
         {notice.text && (
@@ -55,7 +50,7 @@ export default function StudentPanel({ onUnauthorized }) {
             {notice.text}
           </p>
         )}
-        {sesiones.loading && <p className="muted">Cargando…</p>}
+        {sesiones.loading && !sesiones.data && <p className="muted">Cargando…</p>}
         {sesiones.error && <p className="alert">{sesiones.error}</p>}
         {sesiones.data && upcoming.length === 0 && <p className="muted">Todavía no hay clases publicadas para las próximas semanas.</p>}
         <ul className="list">
@@ -77,12 +72,7 @@ export default function StudentPanel({ onUnauthorized }) {
                     Cancelar reserva
                   </button>
                 ) : (
-                  <button
-                    className="btn btn--gold btn--small"
-                    type="button"
-                    disabled={full}
-                    onClick={() => act(() => api.reservarSesion(item.id), 'Reserva confirmada.')}
-                  >
+                  <button className="btn btn--gold btn--small" type="button" disabled={full} onClick={() => act(() => api.reservarSesion(item.id), 'Reserva confirmada.')}>
                     {full ? 'Llena' : 'Reservar'}
                   </button>
                 )}
@@ -93,7 +83,7 @@ export default function StudentPanel({ onUnauthorized }) {
       </section>
 
       {schedules.data?.length > 0 && (
-        <section className="panel">
+        <section className="panel panel--wide">
           <h2>Horarios anteriores</h2>
           <p className="muted">Sistema previo de reservas, mientras la escuela pasa a las clases nuevas.</p>
           <ul className="list">
@@ -126,22 +116,21 @@ export default function StudentPanel({ onUnauthorized }) {
           )}
         </section>
       )}
-        </>
-      ),
-    },
-    { id: 'cuenta', label: 'Mi cuenta', content: (
-      <AccountPanel onUnauthorized={onUnauthorized} />
-    ) },
-    {
-      id: 'grado',
-      label: 'Mi grado',
-      content: (
-        <>
+    </>
+  );
+}
+
+// Current grade and attendance record.
+function GradeTab({ onUnauthorized }) {
+  const attendance = useApi(useCallback(() => api.miAsistencia(), []), onUnauthorized);
+
+  return (
+    <>
       <ProgressPanel onUnauthorized={onUnauthorized} />
 
       <section className="panel">
         <h2>Mi asistencia</h2>
-        {attendance.loading && <p className="muted">Cargando…</p>}
+        {attendance.loading && !attendance.data && <p className="muted">Cargando…</p>}
         {attendance.error && <p className="alert">{attendance.error}</p>}
         {attendance.data && (
           <>
@@ -162,10 +151,15 @@ export default function StudentPanel({ onUnauthorized }) {
           </>
         )}
       </section>
-        </>
-      ),
-    },
-  ];
+    </>
+  );
+}
 
-  return <Tabs tabs={tabs} label="Alumno" />;
+// The student's tabs. The portal joins them with those of the person's other roles.
+export function studentTabs(onUnauthorized) {
+  return [
+    { id: 'clases', label: 'Clases', content: <ClassesTab onUnauthorized={onUnauthorized} /> },
+    { id: 'cuenta', label: 'Mi cuenta', content: <AccountPanel onUnauthorized={onUnauthorized} /> },
+    { id: 'grado', label: 'Mi grado', content: <GradeTab onUnauthorized={onUnauthorized} /> },
+  ];
 }

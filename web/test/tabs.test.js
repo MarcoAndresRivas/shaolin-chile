@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { tabFromHash, nextTab } from '../src/lib/tabs.js';
+import { tabFromHash, nextTab, mergeTabs } from '../src/lib/tabs.js';
 
 const IDS = ['interesados', 'escuela', 'finanzas'];
 
@@ -27,4 +27,17 @@ test('Home and End jump to the first and last tab; other keys do nothing', () =>
   assert.equal(nextTab(IDS, 'escuela', 'End'), 'finanzas');
   assert.equal(nextTab(IDS, 'escuela', 'Enter'), null);
   assert.equal(nextTab(IDS, 'desconocida', 'ArrowRight'), null);
+});
+
+test('several roles share one tab bar, in order, keeping the first tab of each id', () => {
+  const admin = [{ id: 'finanzas', label: 'Finanzas' }, { id: 'examenes', label: 'Exámenes y grados' }];
+  const instructor = [{ id: 'mis-clases', label: 'Mis clases' }, { id: 'examenes', label: 'Exámenes' }];
+  const merged = mergeTabs(admin, instructor);
+  assert.deepEqual(merged.map((t) => t.id), ['finanzas', 'examenes', 'mis-clases']);
+  assert.equal(merged.find((t) => t.id === 'examenes').label, 'Exámenes y grados', 'the first one wins');
+});
+
+test('merging nothing, or empty lists, gives no tabs', () => {
+  assert.deepEqual(mergeTabs(), []);
+  assert.deepEqual(mergeTabs([], []), []);
 });

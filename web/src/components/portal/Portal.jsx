@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { appPath } from '../../lib/client.js';
 import { clearSession, isAdmin, isGuardian, isInstructor, isStudent, readSession } from '../../lib/session.js';
-import AdminPanel from './AdminPanel.jsx';
-import GuardianPanel from './GuardianPanel.jsx';
-import InstructorPanel from './InstructorPanel.jsx';
-import StudentPanel from './StudentPanel.jsx';
+import { mergeTabs } from '../../lib/tabs.js';
+import { adminTabs } from './AdminPanel.jsx';
+import { guardianTabs } from './GuardianPanel.jsx';
+import { instructorTabs } from './InstructorPanel.jsx';
+import { studentTabs } from './StudentPanel.jsx';
+import Tabs from './Tabs.jsx';
 import './portal.css';
 
 export default function Portal() {
@@ -29,6 +31,14 @@ export default function Portal() {
     window.location.assign(appPath(''));
   };
 
+  // One tab bar with the tabs of every role the person has.
+  const tabs = mergeTabs(
+    isAdmin(session) ? adminTabs(onUnauthorized) : [],
+    isInstructor(session) ? instructorTabs(session.userId, onUnauthorized) : [],
+    isGuardian(session) ? guardianTabs(onUnauthorized) : [],
+    isStudent(session) ? studentTabs(onUnauthorized) : [],
+  );
+
   return (
     <div className="portal">
       <div className="portal__bar">
@@ -41,11 +51,8 @@ export default function Portal() {
         </button>
       </div>
 
-      {isAdmin(session) && <AdminPanel onUnauthorized={onUnauthorized} />}
-      {isInstructor(session) && <InstructorPanel userId={session.userId} onUnauthorized={onUnauthorized} />}
-      {isGuardian(session) && <GuardianPanel onUnauthorized={onUnauthorized} />}
-      {isStudent(session) && <StudentPanel onUnauthorized={onUnauthorized} />}
-      {!isAdmin(session) && !isStudent(session) && !isInstructor(session) && !isGuardian(session) && (
+      {tabs.length > 0 && <Tabs tabs={tabs} label="Portal" />}
+      {tabs.length === 0 && (
         <section className="panel">
           <h2>Tu panel está en construcción</h2>
           <p className="muted">

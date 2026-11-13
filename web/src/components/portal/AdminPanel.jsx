@@ -5,12 +5,11 @@ import GradesAdminPanel from './GradesAdminPanel.jsx';
 import LeadsPanel from './LeadsPanel.jsx';
 import LegacySchedulesPanel from './LegacySchedulesPanel.jsx';
 import SchoolPanel from './SchoolPanel.jsx';
-import Tabs from './Tabs.jsx';
 import UsersPanel from './UsersPanel.jsx';
 
-// Administration, one area per tab.
-export default function AdminPanel({ onUnauthorized }) {
-  const tabs = [
+// Administration, one area per tab. The portal joins them with those of the person's other roles.
+export function adminTabs(onUnauthorized) {
+  return [
     { id: 'interesados', label: 'Interesados', content: <LeadsPanel onUnauthorized={onUnauthorized} /> },
     {
       id: 'escuela',
@@ -44,6 +43,4 @@ export default function AdminPanel({ onUnauthorized }) {
       ),
     },
   ];
-
-  return <Tabs tabs={tabs} label="Administración" />;
 }

@@ -105,3 +105,8 @@ export default function GuardianPanel({ onUnauthorized }) {
     </section>
   );
 }
+
+// The guardian's tab. The portal joins it with those of the person's other roles.
+export function guardianTabs(onUnauthorized) {
+  return [{ id: 'familia', label: 'Mi familia', content: <GuardianPanel onUnauthorized={onUnauthorized} /> }];
+}

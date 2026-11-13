@@ -4,7 +4,6 @@ import { addDays, todayInChile } from '../../lib/dates.js';
 import AttendanceList from './AttendanceList.jsx';
 import AvailabilityEditor from './AvailabilityEditor.jsx';
 import ExamsPanel from './ExamsPanel.jsx';
-import Tabs from './Tabs.jsx';
 import { formatTime, useApi } from './useApi.js';
 
 // The instructor's own sesiones: the last week and the next two.
@@ -48,11 +47,11 @@ function MySessions({ userId, onUnauthorized }) {
   );
 }
 
-export default function InstructorPanel({ userId, onUnauthorized }) {
-  const tabs = [
+// The instructor's tabs. The portal joins them with those of the person's other roles.
+export function instructorTabs(userId, onUnauthorized) {
+  return [
     { id: 'mis-clases', label: 'Mis clases', content: <MySessions userId={userId} onUnauthorized={onUnauthorized} /> },
     { id: 'examenes', label: 'Exámenes', content: <ExamsPanel onUnauthorized={onUnauthorized} /> },
     { id: 'disponibilidad', label: 'Disponibilidad', content: <AvailabilityEditor onUnauthorized={onUnauthorized} /> },
   ];
-  return <Tabs tabs={tabs} label="Instructor" />;
 }

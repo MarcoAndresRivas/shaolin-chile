@@ -16,3 +16,15 @@ export function nextTab(ids, current, key) {
   if (key === 'End') return ids[ids.length - 1];
   return null;
 }
+
+// One tab bar for a person with several roles: the tabs of every list, in
+// order, keeping the first tab of each id (administration already includes
+// everything the instructor's exams tab shows).
+export function mergeTabs(...lists) {
+  const seen = new Set();
+  return lists.flat().filter((tab) => {
+    if (seen.has(tab.id)) return false;
+    seen.add(tab.id);
+    return true;
+  });
+}
