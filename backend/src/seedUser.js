@@ -15,8 +15,9 @@ function requireEnv(env, name) {
 // Creates the user, or updates name and password when the email already
 // exists, and grants every role in `roles` (by name). Existing roles are kept.
 // Returns the user id.
-async function upsertUser(knex, { nombre, email, password, roles }) {
-    if (!roles || roles.length === 0) throw new Error(`No roles given for ${email}.`);
+async function upsertUser(knex, { nombre, email, password, roles: requestedRoles }) {
+    if (!requestedRoles || requestedRoles.length === 0) throw new Error(`No roles given for ${email}.`);
+    const roles = [...new Set(requestedRoles)];
 
     const roleRows = await knex('roles').whereIn('nombre', roles).select('id', 'nombre');
     const idsByName = Object.fromEntries(roleRows.map((r) => [r.nombre, r.id]));

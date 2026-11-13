@@ -29,9 +29,15 @@ exports.up = async function up(knex) {
         t.increments('id');
         t.string('nombre', 50).notNullable().unique();
     });
-    const existing = new Set(await knex('roles').pluck('nombre'));
-    const missing = LEGACY_ROLES.filter((r) => !existing.has(r.nombre));
-    if (missing.length) await knex('roles').insert(missing);
+    // Like the old INSERT IGNORE, but a missing role whose old id is already
+    // taken by another row is still added, with a new id.
+    const rows = await knex('roles').select('id', 'nombre');
+    const names = new Set(rows.map((r) => r.nombre));
+    const ids = new Set(rows.map((r) => r.id));
+    for (const role of LEGACY_ROLES.filter((r) => !names.has(r.nombre))) {
+        const [newId] = await knex('roles').insert(ids.has(role.id) ? { nombre: role.nombre } : role);
+        ids.add(Number(newId));
+    }
 
     const rolesUnsigned = await isUnsignedKey(knex, 'roles');
     await createTableIfMissing(knex, 'usuarios', (t) => {
@@ -46,7 +52,7 @@ exports.up = async function up(knex) {
     const usuariosUnsigned = await isUnsignedKey(knex, 'usuarios');
     await createTableIfMissing(knex, 'detalles_alumno', (t) => {
         foreignId(t, 'usuario_id', usuariosUnsigned).primary().references('id').inTable('usuarios').onDelete('CASCADE');
-        t.integer('ano_ingreso');
+        t.specificType('ano_ingreso', 'YEAR');
         t.date('fecha_nacimiento');
         t.string('telefono', 50);
     });

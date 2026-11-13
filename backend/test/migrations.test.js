@@ -163,6 +163,66 @@ test('rolling back the roles migration removes its tables but keeps users', asyn
     }
 });
 
+test('deleting a guardian never rewrites a consent they gave', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [guardian] = await knex('usuarios').insert({ nombre: 'Apoderado', email: 'a@x.cl', password_hash: 'h', rol_id: 5 });
+        const [child] = await knex('usuarios').insert({ nombre: 'Hijo', email: 'h@x.cl', password_hash: 'h', rol_id: 5 });
+        await knex('consentimientos').insert({
+            usuario_id: child, otorgado_por_id: guardian, tipo: 'datos_salud', version_texto: 'v1', aceptado: true,
+        });
+        await assert.rejects(knex('usuarios').where({ id: guardian }).del());
+        const [consent] = await knex('consentimientos').where({ usuario_id: child });
+        assert.equal(consent.otorgado_por_id, guardian);
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('rolling back the roles migration refuses when consents or families exist', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [userId] = await knex('usuarios').insert({ nombre: 'A', email: 'a@x.cl', password_hash: 'h', rol_id: 5 });
+        await knex('consentimientos').insert({ usuario_id: userId, tipo: 'comunicaciones', version_texto: 'v1', aceptado: true });
+        await assert.rejects(knex.migrate.down(), /consentimientos/);
+        assert.ok(await knex.schema.hasTable('consentimientos'));
+        assert.equal((await knex('consentimientos')).length, 1);
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('the baseline adds a missing legacy role even when its old id is taken', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.schema.createTable('roles', (t) => {
+            t.increments('id');
+            t.string('nombre', 50).notNullable().unique();
+        });
+        await knex('roles').insert([{ id: 1, nombre: 'Otro' }, { id: 2, nombre: 'Administrador' }]);
+        await knex.migrate.latest();
+        const names = await roleNames(knex);
+        for (const name of ['Desarrollador', 'Administrador', 'Colaborador', 'Externo', 'Alumno', 'Otro']) {
+            assert.ok(names.includes(name), `missing role ${name}`);
+        }
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('upsertUser ignores a role named twice', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const id = await upsertUser(knex, { nombre: 'X', email: 'x@x.cl', password: 'p', roles: ['Alumno', 'Alumno'] });
+        assert.equal((await knex('usuario_roles').where({ usuario_id: id })).length, 1);
+    } finally {
+        await knex.destroy();
+    }
+});
+
 test('requireEnv refuses to seed without the password variable', () => {
     assert.throws(() => requireEnv({}, 'SEED_ADMIN_PASSWORD'), /SEED_ADMIN_PASSWORD/);
     assert.throws(() => requireEnv({ SEED_ADMIN_PASSWORD: '  ' }, 'SEED_ADMIN_PASSWORD'), /SEED_ADMIN_PASSWORD/);

@@ -55,7 +55,8 @@ exports.up = async function up(knex) {
         // The person the data belongs to.
         foreignId(t, 'usuario_id', usuariosUnsigned).notNullable().references('id').inTable('usuarios').onDelete('CASCADE');
         // Who accepted: the guardian for a minor; null when the person accepted it themselves.
-        foreignId(t, 'otorgado_por_id', usuariosUnsigned).references('id').inTable('usuarios').onDelete('SET NULL');
+        // RESTRICT: deleting the guardian must never make a consent look self-given.
+        foreignId(t, 'otorgado_por_id', usuariosUnsigned).references('id').inTable('usuarios').onDelete('RESTRICT');
         t.enu('tipo', CONSENT_TYPES).notNullable();
         // Version of the text that was accepted, so a later wording change is traceable.
         t.string('version_texto', 20).notNullable();
@@ -66,7 +67,15 @@ exports.up = async function up(knex) {
     });
 };
 
+// Tables whose rows are legal records or user data that a rollback would destroy.
+const PROTECTED_TABLES = ['consentimientos', 'familias'];
+
 exports.down = async function down(knex) {
+    for (const table of PROTECTED_TABLES) {
+        if ((await knex.schema.hasTable(table)) && (await knex(table).first())) {
+            throw new Error(`Refusing to roll back: ${table} has data. Back it up and empty it by hand first.`);
+        }
+    }
     await knex.schema.dropTableIfExists('consentimientos');
     await knex.schema.dropTableIfExists('familia_miembros');
     await knex.schema.dropTableIfExists('familias');
