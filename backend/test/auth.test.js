@@ -74,6 +74,13 @@ test('login works before the migrations run, using the legacy role', async () =>
     assert.deepEqual(res.body.roles, ['Administrador']);
 });
 
+test('login falls back to the legacy role when the user has no rows in usuario_roles', async () => {
+    const user = { id: 8, nombre: 'Admin', rol_id: 2, password_hash: await bcrypt.hash('pw', 4) };
+    const res = await call(fakeDb({ user, roles: [] }), 'POST', '/api/login', { body: { email: 'a@x.cl', password: 'pw' } });
+    assert.equal(res.status, 200);
+    assert.deepEqual(res.body.roles, ['Administrador']);
+});
+
 test('login still rejects a wrong password', async () => {
     const user = { id: 7, nombre: 'Benja', rol_id: 2, password_hash: await bcrypt.hash('pw', 4) };
     const res = await call(fakeDb({ user }), 'POST', '/api/login', { body: { email: 'b@x.cl', password: 'nope' } });

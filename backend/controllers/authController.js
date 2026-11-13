@@ -14,7 +14,9 @@ async function loadRoles(db, usuario) {
              ORDER BY r.id`,
             [usuario.id]
         );
-        return rows.map((r) => r.nombre);
+        // A user with no rows (created by the old backend after the migration)
+        // keeps the role stored in usuarios.rol_id.
+        return rows.length ? rows.map((r) => r.nombre) : rolesOf({ rol_id: usuario.rol_id });
     } catch (error) {
         if (error.code === 'ER_NO_SUCH_TABLE') return rolesOf({ rol_id: usuario.rol_id });
         throw error;
