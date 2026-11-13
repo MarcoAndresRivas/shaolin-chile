@@ -35,6 +35,10 @@ El sitio se publica bajo `/shaolin-chile/`. Para otro dominio, compilar con `BAS
 - Para cambiar un texto se edita `src/data/site.js`. Más adelante, el módulo de contenido lo hará desde el panel de administración.
 - Para agregar una foto de Instagram: guardar `src/assets/instagram/<id>.jpg` y sumarla a `gallery` en `src/data/site.js`.
 
+## Publicación
+
+`.github/workflows/deploy-web.yml` prueba, compila y publica `web/dist` en GitHub Pages cada vez que cambia `web/` en `main`. Para activarlo, una sola vez: en GitHub, Settings > Pages > Source > **GitHub Actions**. Hoy Pages publica la rama `gh-pages` (el sitio antiguo); al cambiar la fuente, el sitio nuevo lo reemplaza.
+
 ## Portal (ingreso)
 
 `/ingresar/` y `/portal/` usan la API de `backend/`: el alumno ve las clases, reserva y revisa sus reservas; la administración (Director, Administrador, Desarrollador) crea y elimina clases y ve los usuarios. Otros roles ven un aviso hasta la Fase 2.
