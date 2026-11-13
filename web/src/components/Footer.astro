@@ -1,6 +1,7 @@
 ---
 import { brand, contact, footer } from '../data/site.js';
 const year = new Date().getFullYear();
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <footer class="footer">
@@ -20,7 +21,7 @@ const year = new Date().getFullYear();
     </div>
   </div>
   <div class="container footer__legal">
-    <p>© {year} {footer.copyright}</p>
+    <p>© {year} {footer.copyright} <a href={`${base}/privacidad/`}>Política de privacidad</a></p>
     {brand.constituted && <p>{brand.legalName}, constituido bajo la {brand.legalBasis}.</p>}
   </div>
 </footer>
