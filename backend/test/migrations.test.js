@@ -384,7 +384,7 @@ test('rolling back the availability migration refuses when blocks exist', async 
         await knex.migrate.latest();
         const [userId] = await knex('usuarios').insert({ nombre: 'I', email: 'i@x.cl', password_hash: 'h', rol_id: 3 });
         await knex('disponibilidad_instructor').insert({ instructor_id: userId, dia_semana: 1, hora_inicio: '09:00', hora_fin: '12:00' });
-        await knex.migrate.down(); // interested people, which come after and are empty
+        await rollBackThrough(knex, '20261113000006_interesados.js');
         await assert.rejects(knex.migrate.down(), /disponibilidad_instructor/);
         assert.equal((await knex('disponibilidad_instructor')).length, 1);
     } finally {
@@ -396,7 +396,7 @@ test('rolling back the interested-people migration removes its tables', async ()
     const knex = memoryDb();
     try {
         await knex.migrate.latest();
-        await knex.migrate.down();
+        await rollBackThrough(knex, '20261113000006_interesados.js');
         for (const table of ['interesados', 'seguimientos', 'clases_prueba']) {
             assert.equal(await knex.schema.hasTable(table), false, table);
         }
@@ -411,8 +411,55 @@ test('rolling back the interested-people migration refuses when people exist', a
     try {
         await knex.migrate.latest();
         await knex('interesados').insert({ nombre: 'Juan', email: 'j@x.cl', consentimiento: true });
+        await knex.migrate.down(); // finances, which come after and are empty
         await assert.rejects(knex.migrate.down(), /interesados/);
         assert.equal((await knex('interesados')).length, 1);
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('rolling back the finance migration removes its tables', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        await knex.migrate.down();
+        for (const table of ['planes', 'suscripciones', 'cargos', 'pagos']) {
+            assert.equal(await knex.schema.hasTable(table), false, table);
+        }
+        assert.ok(await knex.schema.hasTable('interesados'), 'the interested-people migration stays');
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('rolling back the finance migration refuses when financial records exist', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        await knex('planes').insert({ nombre: 'Mensual', monto: 30000, periodicidad: 'mensual' });
+        await assert.rejects(knex.migrate.down(), /planes/);
+        assert.equal((await knex('planes')).length, 1);
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('a charge is generated once per subscription and period', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [alumno] = await knex('usuarios').insert({ nombre: 'A', email: 'a@x.cl', password_hash: 'h', rol_id: 5 });
+        const [plan] = await knex('planes').insert({ nombre: 'Mensual', monto: 30000, periodicidad: 'mensual' });
+        const [sub] = await knex('suscripciones').insert({ alumno_id: alumno, plan_id: plan, fecha_inicio: '2026-11-01' });
+        const row = { alumno_id: alumno, suscripcion_id: sub, concepto: 'Mensual 2026-11', monto: 30000, periodo: '2026-11', fecha_emision: '2026-11-01', fecha_vencimiento: '2026-11-10' };
+        await knex('cargos').insert(row);
+        await assert.rejects(knex('cargos').insert(row), 'the database refuses a second charge for the same period');
+        // Manual charges have no subscription and may repeat.
+        const manual = { ...row, suscripcion_id: null, periodo: null };
+        await knex('cargos').insert(manual);
+        await knex('cargos').insert(manual);
+        assert.equal((await knex('cargos')).length, 3);
     } finally {
         await knex.destroy();
     }

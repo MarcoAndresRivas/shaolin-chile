@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { api } from '../../lib/client.js';
 import { addDays, todayInChile } from '../../lib/dates.js';
+import AccountPanel from './AccountPanel.jsx';
 import { formatTime, useApi } from './useApi.js';
 
 // The students in the guardian's care: their next bookings and attendance, and
@@ -94,6 +95,7 @@ export default function GuardianPanel({ onUnauthorized }) {
                   Reservar
                 </button>
               </div>
+              <AccountPanel alumnoId={student.usuario_id} title={`Cuenta de ${student.nombre}`} onUnauthorized={onUnauthorized} />
             </div>
           ))}
         </div>

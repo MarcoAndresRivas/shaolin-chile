@@ -94,6 +94,16 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
     agregarSeguimiento: (id, nota) => request('POST', `/api/intranet/interesados/${id}/seguimientos`, { nota }),
     agendarClasePrueba: (id, sesionId) => request('POST', `/api/intranet/interesados/${id}/clase-prueba`, { sesion_id: sesionId }),
     resultadoClasePrueba: (id, estado) => request('PUT', `/api/intranet/clases-prueba/${id}`, { estado }),
+    planes: (todos) => request('GET', '/api/intranet/planes' + (todos ? '?todos=1' : '')),
+    crearPlan: (plan) => request('POST', '/api/intranet/planes', plan),
+    suscribir: (suscripcion) => request('POST', '/api/intranet/suscripciones', suscripcion),
+    generarCargos: (periodo, diaVencimiento) => request('POST', '/api/intranet/cargos/generar', { periodo, dia_vencimiento: diaVencimiento }),
+    cuenta: (alumnoId) => request('GET', '/api/intranet/cuenta/mia' + (alumnoId ? `?alumno_id=${alumnoId}` : '')),
+    informarPago: (cargoId, monto, referencia) => request('POST', `/api/intranet/cargos/${cargoId}/pagos`, { monto, referencia }),
+    pagos: (estado) => request('GET', '/api/intranet/pagos' + (estado ? `?estado=${estado}` : '')),
+    validarPago: (id) => request('PUT', `/api/intranet/pagos/${id}/validar`),
+    rechazarPago: (id) => request('PUT', `/api/intranet/pagos/${id}/rechazar`),
+    morosidad: (diasGracia) => request('GET', '/api/intranet/morosidad' + (diasGracia ? `?dias_gracia=${diasGracia}` : '')),
     cancelarSesion: (id, motivo) => request('POST', `/api/intranet/sesiones/${id}/cancelar`, { motivo }),
   };
 }

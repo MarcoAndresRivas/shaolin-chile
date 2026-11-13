@@ -7,6 +7,7 @@ const reservasController = require('../controllers/reservasController');
 const disponibilidadController = require('../controllers/disponibilidadController');
 const interesadosController = require('../controllers/interesadosController');
 const familiasController = require('../controllers/familiasController');
+const finanzasController = require('../controllers/finanzasController');
 
 // All intranet routes are protected by verifyToken
 router.use(verifyToken);
@@ -63,6 +64,23 @@ router.get('/familia/mia', familiasController.miFamilia);
 router.get('/consentimientos', familiasController.getConsentimientos);
 router.post('/consentimientos', familiasController.createConsentimiento);
 router.put('/consentimientos/:id/revocar', familiasController.revocarConsentimiento);
+
+// --- Finances: plans, subscriptions, charges, payments by transfer, statements (admin writes; the student or guardian reports payments and reads the statement) ---
+router.get('/planes', finanzasController.getPlanes);
+router.post('/planes', isAdmin, finanzasController.createPlan);
+router.put('/planes/:id', isAdmin, finanzasController.updatePlan);
+router.get('/suscripciones', isAdmin, finanzasController.getSuscripciones);
+router.post('/suscripciones', isAdmin, finanzasController.createSuscripcion);
+router.put('/suscripciones/:id', isAdmin, finanzasController.updateSuscripcion);
+router.post('/cargos', isAdmin, finanzasController.createCargo);
+router.post('/cargos/generar', isAdmin, finanzasController.generarCargos);
+router.put('/cargos/:id/anular', isAdmin, finanzasController.anularCargo);
+router.post('/cargos/:id/pagos', finanzasController.createPago);
+router.get('/pagos', isAdmin, finanzasController.getPagos);
+router.put('/pagos/:id/validar', isAdmin, finanzasController.validarPago);
+router.put('/pagos/:id/rechazar', isAdmin, finanzasController.rechazarPago);
+router.get('/cuenta/mia', finanzasController.miCuenta);
+router.get('/morosidad', isAdmin, finanzasController.getMorosidad);
 
 // --- Reservas / Booking (Alumno) ---
 router.post('/reservar', intranetController.bookHorario); // Alumno books a class
