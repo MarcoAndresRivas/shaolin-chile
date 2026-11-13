@@ -40,7 +40,8 @@ export default function AdminPanel({ onUnauthorized }) {
   };
 
   const remove = (item) => {
-    if (window.confirm(`¿Eliminar la clase "${item.titulo}" del ${item.dia_semana}?`)) {
+    const question = `¿Eliminar la clase "${item.titulo}" del ${item.dia_semana}? También se eliminarán las reservas de los alumnos.`;
+    if (window.confirm(question)) {
       handle(() => api.eliminarHorario(item.id), 'Clase eliminada.');
     }
   };
@@ -126,7 +127,7 @@ export default function AdminPanel({ onUnauthorized }) {
                 <p className="list__title">{user.nombre}</p>
                 <p className="muted">{user.email}</p>
               </div>
-              <span className="tag">{user.rol}</span>
+              <span className="tag">{user.roles?.length ? user.roles.join(' · ') : user.rol ?? 'Sin rol'}</span>
             </li>
           ))}
         </ul>
