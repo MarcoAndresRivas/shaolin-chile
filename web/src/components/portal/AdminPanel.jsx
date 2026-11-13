@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { api } from '../../lib/client.js';
+import ExamsPanel from './ExamsPanel.jsx';
 import FamiliesPanel from './FamiliesPanel.jsx';
 import FinancePanel from './FinancePanel.jsx';
+import GradesAdminPanel from './GradesAdminPanel.jsx';
 import LeadsPanel from './LeadsPanel.jsx';
 import SchoolPanel from './SchoolPanel.jsx';
 import { formatTime, useApi } from './useApi.js';
@@ -61,6 +63,8 @@ export default function AdminPanel({ onUnauthorized }) {
       <LeadsPanel onUnauthorized={onUnauthorized} />
       <SchoolPanel onUnauthorized={onUnauthorized} />
       <FinancePanel onUnauthorized={onUnauthorized} />
+      <ExamsPanel canApprove onUnauthorized={onUnauthorized} />
+      <GradesAdminPanel onUnauthorized={onUnauthorized} />
       <FamiliesPanel onUnauthorized={onUnauthorized} />
       <section className="panel">
         <h2>Clases</h2>

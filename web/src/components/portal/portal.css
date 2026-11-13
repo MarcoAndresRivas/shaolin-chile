@@ -178,6 +178,32 @@
   margin-top: 10px;
 }
 
+.bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+
+.bar__fill {
+  height: 100%;
+  background: var(--red-strong);
+}
+
+.bar__fill--done {
+  background: var(--gold);
+}
+
+.requirement {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.progress {
+  margin-bottom: 18px;
+}
+
 .panel--nested {
   margin-top: 14px;
   padding: 18px;

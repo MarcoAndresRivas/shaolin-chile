@@ -3,6 +3,7 @@ import { api } from '../../lib/client.js';
 import { addDays, todayInChile } from '../../lib/dates.js';
 import AttendanceList from './AttendanceList.jsx';
 import AvailabilityEditor from './AvailabilityEditor.jsx';
+import ExamsPanel from './ExamsPanel.jsx';
 import { formatTime, useApi } from './useApi.js';
 
 // The instructor's own sesiones: the last week and the next two.
@@ -44,6 +45,7 @@ export default function InstructorPanel({ userId, onUnauthorized }) {
         ))}
       </ul>
     </section>
+    <ExamsPanel onUnauthorized={onUnauthorized} />
     <AvailabilityEditor onUnauthorized={onUnauthorized} />
     </>
   );

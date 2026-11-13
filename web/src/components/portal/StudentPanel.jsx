@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { api } from '../../lib/client.js';
 import { addDays, todayInChile } from '../../lib/dates.js';
 import AccountPanel from './AccountPanel.jsx';
+import ProgressPanel from './ProgressPanel.jsx';
 import { formatTime, useApi } from './useApi.js';
 
 export default function StudentPanel({ onUnauthorized }) {
@@ -86,6 +87,7 @@ export default function StudentPanel({ onUnauthorized }) {
         </ul>
       </section>
 
+      <ProgressPanel onUnauthorized={onUnauthorized} />
       <AccountPanel onUnauthorized={onUnauthorized} />
 
       <section className="panel">
