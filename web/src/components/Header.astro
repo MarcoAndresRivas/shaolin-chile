@@ -1,0 +1,208 @@
+---
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const home = `${base}/`;
+const links = [
+  { href: `${home}#nosotros`, label: 'Nosotros' },
+  { href: `${home}#disciplinas`, label: 'Disciplinas' },
+  { href: `${home}#beneficios`, label: 'Beneficios' },
+  { href: `${home}#sedes`, label: 'Sedes' },
+  { href: `${base}/instructores/`, label: 'Instructores' },
+  { href: `${home}#galeria`, label: 'Galería' },
+];
+---
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="brand" href={home} aria-label="Shaolin Chile, inicio">
+      <span class="brand__mark" aria-hidden="true">少林</span>
+      <span class="brand__text">
+        <strong>Shaolin Chile</strong>
+        <small>Kung Fu tradicional</small>
+      </span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+      <span class="sr-only">Abrir menú</span>
+      <span class="menu-toggle__bar" aria-hidden="true"></span>
+    </button>
+
+    <nav id="site-nav" class="nav" aria-label="Principal">
+      <ul>
+        {links.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+      </ul>
+      <a class="nav__login" href={`${base}/ingresar/`}>Ingresar</a>
+      <a class="btn btn--red nav__cta" href={`${home}#clase-de-prueba`}>Clase de prueba</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const nav = document.getElementById('site-nav');
+  if (toggle && nav) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      nav.classList.toggle('is-open', open);
+    };
+    toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+    nav.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) setOpen(false);
+    });
+  }
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(11, 11, 12, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 72px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .brand__mark {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--red);
+    color: var(--gold-soft);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.05em;
+  }
+  .brand__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+  .brand__text strong {
+    font-family: var(--font-display);
+    color: var(--gold);
+    font-size: 1.15rem;
+  }
+  .brand__text small {
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  .nav ul {
+    display: flex;
+    gap: 22px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .nav ul a {
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--text);
+    transition: color 0.2s;
+  }
+  .nav ul a:hover {
+    color: var(--gold);
+  }
+  .nav__login {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--gold);
+    text-decoration: none;
+  }
+  .nav__login:hover {
+    color: var(--gold-soft);
+  }
+  .nav__cta {
+    padding: 10px 18px;
+  }
+  .menu-toggle {
+    display: none;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+  }
+  .menu-toggle__bar,
+  .menu-toggle__bar::before,
+  .menu-toggle__bar::after {
+    position: absolute;
+    left: 11px;
+    width: 20px;
+    height: 2px;
+    background: var(--text);
+    content: '';
+  }
+  .menu-toggle__bar {
+    top: 21px;
+  }
+  .menu-toggle__bar::before {
+    left: 0;
+    top: -6px;
+  }
+  .menu-toggle__bar::after {
+    left: 0;
+    top: 6px;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 980px) {
+    .menu-toggle {
+      display: block;
+    }
+    .nav {
+      display: none;
+      position: absolute;
+      top: 72px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+      padding: 20px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav.is-open {
+      display: flex;
+    }
+    .nav ul {
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav ul a {
+      display: block;
+      padding: 10px 0;
+      font-size: 1rem;
+    }
+  }
+</style>

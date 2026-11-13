@@ -1,0 +1,88 @@
+---
+import Base from '../layouts/Base.astro';
+import { brand, contact } from '../data/site.js';
+---
+
+<Base title="Política de privacidad" description={`Cómo ${brand.name} trata los datos personales en su sitio web y portal.`}>
+  <section class="section">
+    <div class="container legal">
+      <p class="eyebrow">Legal</p>
+      <h1>Política de privacidad</h1>
+      <p class="legal__note">Versión preliminar, pendiente de revisión legal. Última actualización: 13 de noviembre de 2026.</p>
+
+      <h2>Responsable</h2>
+      <p>
+        El responsable de los datos es el {brand.legalName}, constituido bajo la {brand.legalBasis}. Puedes contactarnos en{' '}
+        <a href={`mailto:${contact.email}`}>{contact.email}</a> o por WhatsApp al {contact.whatsappLabel}.
+      </p>
+
+      <h2>Qué datos tratamos y para qué</h2>
+      <h3>Solicitud de clase de prueba</h3>
+      <p>
+        El formulario pide tu nombre, correo, disciplina y sede, y un comentario opcional. El sitio no guarda estos datos:
+        arma un mensaje y abre WhatsApp para que tú lo envíes. Usamos ese mensaje solo para coordinar tu clase de prueba.
+        Al enviarlo, WhatsApp (Meta) también procesa la conversación según sus propias condiciones.
+      </p>
+      <p>No incluyas información de salud en el comentario; si tienes una condición médica, coméntala en persona con tu instructor.</p>
+
+      <h3>Portal de alumnos y administración</h3>
+      <p>
+        Para las cuentas del portal guardamos nombre, correo, rol y la contraseña protegida con un hash irreversible (nunca en texto plano), además de
+        las clases que reservas. Los usamos para darte acceso, mostrar tus clases y administrar la escuela. Al ingresar, tu
+        navegador guarda una sesión que vence a las 8 horas; al cerrar sesión se borra.
+      </p>
+
+      <h3>Servicios de terceros</h3>
+      <p>
+        Las tipografías del sitio se cargan desde Google Fonts, lo que entrega tu dirección IP a Google. Los enlaces a
+        Instagram y WhatsApp te llevan a servicios de Meta, que tienen sus propias políticas.
+      </p>
+
+      <h2>Con quién compartimos los datos</h2>
+      <p>
+        No vendemos ni cedemos datos personales. Los datos del portal se alojan en proveedores de infraestructura que
+        actúan por encargo nuestro.
+      </p>
+
+      <h2>Tus derechos</h2>
+      <p>
+        Puedes pedir acceso, rectificación, cancelación u oposición respecto de tus datos, conforme a la Ley N° 19.628
+        sobre protección de la vida privada. Escríbenos a <a href={`mailto:${contact.email}`}>{contact.email}</a> indicando tu
+        nombre y tu solicitud.
+      </p>
+
+      <h2>Cambios a esta política</h2>
+      <p>Publicaremos aquí cualquier cambio, con su fecha de actualización.</p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .legal {
+    max-width: 760px;
+  }
+  .legal h1 {
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+  }
+  .legal h2 {
+    margin-top: 2em;
+    font-size: 1.4rem;
+    color: var(--gold);
+  }
+  .legal h3 {
+    margin-top: 1.4em;
+    font-size: 1.1rem;
+  }
+  .legal p {
+    color: #d8d3ca;
+  }
+  .legal a {
+    color: var(--gold);
+  }
+  .legal__note {
+    padding: 10px 14px;
+    border-left: 3px solid var(--gold);
+    background: var(--surface);
+    font-size: 0.92rem;
+  }
+</style>
