@@ -287,3 +287,40 @@
     grid-template-columns: 1fr;
   }
 }
+
+.portal > *,
+.tabs {
+  /* Grid and flex items grow to their content by default: let the tab bar scroll instead. */
+  min-width: 0;
+  max-width: 100%;
+}
+
+.tabs__list {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 22px;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.tabs__tab {
+  flex-shrink: 0;
+  padding: 12px 18px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tabs__tab:hover {
+  color: var(--text);
+}
+
+.tabs__tab[aria-selected="true"] {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
