@@ -58,7 +58,6 @@ const historyImage = instagramImage('Bppn2h8lX4g');
         </ul>
       </div>
       <figure class="split__media">
-        <div class="stat"><strong>{history.stat.value}</strong><span>{history.stat.label}</span></div>
         <Image src={historyImage} alt="Practicante junto a un monje con túnica naranja" widths={[400, 682]} sizes="(max-width: 860px) 100vw, 45vw" />
       </figure>
     </div>
@@ -186,6 +185,13 @@ const historyImage = instagramImage('Bppn2h8lX4g');
 
 <style>
   .hero {
+    /* The photo is dark, so the hero keeps the classic colors whatever palette is chosen. */
+    --text: #f2efe9;
+    --soft: #d8d3ca;
+    --gold: #d4af37;
+    --gold-soft: #e6c869;
+    --on-gold: #141414;
+    color: var(--text);
     position: relative;
     min-height: min(88vh, 760px);
     display: flex;
@@ -220,7 +226,7 @@ const historyImage = instagramImage('Bppn2h8lX4g');
   .hero__lead {
     max-width: 520px;
     font-size: 1.1rem;
-    color: #d8d3ca;
+    color: var(--soft);
   }
   .hero__actions {
     display: flex;
@@ -272,28 +278,6 @@ const historyImage = instagramImage('Bppn2h8lX4g');
   }
   .split__media {
     position: relative;
-  }
-  .stat {
-    position: absolute;
-    left: -18px;
-    bottom: -18px;
-    z-index: 1;
-    display: grid;
-    padding: 18px 22px;
-    border-radius: var(--radius);
-    background: var(--red);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
-  }
-  .stat strong {
-    font-family: var(--font-display);
-    font-size: 2.4rem;
-    line-height: 1;
-    color: var(--gold-soft);
-  }
-  .stat span {
-    font-size: 0.8rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
   }
   .schedules__title {
     margin-top: 56px;
@@ -467,6 +451,7 @@ const historyImage = instagramImage('Bppn2h8lX4g');
     padding: 3px 9px;
     border-radius: 999px;
     background: rgba(0, 0, 0, 0.7);
+    color: #fff;
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.05em;

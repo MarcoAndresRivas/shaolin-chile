@@ -24,13 +24,13 @@
 }
 
 .alert {
-  background: rgba(184, 34, 34, 0.15);
-  border: 1px solid var(--red-strong);
-  color: #ffb4b4;
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+  border: 1px solid var(--danger);
+  color: var(--alert-text);
 }
 
 .success {
-  background: rgba(212, 175, 55, 0.12);
+  background: color-mix(in srgb, var(--gold) 12%, transparent);
   border: 1px solid var(--gold);
   color: var(--gold-soft);
 }

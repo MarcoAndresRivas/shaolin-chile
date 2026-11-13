@@ -1,4 +1,6 @@
 ---
+import { PALETTES } from '../lib/palettes.js';
+
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const home = `${base}/`;
 const links = [
@@ -21,10 +23,32 @@ const links = [
       </span>
     </a>
 
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
-      <span class="sr-only">Abrir menú</span>
-      <span class="menu-toggle__bar" aria-hidden="true"></span>
-    </button>
+    <div class="header__tools">
+      <div class="palette">
+        <button class="palette__toggle" type="button" aria-expanded="false" aria-controls="palette-menu" aria-label="Cambiar la paleta de colores" title="Cambiar la paleta de colores">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3Z" />
+            <circle cx="7.5" cy="11" r="1" fill="currentColor" />
+            <circle cx="10" cy="7" r="1" fill="currentColor" />
+            <circle cx="15" cy="7" r="1" fill="currentColor" />
+          </svg>
+        </button>
+        <div id="palette-menu" class="palette__menu" role="group" aria-label="Paleta de colores" hidden>
+          {PALETTES.map((palette) => (
+            <button type="button" class="palette__option" data-palette={palette.id} aria-pressed="false">
+              <span class="palette__swatches" aria-hidden="true">
+                {palette.swatches.map((color) => <span style={`background:${color}`} />)}
+              </span>
+              {palette.name}
+            </button>
+          ))}
+        </div>
+      </div>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="sr-only">Abrir menú</span>
+        <span class="menu-toggle__bar" aria-hidden="true"></span>
+      </button>
+    </div>
 
     <nav id="site-nav" class="nav" aria-label="Principal">
       <ul>
@@ -37,6 +61,45 @@ const links = [
 </header>
 
 <script>
+  // Palette picker: the choice is kept in this browser and applied before the page paints (see Base.astro).
+  const paletteToggle = document.querySelector<HTMLButtonElement>('.palette__toggle');
+  const paletteMenu = document.getElementById('palette-menu');
+  const options = [...document.querySelectorAll<HTMLButtonElement>('.palette__option')];
+  if (paletteToggle && paletteMenu) {
+    const current = () => document.documentElement.dataset.palette ?? 'clasica';
+    const markCurrent = () => options.forEach((option) => option.setAttribute('aria-pressed', String(option.dataset.palette === current())));
+    const setMenu = (open: boolean) => {
+      paletteMenu.hidden = !open;
+      paletteToggle.setAttribute('aria-expanded', String(open));
+    };
+    markCurrent();
+    paletteToggle.addEventListener('click', () => setMenu(paletteMenu.hidden));
+    options.forEach((option) =>
+      option.addEventListener('click', () => {
+        document.documentElement.dataset.palette = option.dataset.palette;
+        try {
+          localStorage.setItem('shaolin_palette', option.dataset.palette ?? '');
+        } catch {
+          // Private window or blocked storage: the palette still changes for this visit.
+        }
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
+        markCurrent();
+        setMenu(false);
+        paletteToggle.focus();
+      }),
+    );
+    document.addEventListener('click', (event) => {
+      if (!paletteMenu.hidden && !(event.target as HTMLElement).closest('.palette')) setMenu(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !paletteMenu.hidden) {
+        setMenu(false);
+        paletteToggle.focus();
+      }
+    });
+  }
+
   const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
   const nav = document.getElementById('site-nav');
   if (toggle && nav) {
@@ -56,7 +119,7 @@ const links = [
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(11, 11, 12, 0.92);
+    background: rgb(var(--bg-rgb) / 0.92);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
   }
@@ -101,7 +164,83 @@ const links = [
     letter-spacing: 0.18em;
     text-transform: uppercase;
   }
+  .header__tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    order: 3;
+  }
+  .palette {
+    position: relative;
+  }
+  .palette__toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+  }
+  .palette__toggle:hover,
+  .palette__toggle[aria-expanded='true'] {
+    border-color: var(--gold);
+  }
+  .palette__menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 60;
+    display: grid;
+    min-width: 200px;
+    padding: 8px;
+    gap: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  }
+  .palette__menu[hidden] {
+    display: none;
+  }
+  .palette__option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .palette__option:hover {
+    background: var(--surface);
+  }
+  .palette__option[aria-pressed='true'] {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .palette__swatches {
+    display: inline-flex;
+  }
+  .palette__swatches span {
+    width: 18px;
+    height: 18px;
+    margin-left: -5px;
+    border: 2px solid var(--surface-2);
+    border-radius: 50%;
+  }
+  .palette__swatches span:first-child {
+    margin-left: 0;
+    outline: 1px solid var(--border);
+  }
   .nav {
+    order: 2;
     display: flex;
     align-items: center;
     gap: 28px;

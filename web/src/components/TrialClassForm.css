@@ -44,11 +44,11 @@
 }
 
 .trial [aria-invalid='true'] {
-  border-color: var(--red-strong);
+  border-color: var(--danger);
 }
 
 .trial__error {
-  color: #ff8a8a;
+  color: var(--alert-text);
   font-size: 0.82rem;
 }
 
