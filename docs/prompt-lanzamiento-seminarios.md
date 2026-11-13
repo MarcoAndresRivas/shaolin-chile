@@ -26,26 +26,27 @@ Actúa como Arquitecto de Operaciones y Estratega Digital especializado en autom
 # MODELO DE SEMINARIOS (según el plan maestro)
 - Una **temporada** (ej. diciembre) tiene varios **fines de semana**, de viernes a domingo, cada uno con su sede, instructores, temática y cupo.
 - Una **compra** puede incluir varios fines de semana, varias entradas y artículos de la tienda.
-- Cada **entrada** es nominativa: un asistente con su QR y su exención de responsabilidad aceptada. Los nombres se pueden asignar después de pagar, hasta **[DEFINIR: X días]** antes del evento.
+- Cada **entrada** es nominativa: un asistente con su QR y su exención de responsabilidad aceptada. Los nombres se pueden asignar después de pagar, hasta el cierre de inscripciones.
+- **Cierre de inscripciones:** 12 horas antes del inicio de cada clase y fin de semana. Después de esa hora no se vende, no se cambia de fecha ni se traspasan entradas.
 
 # PRODUCTOS (precios en CLP)
 1. **Clase (Taller de Iniciación):** 2 a 3 horas, sábado en la mañana de cada fin de semana. Público general, Qi Gong básico y filosofía Chan. Precio: **$35.000**. Cupo: **50 por clase**.
 2. **Seminario de fin de semana:** viernes a domingo (3 días). Forma tradicional de mano vacía (ej. Xiao Hong Quan) y Qi Gong (Ba Duan Jin). Para practicantes y artistas marciales. Precio: **$75.000**. Cupo: **50 por fin de semana**.
 3. **Poleras y artículos:** poleras y otros productos de la escuela, que se pueden agregar a la misma compra. Con variantes (talla, color) y control de stock. Catálogo y precios a cargo de Maxi Muñoz: **[DEFINIR: productos y precios]**.
-4. **Material grabado (posterior al seminario):** acceso privado en la plataforma a las formas enseñadas, solo para quien lo compró. Precio: **[DEFINIR]**.
+4. **Clase online:** quien contrata una clase online obtiene acceso privado en la plataforma a los videos de esa clase. Este es el material grabado de las formas enseñadas, que se entrega a través del módulo de cursos online del plan. Precio: **[DEFINIR]**.
 5. **Retiro de Inmersión "Estilo China"** (3 a 4 días, alojamiento y comidas): evento aparte, fuera de este lanzamiento salvo indicación. Precio: **[DEFINIR]**.
 
 # REGLAS COMERCIALES
-- **Preventa:** 35 % de descuento para los primeros **15 cupos** **[DEFINIR: por fin de semana o en total]**. Un cupo de preventa queda apartado mientras su transferencia está pendiente; si el plazo vence sin pago, el cupo y su precio de preventa se liberan.
-- **Escuelas Aliadas (kung fu y otras organizaciones):** un representante con cuenta propia y un código de convenio, para delegaciones de 5 personas o más. Beneficio: **10 % de descuento** y **cupos liberados** (**[DEFINIR: un cupo liberado por cada N entradas pagadas]**).
-- Promociones del plan: alumno de Shaolin Chile, pack de temporada (varios fines de semana) y descuento por grupo. Las promociones **[DEFINIR: se acumulan o no]**.
+- **Preventa:** 35 % de descuento para los primeros **15 cupos de cada fin de semana**. Un cupo de preventa queda apartado mientras su transferencia está pendiente; si el plazo vence sin pago, el cupo y su precio de preventa se liberan.
+- **Escuelas Aliadas (kung fu y otras organizaciones):** un representante con cuenta propia y un código de convenio, para delegaciones de 5 personas o más. Beneficio: **10 % de descuento** y **cupos liberados**, cuya cantidad asigna la administración al aprobar cada convenio.
+- Promociones del plan: alumno de Shaolin Chile, pack de temporada (varios fines de semana) y descuento por grupo.
 - Cupos liberados y descuentos se registran por compra, para poder reportarlos por organización.
 
 # PAGO POR TRANSFERENCIA
 1. Al confirmar la compra, el backend la deja **pendiente de pago**, reserva los cupos y el stock, y muestra los datos bancarios y el monto exacto con un código de compra para indicar en la transferencia.
 2. El comprador sube el comprobante desde su cuenta (o lo envía por correo, y la administración lo adjunta).
 3. La administración revisa la cuenta bancaria y valida la compra en el panel. Recién entonces se emiten las entradas con QR, se descuenta el stock en firme y se emite la boleta.
-4. Plazo para transferir: **[DEFINIR: horas]**. Al vencer, la compra se anula y se liberan cupos y stock.
+4. Plazo para transferir: hasta el cierre de inscripciones (12 horas antes del inicio). A esa hora, las compras sin pago validado se anulan y se liberan cupos y stock.
 5. Panel de administración: lista de compras pendientes, con comprobante, monto esperado y botón para validar o rechazar.
 
 # CUMPLIMIENTO
@@ -53,7 +54,7 @@ Actúa como Arquitecto de Operaciones y Estratega Digital especializado en autom
 - El bot se presenta como asistente virtual y deriva a una persona cuando no sabe algo, hay un reclamo, un tema de salud o la persona lo pide.
 - Boleta electrónica por cada venta validada.
 - Exención de responsabilidad aceptada en línea, guardada con fecha.
-- Política de cambios y devoluciones publicada antes de abrir la venta.
+- Política de cambios y devoluciones (tabla del módulo 5 en `docs/plan-maestro.md`), publicada en el sitio y aceptada antes del pago. Debe modelarse en el sistema: retracto de 10 días antes del inicio, cambio de fin de semana y traspaso de entrada hasta el cierre de inscripciones, devolución o cambio si la escuela cancela, y garantía legal de 6 meses para artículos.
 - Correo enviado desde el dominio propio, con la configuración que evita que los mensajes lleguen a spam.
 - Los comprobantes de transferencia se guardan de forma privada, visibles solo para la administración.
 
@@ -67,7 +68,7 @@ Actúa como Arquitecto de Operaciones y Estratega Digital especializado en autom
 - Semanas 1 y 2: configuración técnica (Fase 0 resuelta, compra con transferencia, panel de validación, n8n, ManyChat).
 - Semanas 3 a 6: lanzamiento orgánico en Instagram, captación de interesados y venta con preventa.
 - Semanas 7 a 10: venta a precio normal, recordatorios y venta de poleras y artículos.
-- Semanas 11 y 12: cierre de inscripciones, envío de credenciales QR y activación del material grabado después del evento.
+- Semanas 11 y 12: cierre de inscripciones, envío de credenciales QR y activación del acceso a los videos para quienes contrataron la clase online.
 Si el cronograma no es realista con lo que existe hoy, dímelo y propón qué recortar.
 
 # TU PRIMERA TAREA

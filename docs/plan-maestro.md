@@ -104,25 +104,43 @@ Los seminarios se organizan en temporadas. Por ejemplo, la temporada de diciembr
 | Clase (Taller de Iniciación) | 2 a 3 horas, sábado en la mañana | $35.000 | 50 por clase |
 | Seminario de fin de semana | Viernes a domingo (3 días) | $75.000 | 50 por fin de semana |
 | Poleras y artículos | Venta junto con las entradas | Según catálogo | Según stock |
+| Clase online | Acceso a los videos de la clase contratada | Por definir | Sin límite |
 
 **Promociones**
 
 | Tipo | Para quién | Cómo funciona |
 | --- | --- | --- |
 | Alumno Shaolin Chile | Alumnos con matrícula vigente | Descuento automático al comprar desde su cuenta |
-| Preventa | Público general | 35 % de descuento para los primeros 15 cupos pagados |
+| Preventa | Público general | 35 % de descuento para los primeros 15 cupos pagados de cada fin de semana |
 | Pack de temporada | Quien compra varios fines de semana | Descuento al comprar dos o más fines de semana, mayor si compra la temporada completa |
-| Escuelas de kung fu | Escuelas de kung fu externas | Convenio con código propio: 10 % de descuento y cupos liberados para delegaciones de 5 o más |
-| Otras organizaciones | Escuelas de otras artes marciales, clubes, gimnasios, empresas | Convenio con código propio: 10 % de descuento y cupos liberados para delegaciones de 5 o más |
+| Escuelas de kung fu | Escuelas de kung fu externas | Convenio con código propio: 10 % de descuento y cupos liberados que la administración asigna en cada convenio, para delegaciones de 5 o más |
+| Otras organizaciones | Escuelas de otras artes marciales, clubes, gimnasios, empresas | Convenio con código propio: 10 % de descuento y cupos liberados que la administración asigna en cada convenio, para delegaciones de 5 o más |
 | Grupo | Cualquier comprador | Descuento por cantidad de entradas en una misma compra (por ejemplo, desde 5) |
 
 Las organizaciones con convenio tienen un representante con cuenta propia. Ese representante compra un bloque de entradas para su grupo y luego asigna los nombres de los asistentes. Las promociones no se acumulan, salvo que la dirección lo defina, y cada una tiene vigencia y tope de usos.
+
+**Política de cambios y devoluciones (propuesta, a validar con abogado)**
+
+Basada en la Ley del Consumidor (Ley 19.496, modificada por la Ley 21.398) y en los criterios del SERNAC:
+
+| Caso | Política |
+| --- | --- |
+| Retracto en entradas y clases | Dentro de 10 días desde la compra y antes del inicio del seminario o clase: devolución total, sin expresar causa. Es el derecho legal por defecto en compras a distancia; solo se puede excluir si se informa de forma expresa antes del pago |
+| Cambio de fin de semana | Sin costo, sujeto a cupo, hasta el cierre de inscripciones (12 horas antes del inicio) |
+| Cambio de asistente | La entrada nominativa se puede traspasar a otra persona hasta el cierre de inscripciones |
+| Inasistencia | Sin devolución fuera del plazo de retracto; se ofrece cambio a otro fin de semana de la misma temporada, sujeto a cupo |
+| Cancelación o reprogramación por la escuela | El comprador elige entre devolución total o cambio a otra fecha. Se avisa de inmediato por correo e Instagram |
+| Clase online con videos | Retracto dentro de 10 días, solo si aún no se ha accedido al contenido; al acceder, el servicio se considera iniciado |
+| Poleras y artículos | Retracto de 10 días desde la recepción, sin uso y con etiquetas. Garantía legal de 6 meses por fallas: el comprador elige cambio, reparación o devolución. Cambio de talla dentro de 30 días, como beneficio de la escuela |
+| Plazo de devolución | Por transferencia a la cuenta del comprador, dentro de 10 días hábiles desde la solicitud aprobada |
+
+La política se publica en el sitio y se acepta al comprar, antes del pago.
 
 **Reglas de operación**
 
 - El cupo se descuenta por fin de semana. Al iniciar el pago, las entradas quedan reservadas por un tiempo breve (por ejemplo, 15 minutos) para no vender dos veces el mismo lugar.
 - Si un fin de semana se llena, se ofrece lista de espera.
-- La política de cambios de fin de semana y de devoluciones se publica antes de abrir la venta.
+- Las inscripciones de cada clase y fin de semana se cierran 12 horas antes de su inicio; las compras con transferencia pendiente a esa hora se anulan.
 - El asistente virtual informa sobre la temporada y envía el enlace de compra, pero el pago siempre se hace en la plataforma.
 - Reportes para la administración: entradas vendidas y asistentes por fin de semana, ingresos por temporada y ventas por promoción y por organización.
 
@@ -399,7 +417,7 @@ Estas definiciones bloquean el inicio de la Fase 1 o de la Fase 3 y corresponden
 - [ ] ¿Qué sedes estarán activas al lanzamiento, además de la Región Metropolitana y la Región del Maule?
 - [ ] ¿Dominio oficial del sitio y correo institucional para el equipo?
 - [ ] ¿La tienda despachará a todo Chile o solo retiro en sede al comienzo?
-- [ ] Seminarios: ¿los 15 cupos de preventa son por fin de semana o en total?, ¿cuántas entradas dan derecho a un cupo liberado?, ¿se acumulan preventa y convenio?, ¿precio del retiro y del material grabado?, ¿plazo para pagar la transferencia antes de liberar el cupo?, ¿política de cambios y devoluciones?, ¿qué organizaciones tendrán convenio en la primera temporada?
+- [ ] Seminarios: ¿precio de la clase online y del retiro?, ¿qué organizaciones tendrán convenio en la primera temporada?, ¿validación legal de la política de cambios y devoluciones?
 - [ ] ¿Se mantiene el registro de representantes de sede como función del sitio?
 - [ ] ¿Construir todo el sistema o combinar? Recomendación: construir, porque la base existe y la identidad de la organización es central; la alternativa es arrendar la gestión de clases y cobros (por ejemplo, AgendaPro o Gymdesk) y construir solo sitio, seminarios, tienda y certificación.
 - [ ] ¿Qué política de morosidad se aplica: cuántos días de gracia y cuándo se suspende la reserva de clases?
