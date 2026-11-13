@@ -67,13 +67,56 @@ El sistema se divide en ocho módulos. Cada uno puede construirse y entregarse p
 | 2. Portal del alumno | Perfil y ficha médica, cuenta familiar (un apoderado gestiona y paga por varios alumnos, con descuento familiar), estado de cuenta, pago en línea, clases disponibles, agenda y cancelación, historial de asistencia, grado actual y avance hacia los requisitos del próximo examen, cursos online contratados, solicitud de copia o eliminación de sus datos | Alumno, apoderado |
 | 3. Portal del instructor | Clases asignadas y lista de alumnos, toma de asistencia, disponibilidad semanal, liquidaciones y estado de pagos, alumnos habilitados para rendir examen, registro de avances, nivel de certificación propio | Instructor |
 | 4. Administración | Usuarios y roles, sedes, horarios y cupos, asignación de instructores, planes y cobros, morosidad y recuperación de pagos fallidos (avisos y reintentos automáticos), seguimiento de interesados desde la clase de prueba hasta la inscripción, alerta de alumnos que dejan de asistir, exámenes de grado, certificación de instructores y escuelas afiliadas, reportes, bitácora de cambios | Administrador |
-| 5. Seminarios y eventos | Ficha con video promocional, fecha, horario, ubicación, instructor invitado y cupos; precio de preventa y descuento para alumnos; venta de entradas con código QR; aceptación de exención de responsabilidad al comprar; control de acceso el día del evento; certificado de participación descargable | Público, alumno, administrador |
+| 5. Seminarios por temporada | Temporadas de seminarios por fines de semana (viernes a domingo), compra de uno o varios fines de semana y de varias entradas en una sola compra, promociones para escuelas de kung fu y otras organizaciones (detalle en la sección del módulo 5); ficha con video promocional, fecha, horario, ubicación, instructor invitado y cupos; precio de preventa y descuento para alumnos; venta de entradas con código QR; aceptación de exención de responsabilidad al comprar; control de acceso el día del evento; certificado de participación descargable | Público, alumno, administrador |
 | 6. Tienda | Catálogo por categoría (armas de entrenamiento, vestimenta, decoración, libros y accesorios), tallas y variantes, stock, carro de compra, pago con boleta electrónica, despacho o retiro en sede, seguimiento de pedidos | Público, alumno, encargado de catálogo |
 | 7. Contenido y formación online | Galería de videos y fotos, noticias, avisos internos, correos automáticos (bienvenida, cobro, recordatorio de clase), cursos online pagados por nivel con acceso por alumno | Encargado de contenido, administrador |
 
 **Pagos:** se recomienda una pasarela chilena (Webpay de Transbank, Mercado Pago o Flow) compartida por mensualidades, entradas y tienda, para tener una sola conciliación de ingresos.
 
 **Grados y certificación:** es la funcionalidad que distingue a los sistemas especializados en artes marciales de un sistema de reservas genérico. Cada grado define requisitos (clases mínimas, tiempo mínimo en el grado y técnicas exigidas); el sistema calcula quién está habilitado, José Cuevas aprueba la nominación, se cobra el derecho a examen y, una vez aprobado, el grado queda registrado en la ficha del alumno. La certificación de instructores y escuelas afiliadas sigue el mismo modelo, por niveles.
+
+## Módulo 5 — Seminarios por temporada
+
+Los seminarios se organizan en temporadas. Por ejemplo, la temporada de diciembre ofrece un seminario cada fin de semana del mes, de viernes a domingo. Cada interesado se registra, elige uno o varios fines de semana, compra una o varias entradas y paga todo en una sola compra.
+
+**Estructura**
+
+| Concepto | Definición | Ejemplo |
+| --- | --- | --- |
+| Temporada | Conjunto de seminarios de un período, con su video promocional y su programa | Temporada Diciembre 2026 |
+| Fin de semana | Un seminario de viernes a domingo, con sede, horario, instructores, temática y cupo propios | Viernes 4 a domingo 6 de diciembre |
+| Entrada | Derecho de una persona a asistir a un fin de semana; es nominativa y lleva su código QR | Entrada de Juan Pérez para el 4 al 6 de diciembre |
+| Compra | El pago único de un comprador, que puede reunir varias entradas para varios fines de semana | 3 entradas para 2 fines de semana: 6 entradas en total |
+
+**Flujo de compra**
+
+1. El interesado ve la temporada con el calendario de fines de semana, el cupo disponible de cada uno y el video promocional.
+2. Elige uno o varios fines de semana y la cantidad de entradas para cada uno.
+3. Aplica una promoción, si corresponde: código de convenio, descuento por grupo o pack de temporada.
+4. Paga una sola vez y recibe un correo con el comprobante y la boleta.
+5. Asigna el nombre de cada asistente a cada entrada, en ese momento o después, hasta una fecha límite antes del fin de semana; cada asistente acepta la exención de responsabilidad y recibe su QR.
+6. El día del seminario se controla el acceso con el QR y, al terminar, cada asistente descarga su certificado de participación.
+
+**Promociones**
+
+| Tipo | Para quién | Cómo funciona |
+| --- | --- | --- |
+| Alumno Shaolin Chile | Alumnos con matrícula vigente | Descuento automático al comprar desde su cuenta |
+| Preventa | Público general | Precio rebajado hasta una fecha definida |
+| Pack de temporada | Quien compra varios fines de semana | Descuento al comprar dos o más fines de semana, mayor si compra la temporada completa |
+| Escuelas de kung fu | Escuelas de kung fu externas | Convenio con código propio y precio por grupo |
+| Otras organizaciones | Escuelas de otras artes marciales, clubes, gimnasios, empresas | Convenio con código propio y precio por grupo |
+| Grupo | Cualquier comprador | Descuento por cantidad de entradas en una misma compra (por ejemplo, desde 5) |
+
+Las organizaciones con convenio tienen un representante con cuenta propia. Ese representante compra un bloque de entradas para su grupo y luego asigna los nombres de los asistentes. Las promociones no se acumulan, salvo que la dirección lo defina, y cada una tiene vigencia y tope de usos.
+
+**Reglas de operación**
+
+- El cupo se descuenta por fin de semana. Al iniciar el pago, las entradas quedan reservadas por un tiempo breve (por ejemplo, 15 minutos) para no vender dos veces el mismo lugar.
+- Si un fin de semana se llena, se ofrece lista de espera.
+- La política de cambios de fin de semana y de devoluciones se publica antes de abrir la venta.
+- El asistente virtual informa sobre la temporada y envía el enlace de compra, pero el pago siempre se hace en la plataforma.
+- Reportes para la administración: entradas vendidas y asistentes por fin de semana, ingresos por temporada y ventas por promoción y por organización.
 
 ## Módulo 8 — Asistente virtual
 
@@ -143,7 +186,7 @@ La base actual tiene seis tablas (roles, usuarios, detalles\_alumno, horarios, r
 | Captación | interesados, clases\_prueba, seguimientos, conversaciones\_asistente | Registra el origen del interesado (redes, sitio, referido) para medir campañas |
 | Clases | clases (plantilla semanal), sesiones (fecha concreta), reservas, asistencias, disponibilidad\_instructor | Separar la plantilla de la sesión permite cancelar o reprogramar un día puntual |
 | Finanzas | planes, descuentos, suscripciones, cargos, pagos, intentos\_cobro, liquidaciones\_instructor, boletas | El estado de cuenta se calcula como cargos menos pagos; intentos\_cobro sostiene la recuperación de pagos fallidos |
-| Seminarios | seminarios, tipos\_entrada (preventa, general, alumno), entradas, exenciones\_firmadas, certificados\_participacion | Cada entrada lleva un código único para el QR |
+| Seminarios | temporadas, fines\_semana\_seminario, compras\_seminario, entradas, promociones, convenios\_organizacion, lista\_espera, exenciones\_firmadas, certificados\_participacion | Cada entrada pertenece a un fin de semana y a un asistente, y lleva un código único para el QR; una compra agrupa varias entradas |
 | Tienda | categorias, productos, variantes (talla, color), movimientos\_stock, pedidos, items\_pedido | El stock se lleva por variante, no por producto |
 | Contenido y cursos | medios, noticias, avisos, cursos, lecciones, accesos\_curso | Los videos se alojan en YouTube o Vimeo (privados en el caso de cursos); la base guarda el enlace |
 | Privacidad y auditoría | consentimientos, solicitudes\_datos, bitacora | Qué aceptó cada persona y cuándo; solicitudes de acceso o eliminación; quién cambió qué |
@@ -206,7 +249,7 @@ Se proponen cinco fases secuenciales. Una fase se da por cerrada solo cuando cum
    - Cierre: contenido aprobado por la dirección y por José Cuevas; sitio publicado en el dominio oficial y recibiendo solicitudes de clase de prueba.
 3. **Fase 2 — Portales de alumno, instructor y administración (5 a 7 semanas).** Sedes, clases y sesiones, reservas, asistencia, disponibilidad, cuentas familiares, estado de cuenta, morosidad, seguimiento de interesados, requisitos de grado, exámenes y asistente virtual en la página web.
    - Cierre: una sede piloto opera un mes completo en el sistema, con asistencia, cobros y al menos una ronda de exámenes registrados; validación legal de datos personales aprobada.
-4. **Fase 3 — Pagos, tienda y seminarios (4 a 6 semanas).** Pasarela de pago con boleta electrónica, recuperación de pagos fallidos, catálogo, pedidos, seminarios con preventa, descuento para alumnos, exención firmada, entradas con QR, certificado de participación y asistente virtual en Instagram.
+4. **Fase 3 — Pagos, tienda y seminarios (4 a 6 semanas).** Pasarela de pago con boleta electrónica, recuperación de pagos fallidos, catálogo, pedidos, seminarios por temporada con compra de varios fines de semana y varias entradas, promociones y convenios con organizaciones, preventa, descuento para alumnos, exención firmada, entradas con QR, certificado de participación y asistente virtual en Instagram.
    - Cierre: primera venta real de un producto y de una entrada, conciliadas con la pasarela y con su boleta emitida.
 5. **Fase 4 — Crecimiento (permanente).** Certificación de instructores y escuelas afiliadas con directorio público, cursos online pagados, reportes, liquidaciones automáticas y notificaciones.
    - Cierre: revisión trimestral de indicadores con el equipo.
@@ -348,6 +391,7 @@ Estas definiciones bloquean el inicio de la Fase 1 o de la Fase 3 y corresponden
 - [ ] ¿Qué sedes estarán activas al lanzamiento, además de la Región Metropolitana y la Región del Maule?
 - [ ] ¿Dominio oficial del sitio y correo institucional para el equipo?
 - [ ] ¿La tienda despachará a todo Chile o solo retiro en sede al comienzo?
+- [ ] Seminarios: ¿la entrada cubre el fin de semana completo o también se venden días sueltos?, ¿precios y porcentajes de cada promoción?, ¿política de cambios y devoluciones?, ¿qué escuelas y organizaciones tendrán convenio en la primera temporada?
 - [ ] ¿Se mantiene el registro de representantes de sede como función del sitio?
 - [ ] ¿Construir todo el sistema o combinar? Recomendación: construir, porque la base existe y la identidad de la organización es central; la alternativa es arrendar la gestión de clases y cobros (por ejemplo, AgendaPro o Gymdesk) y construir solo sitio, seminarios, tienda y certificación.
 - [ ] ¿Qué política de morosidad se aplica: cuántos días de gracia y cuándo se suspende la reserva de clases?
