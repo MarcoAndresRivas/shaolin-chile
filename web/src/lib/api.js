@@ -70,6 +70,12 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
       if (hasta) query.set('hasta', hasta);
       return request('GET', '/api/intranet/sesiones' + (query.size ? `?${query}` : ''));
     },
+    reservarSesion: (id) => request('POST', `/api/intranet/sesiones/${id}/reservar`),
+    cancelarReservaSesion: (id) => request('DELETE', `/api/intranet/sesiones/${id}/reservar`),
+    misReservasSesiones: () => request('GET', '/api/intranet/reservas/mias'),
+    asistencia: (id) => request('GET', `/api/intranet/sesiones/${id}/asistencia`),
+    guardarAsistencia: (id, asistencias) => request('PUT', `/api/intranet/sesiones/${id}/asistencia`, { asistencias }),
+    miAsistencia: () => request('GET', '/api/intranet/asistencia/mia'),
     cancelarSesion: (id, motivo) => request('POST', `/api/intranet/sesiones/${id}/cancelar`, { motivo }),
   };
 }

@@ -144,6 +144,29 @@
   justify-content: flex-end;
 }
 
+.list__item--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.attendance {
+  margin-top: 6px;
+  display: grid;
+  gap: 12px;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .list__title {
   margin: 0;
   font-weight: 600;

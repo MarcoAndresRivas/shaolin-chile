@@ -19,9 +19,9 @@ function decodeTokenPayload(token) {
 }
 
 export function createSession({ token, nombre, roles, rol_id }) {
-  const { exp } = decodeTokenPayload(token);
+  const { exp, id } = decodeTokenPayload(token);
   const resolvedRoles = Array.isArray(roles) ? roles : LEGACY_ROLES[rol_id] ? [LEGACY_ROLES[rol_id]] : [];
-  return { token, name: nombre, roles: resolvedRoles, expiresAt: exp * 1000 };
+  return { token, name: nombre, roles: resolvedRoles, expiresAt: exp * 1000, ...(id !== undefined && { userId: id }) };
 }
 
 export function saveSession(session, storage = globalThis.localStorage) {
@@ -49,3 +49,4 @@ export function clearSession(storage = globalThis.localStorage) {
 
 export const isAdmin = (session) => session.roles.some((role) => ADMIN_ROLES.includes(role));
 export const isStudent = (session) => session.roles.includes('Alumno');
+export const isInstructor = (session) => session.roles.includes('Instructor');

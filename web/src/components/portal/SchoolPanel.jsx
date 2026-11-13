@@ -1,27 +1,21 @@
 import { useCallback, useState } from 'react';
 import { api } from '../../lib/client.js';
+import { todayInChile, monthRange } from '../../lib/dates.js';
+import AttendanceList from './AttendanceList.jsx';
 import { formatTime, useApi } from './useApi.js';
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-
-const toIso = (date) => date.toISOString().slice(0, 10);
-
-// First and last day of the current month, as YYYY-MM-DD.
-function currentMonth() {
-  const now = new Date();
-  const first = new Date(Date.UTC(now.getFullYear(), now.getMonth(), 1));
-  const last = new Date(Date.UTC(now.getFullYear(), now.getMonth() + 1, 0));
-  return { desde: toIso(first), hasta: toIso(last) };
-}
 
 export default function SchoolPanel({ onUnauthorized }) {
   const sedes = useApi(useCallback(() => api.sedes(), []), onUnauthorized);
   const disciplinas = useApi(useCallback(() => api.disciplinas(), []), onUnauthorized);
   const clases = useApi(useCallback(() => api.clases(), []), onUnauthorized);
-  const range = currentMonth();
+  const range = monthRange(todayInChile());
+  const usuarios = useApi(useCallback(() => api.usuarios(), []), onUnauthorized);
+  const [attendanceOf, setAttendanceOf] = useState(null);
   const sesiones = useApi(useCallback(() => api.sesiones(range), [range.desde, range.hasta]), onUnauthorized); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const [form, setForm] = useState({ sede_id: '', disciplina_id: '', dia_semana: '1', hora_inicio: '', hora_fin: '', cupo: '20' });
+  const [form, setForm] = useState({ sede_id: '', disciplina_id: '', dia_semana: '1', instructor_id: '', hora_inicio: '', hora_fin: '', cupo: '20' });
   const [notice, setNotice] = useState({ text: '', error: false });
 
   const run = async (action, success) => {
@@ -52,6 +46,7 @@ export default function SchoolPanel({ onUnauthorized }) {
       hora_inicio: form.hora_inicio,
       hora_fin: form.hora_fin,
       cupo: Number(form.cupo) || 20,
+      ...(form.instructor_id && { instructor_id: Number(form.instructor_id) }),
     };
     await run(() => api.crearClase(payload), 'Clase creada.');
   };
@@ -106,6 +101,17 @@ export default function SchoolPanel({ onUnauthorized }) {
             {disciplinas.data?.filter((d) => d.activa).map((d) => (
               <option key={d.id} value={d.id}>
                 {d.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="field">
+          <label htmlFor="school-instructor_id">Instructor (opcional)</label>
+          <select {...field('instructor_id')}>
+            <option value="">Sin asignar</option>
+            {usuarios.data?.filter((u) => u.roles?.includes('Instructor')).map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.nombre}
               </option>
             ))}
           </select>
@@ -171,23 +177,31 @@ export default function SchoolPanel({ onUnauthorized }) {
       {sesiones.data?.length === 0 && <p className="muted">No hay sesiones este mes. Usa "Crear sesiones del mes" en una clase.</p>}
       <ul className="list">
         {sesiones.data?.map((item) => (
-          <li key={item.id} className="list__item">
-            <div>
-              <p className="list__title">
-                {item.fecha} · {item.disciplina} · {item.sede}
-              </p>
-              <p className="muted">
-                {formatTime(item.hora_inicio)} – {formatTime(item.hora_fin)}
-                {item.estado === 'cancelada' ? ` · cancelada${item.motivo ? `: ${item.motivo}` : ''}` : ''}
-              </p>
+          <li key={item.id} className="list__item list__item--stack">
+            <div className="list__row">
+              <div>
+                <p className="list__title">
+                  {item.fecha} · {item.disciplina} · {item.sede}
+                </p>
+                <p className="muted">
+                  {formatTime(item.hora_inicio)} – {formatTime(item.hora_fin)} · {item.reservas} de {item.cupo} cupos
+                  {item.estado === 'cancelada' ? ` · cancelada${item.motivo ? `: ${item.motivo}` : ''}` : ''}
+                </p>
+              </div>
+              {item.estado === 'cancelada' ? (
+                <span className="tag">Cancelada</span>
+              ) : (
+                <div className="list__actions">
+                  <button className="btn btn--gold btn--small" type="button" onClick={() => setAttendanceOf(attendanceOf === item.id ? null : item.id)}>
+                    {attendanceOf === item.id ? 'Cerrar' : 'Asistencia'}
+                  </button>
+                  <button className="btn btn--ghost btn--small" type="button" onClick={() => cancel(item)}>
+                    Cancelar
+                  </button>
+                </div>
+              )}
             </div>
-            {item.estado === 'cancelada' ? (
-              <span className="tag">Cancelada</span>
-            ) : (
-              <button className="btn btn--ghost btn--small" type="button" onClick={() => cancel(item)}>
-                Cancelar
-              </button>
-            )}
+            {attendanceOf === item.id && <AttendanceList sesionId={item.id} onUnauthorized={onUnauthorized} />}
           </li>
         ))}
       </ul>
