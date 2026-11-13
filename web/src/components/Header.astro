@@ -30,6 +30,7 @@ const links = [
       <ul>
         {links.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
       </ul>
+      <a class="nav__login" href={`${base}/ingresar/`}>Ingresar</a>
       <a class="btn btn--red nav__cta" href={`${home}#clase-de-prueba`}>Clase de prueba</a>
     </nav>
   </div>
@@ -121,6 +122,15 @@ const links = [
   }
   .nav ul a:hover {
     color: var(--gold);
+  }
+  .nav__login {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--gold);
+    text-decoration: none;
+  }
+  .nav__login:hover {
+    color: var(--gold-soft);
   }
   .nav__cta {
     padding: 10px 18px;

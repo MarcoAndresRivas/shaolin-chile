@@ -1,0 +1,23 @@
+---
+import Base from '../layouts/Base.astro';
+import LoginForm from '../components/portal/LoginForm.jsx';
+---
+
+<Base title="Ingresar" description="Acceso al portal de alumnos, instructores y administración de Shaolin Chile." noindex>
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Portal</p>
+        <h1>Ingresar</h1>
+        <p>Acceso para alumnos, instructores y administración. Si no tienes cuenta, solicítala en tu sede.</p>
+      </div>
+      <LoginForm client:only="react" />
+    </div>
+  </section>
+</Base>
+
+<style>
+  h1 {
+    font-size: clamp(2.2rem, 5vw, 3.2rem);
+  }
+</style>

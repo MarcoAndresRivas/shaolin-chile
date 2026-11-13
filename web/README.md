@@ -35,6 +35,17 @@ El sitio se publica bajo `/shaolin-chile/`. Para otro dominio, compilar con `BAS
 - Para cambiar un texto se edita `src/data/site.js`. Más adelante, el módulo de contenido lo hará desde el panel de administración.
 - Para agregar una foto de Instagram: guardar `src/assets/instagram/<id>.jpg` y sumarla a `gallery` en `src/data/site.js`.
 
+## Portal (ingreso)
+
+`/ingresar/` y `/portal/` usan la API de `backend/`: el alumno ve las clases, reserva y revisa sus reservas; la administración (Director, Administrador, Desarrollador) crea y elimina clases y ve los usuarios. Otros roles ven un aviso hasta la Fase 2.
+
+La URL de la API es `PUBLIC_API_URL` si está definida; si no, `http://localhost:3000` en local y el backend de Render en producción. Para probarlo en local, el backend debe aceptar el origen del sitio:
+
+```bash
+cd backend
+DB_CLIENT=sqlite JWT_SECRET=dev-secret CORS_ORIGINS=http://localhost:4321 npm start
+```
+
 ## Clase de prueba
 
 Hasta que exista el registro de interesados en la API (Fase 2), el formulario valida los datos y abre WhatsApp con el mensaje armado hacia el número oficial.

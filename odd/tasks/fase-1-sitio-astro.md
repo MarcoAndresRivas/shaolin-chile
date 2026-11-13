@@ -12,6 +12,8 @@ Rama: `feat/fase1-sitio-astro` (sobre `feat/fase0-5-sqlite-docs`) · Entrega: as
 - S5 — El contenido vive en archivos de datos separados del diseño, para que luego lo edite el módulo de contenido (plan maestro, Módulo 7). Supuesto.
 - S6 — No se publica información inventada: los campos que José no entregó (horarios, direcciones, biografías de instructores) se muestran como "por confirmar" o se omiten. Supuesto.
 - S7 — Reserva de clase de prueba: el formulario arma un mensaje y abre WhatsApp oficial (+56 9 8615 7545) hasta que exista el endpoint de interesados (Fase 2). Supuesto.
+- S8 — Política de privacidad que describe solo lo que el sitio hace con los datos (plan maestro, Fase 1). Supuesto: queda marcada para revisión legal.
+- S9 — Ingreso y portal en la plataforma nueva sobre la API existente (`/api/login`, `/api/intranet/*`): alumno ve horarios, reserva y ve sus reservas; administración ve usuarios y crea/elimina horarios. Supuesto: reemplaza a admin-dashboard.html y alumno-dashboard.html.
 
 ## Tasks
 
@@ -21,6 +23,8 @@ Rama: `feat/fase1-sitio-astro` (sobre `feat/fase0-5-sqlite-docs`) · Entrega: as
 | T2 | S3, S4, S5, S6 | inline | hecho | (commit de páginas) |
 | T3 | S7 | inline | hecho (RED: módulo inexistente; GREEN 6/6) | 7ac88ee |
 | T4 | S1 | inline | hecho | c542954 (README) |
+| T5 | S8 | inline | hecho | (commit privacidad) |
+| T6 | S9 | inline | hecho (RED: módulos inexistentes; GREEN 19/19) | (commit portal) |
 
 - T1: scaffold Astro + React en `web/`, layout base, tema y navegación.
 - T2: páginas Inicio e Instructores con contenido oficial e imágenes de Instagram en `web/src/data`.
@@ -43,3 +47,5 @@ Ruta: todo inline; no hay unidades paralelas ni disparador de writer.
 - L10 (2026-11-13): "Quiero que la pagina se llame Shaolin Chile, pero Constitúyanse como Club Deportivo bajo la Ley del Deporte (N° 19.712) que se llame shaolin guan chile"
 - L11: Marca pública "Shaolin Chile" (también en copyright). Razón social "Club Deportivo Shaolin Guan Chile" (Ley N° 19.712) guardada en `brand`; se muestra en el pie solo con `constituted: true`. Pendiente: confirmar si el club ya está constituido.
 - L12 (2026-11-13): "el club ya esta constituido" → `constituted: true`; el pie muestra la razón social en ambas páginas.
+- L13 (2026-11-13): "continua sin esos datos" (sin RUT). Se agregan T5 (privacidad) y T6 (ingreso y portal).
+- L14: Verificación T6: backend local en SQLite temporal (fuera del repo) con CORS para localhost:4321; curl: login admin/alumno, crear clase, reservar, alumno recibe 403 en /usuarios. Chrome headless vía CDP: ingreso real con el formulario, portal de alumno y de admin renderizan los datos. Defecto encontrado y corregido: botones ghost con fondo blanco del navegador.
