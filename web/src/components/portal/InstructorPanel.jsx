@@ -4,10 +4,11 @@ import { addDays, todayInChile } from '../../lib/dates.js';
 import AttendanceList from './AttendanceList.jsx';
 import AvailabilityEditor from './AvailabilityEditor.jsx';
 import ExamsPanel from './ExamsPanel.jsx';
+import Tabs from './Tabs.jsx';
 import { formatTime, useApi } from './useApi.js';
 
 // The instructor's own sesiones: the last week and the next two.
-export default function InstructorPanel({ userId, onUnauthorized }) {
+function MySessions({ userId, onUnauthorized }) {
   const today = todayInChile();
   const range = { desde: addDays(today, -7), hasta: addDays(today, 14) };
   const sesiones = useApi(useCallback(() => api.sesiones(range), [range.desde, range.hasta]), onUnauthorized); // eslint-disable-line react-hooks/exhaustive-deps
@@ -16,7 +17,6 @@ export default function InstructorPanel({ userId, onUnauthorized }) {
   const mine = sesiones.data?.filter((s) => s.instructor_id === userId && s.estado === 'programada') ?? [];
 
   return (
-    <>
     <section className="panel panel--wide">
       <h2>Mis clases</h2>
       {sesiones.loading && <p className="muted">Cargando…</p>}
@@ -45,8 +45,14 @@ export default function InstructorPanel({ userId, onUnauthorized }) {
         ))}
       </ul>
     </section>
-    <ExamsPanel onUnauthorized={onUnauthorized} />
-    <AvailabilityEditor onUnauthorized={onUnauthorized} />
-    </>
   );
+}
+
+export default function InstructorPanel({ userId, onUnauthorized }) {
+  const tabs = [
+    { id: 'mis-clases', label: 'Mis clases', content: <MySessions userId={userId} onUnauthorized={onUnauthorized} /> },
+    { id: 'examenes', label: 'Exámenes', content: <ExamsPanel onUnauthorized={onUnauthorized} /> },
+    { id: 'disponibilidad', label: 'Disponibilidad', content: <AvailabilityEditor onUnauthorized={onUnauthorized} /> },
+  ];
+  return <Tabs tabs={tabs} label="Instructor" />;
 }

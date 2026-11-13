@@ -3,6 +3,7 @@ import { api } from '../../lib/client.js';
 import { addDays, todayInChile } from '../../lib/dates.js';
 import AccountPanel from './AccountPanel.jsx';
 import ProgressPanel from './ProgressPanel.jsx';
+import Tabs from './Tabs.jsx';
 import { formatTime, useApi } from './useApi.js';
 
 export default function StudentPanel({ onUnauthorized }) {
@@ -41,8 +42,12 @@ export default function StudentPanel({ onUnauthorized }) {
 
   const upcoming = sesiones.data?.filter((s) => s.estado === 'programada') ?? [];
 
-  return (
-    <div className="portal__grid">
+  const tabs = [
+    {
+      id: 'clases',
+      label: 'Clases',
+      content: (
+        <>
       <section className="panel panel--wide">
         <h2>Próximas clases</h2>
         {notice.text && (
@@ -87,33 +92,6 @@ export default function StudentPanel({ onUnauthorized }) {
         </ul>
       </section>
 
-      <ProgressPanel onUnauthorized={onUnauthorized} />
-      <AccountPanel onUnauthorized={onUnauthorized} />
-
-      <section className="panel">
-        <h2>Mi asistencia</h2>
-        {attendance.loading && <p className="muted">Cargando…</p>}
-        {attendance.error && <p className="alert">{attendance.error}</p>}
-        {attendance.data && (
-          <>
-            <p className="portal__hello">
-              {attendance.data.resumen.asistidas} de {attendance.data.resumen.clases}
-            </p>
-            <p className="muted">clases registradas con asistencia</p>
-            <ul className="list">
-              {attendance.data.detalle.slice(0, 8).map((item) => (
-                <li key={`${item.fecha}-${item.disciplina}`} className="list__item">
-                  <p className="list__title">
-                    {item.fecha} · {item.disciplina}
-                  </p>
-                  <span className="tag">{item.presente ? 'Presente' : 'Ausente'}</span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </section>
-
       {schedules.data?.length > 0 && (
         <section className="panel">
           <h2>Horarios anteriores</h2>
@@ -148,6 +126,46 @@ export default function StudentPanel({ onUnauthorized }) {
           )}
         </section>
       )}
-    </div>
-  );
+        </>
+      ),
+    },
+    { id: 'cuenta', label: 'Mi cuenta', content: (
+      <AccountPanel onUnauthorized={onUnauthorized} />
+    ) },
+    {
+      id: 'grado',
+      label: 'Mi grado',
+      content: (
+        <>
+      <ProgressPanel onUnauthorized={onUnauthorized} />
+
+      <section className="panel">
+        <h2>Mi asistencia</h2>
+        {attendance.loading && <p className="muted">Cargando…</p>}
+        {attendance.error && <p className="alert">{attendance.error}</p>}
+        {attendance.data && (
+          <>
+            <p className="portal__hello">
+              {attendance.data.resumen.asistidas} de {attendance.data.resumen.clases}
+            </p>
+            <p className="muted">clases registradas con asistencia</p>
+            <ul className="list">
+              {attendance.data.detalle.slice(0, 8).map((item) => (
+                <li key={`${item.fecha}-${item.disciplina}`} className="list__item">
+                  <p className="list__title">
+                    {item.fecha} · {item.disciplina}
+                  </p>
+                  <span className="tag">{item.presente ? 'Presente' : 'Ausente'}</span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </section>
+        </>
+      ),
+    },
+  ];
+
+  return <Tabs tabs={tabs} label="Alumno" />;
 }
