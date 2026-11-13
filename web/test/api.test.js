@@ -98,3 +98,33 @@ test('the API URL is the configured one, else local or production by host', () =
   assert.equal(apiBaseUrl({ hostname: '127.0.0.1' }), 'http://localhost:3000');
   assert.equal(apiBaseUrl({ hostname: 'marcoandresrivas.github.io' }), 'https://shaolin-chile-backend.onrender.com');
 });
+
+test('the school endpoints use their routes, methods and query strings', async () => {
+    const { fetchImpl, calls } = fakeFetch(200, {});
+    const api = createApi({ baseUrl: '', fetchImpl, getToken: () => 'abc' });
+    await api.sedes();
+    await api.disciplinas();
+    await api.clases();
+    await api.clases(3);
+    await api.crearClase({ sede_id: 1, disciplina_id: 2, dia_semana: 1, hora_inicio: '19:00', hora_fin: '20:30' });
+    await api.eliminarClase(5);
+    await api.generarSesiones(5, '2026-12-01', '2026-12-31');
+    await api.sesiones({ desde: '2026-12-01', hasta: '2026-12-31' });
+    await api.sesiones();
+    await api.cancelarSesion(8, 'Feriado');
+    assert.deepEqual(
+        calls.map((c) => `${c.options.method} ${c.url} ${c.options.body ?? ''}`.trim()),
+        [
+            'GET /api/intranet/sedes',
+            'GET /api/intranet/disciplinas',
+            'GET /api/intranet/clases',
+            'GET /api/intranet/clases?sede_id=3',
+            'POST /api/intranet/clases {"sede_id":1,"disciplina_id":2,"dia_semana":1,"hora_inicio":"19:00","hora_fin":"20:30"}',
+            'DELETE /api/intranet/clases/5',
+            'POST /api/intranet/clases/5/sesiones {"desde":"2026-12-01","hasta":"2026-12-31"}',
+            'GET /api/intranet/sesiones?desde=2026-12-01&hasta=2026-12-31',
+            'GET /api/intranet/sesiones',
+            'POST /api/intranet/sesiones/8/cancelar {"motivo":"Feriado"}',
+        ],
+    );
+});

@@ -16,7 +16,7 @@ Rama: `feat/fase2-clases` (sobre `feat/fase1-sitio-astro`) · Entrega: cadena ap
 
 | ID | Specs | Ruta | Estado | Commit |
 | --- | --- | --- | --- | --- |
-| T1 | S1, S3, S4, S5, S6 | inline | en curso | — |
+| T1 | S1, S3, S4, S5, S6 | inline | hecho (RED 9 fallos → GREEN 10/10) | 5051c41 (backend), commit de la pantalla (web) |
 | T2 | S1, S3, S4 | inline | pendiente | — |
 | T3 | S1, S3 | inline | pendiente | — |
 | T4 | S1 | inline | pendiente | — |
@@ -39,3 +39,4 @@ Ruta: todo inline; sin unidades paralelas ni disparador de writer.
 ## Log
 
 - L1 (2026-11-13): "continua con el plan fase 2" (el usuario eligió seguir el orden estricto del plan antes que adelantar el asistente).
+- L2: T1 verificado: backend 63/63 (10 tests nuevos de la API y 3 de la migración), web 21/21. En Chrome real: ingreso como administrador, crear clase semanal de lunes, generar sesiones de noviembre de 2026 (2, 9, 16, 23 y 30). Defecto de mis pruebas locales: TaskStop no mata el proceso de Node en Windows, por lo que un backend viejo siguió ocupando el puerto; se usó un puerto nuevo.

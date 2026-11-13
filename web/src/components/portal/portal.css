@@ -128,6 +128,22 @@
   background: var(--bg);
 }
 
+.panel--wide {
+  grid-column: 1 / -1;
+}
+
+.panel h3 {
+  margin-top: 28px;
+  font-size: 1.05rem;
+}
+
+.list__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .list__title {
   margin: 0;
   font-weight: 600;
