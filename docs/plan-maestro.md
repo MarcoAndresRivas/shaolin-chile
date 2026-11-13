@@ -71,7 +71,7 @@ El sistema se divide en ocho módulos. Cada uno puede construirse y entregarse p
 | 6. Tienda | Catálogo por categoría (armas de entrenamiento, vestimenta, decoración, libros y accesorios), tallas y variantes, stock, carro de compra, pago con boleta electrónica, despacho o retiro en sede, seguimiento de pedidos | Público, alumno, encargado de catálogo |
 | 7. Contenido y formación online | Galería de videos y fotos, noticias, avisos internos, correos automáticos (bienvenida, cobro, recordatorio de clase), cursos online pagados por nivel con acceso por alumno | Encargado de contenido, administrador |
 
-**Pagos:** se recomienda una pasarela chilena (Webpay de Transbank, Mercado Pago o Flow) compartida por mensualidades, entradas y tienda, para tener una sola conciliación de ingresos.
+**Pagos:** en el primer lanzamiento, los pagos se reciben por transferencia bancaria directa y la administración los valida en la plataforma. Más adelante se incorporará una pasarela chilena (Webpay de Transbank, Mercado Pago o Flow) compartida por mensualidades, entradas y tienda, para tener una sola conciliación de ingresos.
 
 **Grados y certificación:** es la funcionalidad que distingue a los sistemas especializados en artes marciales de un sistema de reservas genérico. Cada grado define requisitos (clases mínimas, tiempo mínimo en el grado y técnicas exigidas); el sistema calcula quién está habilitado, José Cuevas aprueba la nominación, se cobra el derecho a examen y, una vez aprobado, el grado queda registrado en la ficha del alumno. La certificación de instructores y escuelas afiliadas sigue el mismo modelo, por niveles.
 
@@ -93,19 +93,27 @@ Los seminarios se organizan en temporadas. Por ejemplo, la temporada de diciembr
 1. El interesado ve la temporada con el calendario de fines de semana, el cupo disponible de cada uno y el video promocional.
 2. Elige uno o varios fines de semana y la cantidad de entradas para cada uno.
 3. Aplica una promoción, si corresponde: código de convenio, descuento por grupo o pack de temporada.
-4. Paga una sola vez y recibe un correo con el comprobante y la boleta.
+4. Paga una sola vez por transferencia bancaria y sube el comprobante; la administración valida el pago y el comprador recibe un correo con la confirmación y la boleta.
 5. Asigna el nombre de cada asistente a cada entrada, en ese momento o después, hasta una fecha límite antes del fin de semana; cada asistente acepta la exención de responsabilidad y recibe su QR.
 6. El día del seminario se controla el acceso con el QR y, al terminar, cada asistente descarga su certificado de participación.
+
+**Productos del primer lanzamiento**
+
+| Producto | Duración | Precio | Cupo |
+| --- | --- | --- | --- |
+| Clase (Taller de Iniciación) | 2 a 3 horas, sábado en la mañana | $35.000 | 50 por clase |
+| Seminario de fin de semana | Viernes a domingo (3 días) | $75.000 | 50 por fin de semana |
+| Poleras y artículos | Venta junto con las entradas | Según catálogo | Según stock |
 
 **Promociones**
 
 | Tipo | Para quién | Cómo funciona |
 | --- | --- | --- |
 | Alumno Shaolin Chile | Alumnos con matrícula vigente | Descuento automático al comprar desde su cuenta |
-| Preventa | Público general | Precio rebajado hasta una fecha definida |
+| Preventa | Público general | 35 % de descuento para los primeros 15 cupos pagados |
 | Pack de temporada | Quien compra varios fines de semana | Descuento al comprar dos o más fines de semana, mayor si compra la temporada completa |
-| Escuelas de kung fu | Escuelas de kung fu externas | Convenio con código propio y precio por grupo |
-| Otras organizaciones | Escuelas de otras artes marciales, clubes, gimnasios, empresas | Convenio con código propio y precio por grupo |
+| Escuelas de kung fu | Escuelas de kung fu externas | Convenio con código propio: 10 % de descuento y cupos liberados para delegaciones de 5 o más |
+| Otras organizaciones | Escuelas de otras artes marciales, clubes, gimnasios, empresas | Convenio con código propio: 10 % de descuento y cupos liberados para delegaciones de 5 o más |
 | Grupo | Cualquier comprador | Descuento por cantidad de entradas en una misma compra (por ejemplo, desde 5) |
 
 Las organizaciones con convenio tienen un representante con cuenta propia. Ese representante compra un bloque de entradas para su grupo y luego asigna los nombres de los asistentes. Las promociones no se acumulan, salvo que la dirección lo defina, y cada una tiene vigencia y tope de usos.
@@ -391,7 +399,7 @@ Estas definiciones bloquean el inicio de la Fase 1 o de la Fase 3 y corresponden
 - [ ] ¿Qué sedes estarán activas al lanzamiento, además de la Región Metropolitana y la Región del Maule?
 - [ ] ¿Dominio oficial del sitio y correo institucional para el equipo?
 - [ ] ¿La tienda despachará a todo Chile o solo retiro en sede al comienzo?
-- [ ] Seminarios: ¿la entrada cubre el fin de semana completo o también se venden días sueltos?, ¿precios y porcentajes de cada promoción?, ¿política de cambios y devoluciones?, ¿qué escuelas y organizaciones tendrán convenio en la primera temporada?
+- [ ] Seminarios: ¿los 15 cupos de preventa son por fin de semana o en total?, ¿cuántas entradas dan derecho a un cupo liberado?, ¿se acumulan preventa y convenio?, ¿precio del retiro y del material grabado?, ¿plazo para pagar la transferencia antes de liberar el cupo?, ¿política de cambios y devoluciones?, ¿qué organizaciones tendrán convenio en la primera temporada?
 - [ ] ¿Se mantiene el registro de representantes de sede como función del sitio?
 - [ ] ¿Construir todo el sistema o combinar? Recomendación: construir, porque la base existe y la identidad de la organización es central; la alternativa es arrendar la gestión de clases y cobros (por ejemplo, AgendaPro o Gymdesk) y construir solo sitio, seminarios, tienda y certificación.
 - [ ] ¿Qué política de morosidad se aplica: cuántos días de gracia y cuándo se suspende la reserva de clases?
