@@ -94,7 +94,7 @@ Los seminarios se organizan en temporadas. Por ejemplo, la temporada de diciembr
 2. Elige uno o varios fines de semana y la cantidad de entradas para cada uno.
 3. Aplica una promoción, si corresponde: código de convenio, descuento por grupo o pack de temporada.
 4. Paga una sola vez por transferencia bancaria y sube el comprobante; la administración valida el pago y el comprador recibe un correo con la confirmación y la boleta.
-5. Asigna el nombre de cada asistente a cada entrada, en ese momento o después, hasta una fecha límite antes del fin de semana; cada asistente acepta la exención de responsabilidad y recibe su QR.
+5. Asigna el nombre de cada asistente a cada entrada, en ese momento o después, hasta el cierre de inscripciones; cada asistente acepta la exención de responsabilidad y recibe su QR.
 6. El día del seminario se controla el acceso con el QR y, al terminar, cada asistente descarga su certificado de participación.
 
 **Productos del primer lanzamiento**
@@ -170,7 +170,7 @@ La política se publica en el sitio y se acepta al comprar, antes del pago.
 
 **Reglas de operación**
 
-- El cupo se descuenta por fin de semana. Al iniciar el pago, las entradas quedan reservadas por un tiempo breve (por ejemplo, 15 minutos) para no vender dos veces el mismo lugar.
+- El cupo se descuenta por fin de semana. Al confirmar la compra, las entradas quedan reservadas mientras se espera la transferencia, hasta el cierre de inscripciones, para no vender dos veces el mismo lugar.
 - Si un fin de semana se llena, se ofrece lista de espera.
 - Las inscripciones de cada clase y fin de semana se cierran 12 horas antes de su inicio; las compras con transferencia pendiente a esa hora se anulan.
 - El asistente virtual informa sobre la temporada y envía el enlace de compra, pero el pago siempre se hace en la plataforma.
@@ -199,7 +199,7 @@ Un agente de inteligencia artificial atiende las consultas del público en la p�
 
 **Arquitectura**
 
-1. Canales: chat insertado en la página web e Instagram; al comienzo vía ManyChat, ya aprobado por Meta, y luego con la API directa de Meta.
+1. Canales: chat insertado en la página web e Instagram vía ManyChat, ya aprobado por Meta.
 2. Cerebro: agente en n8n con la base de conocimiento de la escuela.
 3. Acciones: el agente llama a la API propia de Shaolin Chile (clases disponibles, reservas, interesados), no a un calendario externo, para que todo quede en un solo sistema.
 4. Registro: cada conversación queda guardada y vinculada al interesado.
@@ -212,9 +212,11 @@ Un agente de inteligencia artificial atiende las consultas del público en la p�
 - Pide consentimiento antes de guardar datos personales (Ley 21.719).
 - En Instagram responde solo dentro de las 24 horas posteriores al último mensaje de la persona; fuera de ese plazo responde un humano.
 
-**Requisitos de Instagram:** cuenta profesional vinculada a una página de Facebook; para usar la API directa, revisión de la aplicación y verificación de la empresa por parte de Meta.
+**Requisitos de Instagram:** cuenta profesional vinculada a una página de Facebook.
 
 **Indicadores:** porcentaje de consultas resueltas sin intervención humana, clases de prueba agendadas por el asistente y tiempo de respuesta.
+
+**Prompt de lanzamiento:** el plan técnico del lanzamiento de la temporada de seminarios (flujos de n8n y ManyChat, pago por transferencia y reglas comerciales) está en el repositorio, en `docs/prompt-lanzamiento-seminarios.md`.
 
 ## Roles y permisos
 
@@ -368,12 +370,12 @@ Maxi es responsable de que la tienda tenga un catálogo completo, correcto y atr
 
 **Crecimiento del rol**
 
-| Etapa | Responsabilidades que se agregan |
+| • Etapa | • Responsabilidades que se agregan |
 | --- | --- |
-| 1. Catálogo | Fichas, fotos, categorías y stock |
-| 2. Pedidos | Preparación, despacho o retiro en sede, verificación de boleta emitida, cambios y devoluciones |
-| 3. Proveedores | Cotizaciones, compras, negociación y reposición |
-| 4. Comercial | Promociones, packs para alumnos nuevos, merchandising de seminarios y reporte mensual de ventas |
+| • 1. Catálogo | • Fichas, fotos, categorías y stock |
+| • 2. Pedidos | • Preparación, despacho o retiro en sede, verificación de boleta emitida, cambios y devoluciones |
+| • 3. Proveedores | • Cotizaciones, compras, negociación y reposición |
+| • 4. Comercial | • Promociones, packs para alumnos nuevos, merchandising de seminarios y reporte mensual de ventas |
 
 ## Benja Muñoz — Contenido Audiovisual y Redes, Alumno Avanzado e Instructor
 
@@ -430,8 +432,8 @@ José es la autoridad técnica de la escuela: define qué se enseña, cómo se e
 - [ ] Revisar y aprobar el texto de lineamientos y código de conducta para el sitio.
 - [ ] Definir el calendario anual de exámenes de grado y la propuesta de seminarios del próximo semestre.
 - [ ] Diseñar la certificación de instructores en niveles (por ejemplo, asistente, instructor y maestro), con requisitos, evaluación y renovación, como base del directorio oficial y de las escuelas afiliadas.
-- [ ] Validar la base de conocimiento del asistente virtual (preguntas frecuentes, lineamientos, criterios de derivación) y revisar cada mes una muestra de conversaciones.
 - [ ] Entregar o validar sus textos publicados en shaolinguan.cl (filosofía, lineamientos, historia) para integrarlos al sitio como contenido oficial, con su autoría.
+- [ ] Validar la base de conocimiento del asistente virtual (preguntas frecuentes, lineamientos, criterios de derivación) y revisar cada mes una muestra de conversaciones.
 
 **Indicadores**
 
@@ -449,14 +451,14 @@ Estas definiciones bloquean el inicio de la Fase 1 o de la Fase 3 y corresponden
 - [ ] ¿Qué sedes estarán activas al lanzamiento, además de la Región Metropolitana y la Región del Maule?
 - [ ] ¿Dominio oficial del sitio y correo institucional para el equipo?
 - [ ] ¿La tienda despachará a todo Chile o solo retiro en sede al comienzo?
-- [ ] Seminarios: ¿precio del retiro?, ¿catálogo definitivo de la tienda (reemplaza el de prueba)?, ¿validación legal de la política de cambios y devoluciones?
 - [ ] ¿Se mantiene el registro de representantes de sede como función del sitio?
 - [ ] ¿Construir todo el sistema o combinar? Recomendación: construir, porque la base existe y la identidad de la organización es central; la alternativa es arrendar la gestión de clases y cobros (por ejemplo, AgendaPro o Gymdesk) y construir solo sitio, seminarios, tienda y certificación.
 - [ ] ¿Qué política de morosidad se aplica: cuántos días de gracia y cuándo se suspende la reserva de clases?
 - [ ] ¿Descuento familiar y descuento de alumno en seminarios: qué porcentajes?
 - [ ] ¿Niveles de certificación de instructores y escuelas afiliadas, y su costo?
 - [ ] ¿Quién asesora en ley de datos personales y quién en boleta electrónica (abogado y contador)?
-- [ ] Asistente virtual: ¿n8n en Render junto al backend o en un servidor aparte?, ¿qué modelo de IA usar?, ¿ManyChat al inicio o API directa de Meta? Confirmar con n8n que la licencia gratuita cubre un chat de atención en el sitio propio.
+- [ ] Asistente virtual: ¿n8n en Render junto al backend o en un servidor aparte?, ¿qué modelo de IA usar? Confirmar con n8n que la licencia gratuita cubre un chat de atención en el sitio propio.
+- [ ] Seminarios: ¿precio del retiro?, ¿catálogo definitivo de la tienda (reemplaza el de prueba)?, ¿validación legal de la política de cambios y devoluciones?
 
 ## Fuentes
 
@@ -464,5 +466,6 @@ Referentes revisados para completar este plan:
 
 - Software para escuelas de artes marciales: [Gymdesk, seguimiento de grados](https://gymdesk.com/blog/martial-arts-belt-tracking-software), [Zen Planner](https://zenplanner.com/?p=31871), [BlackBeltCRM](https://blackbeltcrm.com/?p=14480), [Classcard, comparativa 2026](https://www.classcardapp.com/blog/martial-arts-school-management), [AgendaPro Chile](https://agendapro.com/cl/centro-deportivo/software-para-centro-deportivo)
 - Organizaciones Shaolin: [certificación de instructores, Shaolin Yanxu](https://www.shaolinyanxu.com/instructor-certification), [curso online, Shaolin Yanxu](https://shaolinyanxu.com/course/shaolin-beginner-program), [USA Shaolin Temple](https://usashaolintemple.com/shaolintraining)
-- Asistente virtual: [plantilla n8n Instagram + agenda](https://n8n.io/workflows/11771-book-beauty-appointments-and-answer-faqs-with-gpt-4-google-calendar-gmail-and-instagram/), [Meta: Instagram Messaging](https://developers.facebook.com/docs/messenger-platform/instagram), [precios n8n](https://n8n.io/pricing/?selfHosted=true), [documentación de Hermes Agent](https://hermes-agent.nousresearch.com/docs/user-stories)
 - Ley 21.719: [Garrigues](https://www.garrigues.com/es_ES/noticia/chile-redefine-marco-privacidad-ciberseguridad-nuevas-reglas-cumplimiento-cambios.md), [Diario Constitucional](https://www.diarioconstitucional.cl/2026/06/12/la-ley-21-719-entra-en-vigor-el-1-de-diciembre-y-expone-vacios-en-regulacion-de-pequenas-empresas/)
+- Asistente virtual: [plantilla n8n Instagram y agenda](https://n8n.io/workflows/11771-book-beauty-appointments-and-answer-faqs-with-gpt-4-google-calendar-gmail-and-instagram/), [Meta: Instagram Messaging](https://developers.facebook.com/docs/messenger-platform/instagram), [precios de n8n](https://n8n.io/pricing/?selfHosted=true), [documentación de Hermes Agent](https://hermes-agent.nousresearch.com/docs/user-stories)
+- Política de devoluciones: [Ley 19.496 en BCN](https://www.bcn.cl/leychile/navegar?idNorma=61438), [Carey: reglamento de retracto](https://www.carey.cl/publican-reglamento-que-establece-exclusiones-al-derecho-de-retracto), [SERNAC: garantía legal](https://www.sernac.cl/garantialegal), [SERNAC: eventos cancelados](https://www.sernac.cl/604/w3-article-87009.html)
