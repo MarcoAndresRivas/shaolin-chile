@@ -11,7 +11,7 @@ exports.verifyToken = (req, res, next) => {
         // Bearer <token>
         const tokenString = token.startsWith('Bearer ') ? token.slice(7, token.length) : token;
 
-        const decoded = jwt.verify(tokenString, process.env.JWT_SECRET || 'fallback_secret');
+        const decoded = jwt.verify(tokenString, req.app.locals.config.jwtSecret);
         req.user = decoded;
         next();
     } catch (err) {

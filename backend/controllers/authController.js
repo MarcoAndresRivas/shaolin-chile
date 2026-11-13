@@ -30,7 +30,7 @@ exports.login = async (req, res) => {
         // Generar JWT
         const token = jwt.sign(
             { id: usuario.id, rol_id: usuario.rol_id },
-            process.env.JWT_SECRET || 'fallback_secret',
+            req.app.locals.config.jwtSecret,
             { expiresIn: '8h' }
         );
 
