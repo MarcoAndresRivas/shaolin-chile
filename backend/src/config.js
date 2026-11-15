@@ -76,6 +76,13 @@ function loadConfig(env = process.env) {
         port: Number(env.PORT) || 3000,
         jwtSecret,
         asistenteApiKey,
+        // The AI model of the site's chat: any provider with the OpenAI chat format.
+        asistenteModelo: {
+            url: env.ASISTENTE_MODELO_URL || '',
+            model: env.ASISTENTE_MODELO || '',
+            key: env.ASISTENTE_MODELO_KEY || '',
+            reasoning: env.ASISTENTE_MODELO_RAZONAMIENTO || '',
+        },
         corsOrigins: parseOrigins(env.CORS_ORIGINS),
         ...loadDbConfig(env),
     };

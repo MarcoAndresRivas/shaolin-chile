@@ -6,13 +6,19 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pino from 'pino';
 import { makeWASocket, useMultiFileAuthState, DisconnectReason, isJidGroup } from 'baileys';
-import { createAgent } from './agent.js';
+import { createAgent, createChats, createModelClient } from '../backend/src/asistente.js';
 
 const env = process.env;
 const API_URL = (env.ASISTENTE_API_URL || 'http://localhost:3000/api/asistente').replace(/\/+$/, '');
 const API_KEY = env.ASISTENTE_API_KEY || '';
-const OLLAMA_URL = (env.OLLAMA_URL || 'http://localhost:11434').replace(/\/+$/, '');
-const OLLAMA_MODEL = env.OLLAMA_MODEL || 'qwen3.5:latest';
+// Any provider with the OpenAI chat format; by default, Ollama on this computer.
+const MODEL = {
+    url: env.ASISTENTE_MODELO_URL || 'http://localhost:11434/v1',
+    model: env.ASISTENTE_MODELO || 'qwen3.5:latest',
+    key: env.ASISTENTE_MODELO_KEY || '',
+    reasoning: env.ASISTENTE_MODELO_RAZONAMIENTO ?? 'none',
+    timeoutMs: 180_000, // a local model can take a while on the first message
+};
 const NUMERO = (env.WHATSAPP_NUMERO || '').replace(/\D/g, '');
 const AUTH_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), 'auth');
 
@@ -31,42 +37,12 @@ async function api(method, route, body) {
     return { status: res.status, body: await res.json().catch(() => ({})) };
 }
 
-async function chat(messages, tools) {
-    const res = await fetch(`${OLLAMA_URL}/api/chat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: OLLAMA_MODEL, messages, tools, stream: false, think: false }),
-        signal: AbortSignal.timeout(180_000), // a local model can take a while on the first message
-    });
-    if (!res.ok) throw new Error(`Ollama respondió ${res.status}`);
-    return (await res.json()).message;
-}
-
-const agent = createAgent({ chat, api });
-
-// shortcut: chats live in memory, so a restart forgets them; store them when this stops being a test.
-const chats = new Map(); // jid -> { history, interesadoId, pending, queue }
-
-// The conversation is stored only once the person agreed to be registered.
-async function saveConversation(jid, state) {
-    if (!state.interesadoId) return;
-    while (state.pending.length) {
-        const mensajes = state.pending.slice(0, 20);
-        const { status } = await api('POST', '/conversaciones', { canal: 'whatsapp', chat_id: jid, interesado_id: state.interesadoId, mensajes });
-        if (status >= 400) throw new Error(`conversaciones respondió ${status}`);
-        state.pending.splice(0, mensajes.length);
-    }
-}
+const agent = createAgent({ chat: createModelClient(MODEL), api, canal: 'whatsapp' });
+const chats = createChats({ agent, api, canal: 'whatsapp' });
 
 async function answer(sock, jid, text) {
-    const state = chats.get(jid);
-    const reply = text
-        ? await agent.handle(state, text.slice(0, 2000))
-        : 'Por ahora solo puedo leer mensajes de texto.';
+    const reply = text ? await chats.reply(jid, text) : 'Por ahora solo puedo leer mensajes de texto.';
     await sock.sendMessage(jid, { text: reply });
-    if (text) state.pending.push({ rol: 'persona', texto: text.slice(0, 2000) }, { rol: 'asistente', texto: reply });
-    state.pending.splice(0, Math.max(0, state.pending.length - 200));
-    await saveConversation(jid, state).catch((error) => console.error('No se pudo guardar la conversación:', error.message));
 }
 
 async function start() {
@@ -106,12 +82,7 @@ async function start() {
             if (msg.message.protocolMessage || msg.message.reactionMessage) continue;
             const text = (msg.message.conversation || msg.message.extendedTextMessage?.text || '').trim();
 
-            if (!chats.has(jid)) chats.set(jid, { history: [], interesadoId: null, pending: [], queue: Promise.resolve() });
-            const state = chats.get(jid);
-            // One message at a time per chat, so answers keep their order.
-            state.queue = state.queue
-                .then(() => answer(sock, jid, text))
-                .catch((error) => console.error('No se pudo responder:', error.message));
+            answer(sock, jid, text).catch((error) => console.error('No se pudo responder:', error.message));
         }
     });
 }

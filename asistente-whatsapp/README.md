@@ -7,7 +7,7 @@ Conecta un número de WhatsApp con el asistente virtual para **probarlo**. No es
 ## Cómo funciona
 
 1. Llega un mensaje privado de texto al número de prueba.
-2. `agent.js` lo envía a un modelo local (Ollama) junto con las reglas del asistente.
+2. El asistente (`backend/src/asistente.js`, el mismo del chat de la página) lo envía a un modelo local (Ollama) junto con las reglas.
 3. Si el modelo necesita datos o debe actuar, el puente llama a la API del backend (`/api/asistente`): ver clases, registrar a la persona, agendar la clase de prueba.
 4. El puente responde por WhatsApp.
 
@@ -51,16 +51,14 @@ La sesión queda en `auth/` (no se sube al repositorio: equivale a la sesión de
 | `ASISTENTE_API_KEY` | — (obligatoria) | Clave compartida con el backend |
 | `WHATSAPP_NUMERO` | — (obligatoria la primera vez) | Número a vincular |
 | `ASISTENTE_API_URL` | `http://localhost:3000/api/asistente` | Dirección de la API |
-| `OLLAMA_URL` | `http://localhost:11434` | Dirección de Ollama |
-| `OLLAMA_MODEL` | `qwen3.5:latest` | Modelo local |
+| `ASISTENTE_MODELO_URL` | `http://localhost:11434/v1` | Dirección del modelo, en formato OpenAI |
+| `ASISTENTE_MODELO` | `qwen3.5:latest` | Modelo |
+| `ASISTENTE_MODELO_KEY` | — | Clave del proveedor, si la pide |
+| `ASISTENTE_MODELO_RAZONAMIENTO` | `none` | Vacío para dejar razonar al modelo |
 
 ## Pruebas
 
-```
-npm test
-```
-
-Prueban el asistente (`agent.js`) con un modelo simulado. La conexión con WhatsApp (`index.js`) solo se puede probar con un número real.
+El asistente se prueba en el backend (`cd backend && npm test`), con un modelo simulado. La conexión con WhatsApp (`index.js`) solo se puede probar con un número real.
 
 ## Límites conocidos
 

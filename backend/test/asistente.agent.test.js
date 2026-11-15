@@ -1,15 +1,17 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { createAgent, FALLBACK } from '../agent.js';
+// The assistant's loop, its chats and its model client, with a scripted model.
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { createAgent, createChats, createModelClient, FALLBACK } = require('../src/asistente');
 
 const say = (content) => ({ role: 'assistant', content });
 const use = (name, args = {}) => ({ role: 'assistant', content: '', tool_calls: [{ function: { name, arguments: args } }] });
 
 // A model that answers with a fixed script, and an API that records its calls.
-function setup(script, responses = {}) {
+function setup(script, responses = {}, canal = 'whatsapp') {
     const calls = [];
     const seen = [];
     const agent = createAgent({
+        canal,
         chat: async (messages) => {
             seen.push(structuredClone(messages));
             const next = script.shift();
@@ -125,4 +127,113 @@ test('the history sent to the model is capped, and tool traffic is not kept betw
     assert.ok(state.history.every((m) => m.role === 'user' || (m.role === 'assistant' && !m.tool_calls)));
     assert.equal(state.history.at(-1).content, 'respuesta 14');
     assert.equal(seen.at(-1)[1].content, 'mensaje 4');
+});
+
+test('arguments sent as a JSON string are understood, and each result answers its tool call', async () => {
+    const call = { role: 'assistant', content: null, tool_calls: [{ id: 'call_1', type: 'function', function: { name: 'registrar_interesado', arguments: '{"nombre":"Ana","email":"ana@example.com","consentimiento":true}' } }] };
+    const { agent, state, calls, seen } = setup([call, say('Listo.')], { 'POST /interesados': { status: 201, body: { id: 5 } } }, 'sitio');
+    await agent.handle(state, 'Sí, autorizo');
+    assert.deepEqual(calls, [['POST', '/interesados', { nombre: 'Ana', email: 'ana@example.com', consentimiento: true, origen: 'sitio' }]]);
+    assert.equal(seen.at(-1).at(-1).tool_call_id, 'call_1');
+    assert.match(seen[0][0].content, /chat de la página web/);
+
+    const broken = setup([{ role: 'assistant', tool_calls: [{ id: 'c', function: { name: 'registrar_interesado', arguments: '{not json' } }] }, say('¿Me repites tus datos?')]);
+    await broken.agent.handle(broken.state, 'x');
+    assert.deepEqual(broken.calls, []);
+});
+
+test('an unknown channel is refused when the assistant is built', () => {
+    assert.throws(() => createAgent({ chat: async () => say('x'), api: async () => ({}), canal: 'telegram' }), /canal/);
+});
+
+function chatsWith(agent, options = {}) {
+    const saved = [];
+    const api = async (method, path, body) => {
+        saved.push([method, path, body]);
+        return options.saveFails ? { status: 500, body: {} } : { status: 201, body: {} };
+    };
+    return { chats: createChats({ agent, api, canal: 'sitio', ...options }), saved };
+}
+
+test('each chat keeps its own conversation, and nothing is stored before the person is registered', async () => {
+    const agent = { handle: async (state, text) => { state.history.push(text); return `eco ${text} (${state.history.length})`; } };
+    const { chats, saved } = chatsWith(agent);
+    assert.equal(await chats.reply('a', 'hola'), 'eco hola (1)');
+    assert.equal(await chats.reply('b', 'hola'), 'eco hola (1)');
+    assert.equal(await chats.reply('a', 'otra'), 'eco otra (2)');
+    assert.deepEqual(saved, []);
+});
+
+test('once the person is registered the whole conversation is stored, in batches of 20, and only once', async () => {
+    let registerAt = 12;
+    const agent = { handle: async (state, text) => { registerAt -= 1; if (registerAt === 0) state.interesadoId = 7; return `r:${text}`; } };
+    const { chats, saved } = chatsWith(agent);
+    for (let i = 1; i <= 12; i += 1) await chats.reply('a', `m${i}`);
+    assert.deepEqual(saved.map(([, path, body]) => [path, body.canal, body.chat_id, body.interesado_id, body.mensajes.length]), [
+        ['/conversaciones', 'sitio', 'a', 7, 20],
+        ['/conversaciones', 'sitio', 'a', 7, 4],
+    ]);
+    assert.deepEqual(saved[0][2].mensajes.slice(0, 2), [{ rol: 'persona', texto: 'm1' }, { rol: 'asistente', texto: 'r:m1' }]);
+    await chats.reply('a', 'm13');
+    assert.deepEqual(saved[2][2].mensajes, [{ rol: 'persona', texto: 'm13' }, { rol: 'asistente', texto: 'r:m13' }]);
+});
+
+test('a failed save does not lose the answer, and the messages are sent again next time', async () => {
+    const agent = { handle: async (state, text) => { state.interesadoId = 7; return `r:${text}`; } };
+    const failing = chatsWith(agent, { saveFails: true });
+    assert.equal(await failing.chats.reply('a', 'm1'), 'r:m1');
+    assert.equal(await failing.chats.reply('a', 'm2'), 'r:m2');
+    assert.equal(failing.saved.at(-1)[2].mensajes.length, 4);
+});
+
+test('messages of one chat are answered in order even when they arrive together, and a failure does not block the chat', async () => {
+    const order = [];
+    const agent = {
+        handle: async (state, text) => {
+            if (text === 'rompe') throw new Error('boom');
+            await new Promise((resolve) => setTimeout(resolve, text === 'lento' ? 30 : 0));
+            order.push(text);
+            return text;
+        },
+    };
+    const { chats } = chatsWith(agent);
+    const results = await Promise.allSettled([chats.reply('a', 'lento'), chats.reply('a', 'rompe'), chats.reply('a', 'rápido')]);
+    assert.deepEqual(order, ['lento', 'rápido']);
+    assert.deepEqual(results.map((r) => r.status), ['fulfilled', 'rejected', 'fulfilled']);
+});
+
+test('a long message is cut, idle chats expire and the oldest is dropped when the limit is reached', async () => {
+    let clock = 0;
+    const agent = { handle: async (state, text) => String(text.length) };
+    const { chats } = chatsWith(agent, { maxChats: 2, ttlMs: 1000, now: () => clock });
+    assert.equal(await chats.reply('a', 'x'.repeat(5000)), '2000');
+    await chats.reply('b', 'hola');
+    await chats.reply('a', 'hola'); // a is now the latest
+    await chats.reply('c', 'hola'); // b was idle the longest
+    assert.deepEqual(['a', 'b', 'c'].map((id) => chats.has(id)), [true, false, true]);
+    clock = 5000;
+    await chats.reply('d', 'hola');
+    assert.deepEqual(['a', 'c', 'd'].map((id) => chats.has(id)), [false, false, true]);
+    assert.equal(chats.size(), 1);
+});
+
+test('the model client speaks the OpenAI chat format and fails loudly on an error status', async () => {
+    const requests = [];
+    const fetchImpl = async (url, options) => {
+        requests.push({ url, headers: options.headers, body: JSON.parse(options.body) });
+        return { ok: true, status: 200, json: async () => ({ choices: [{ message: { role: 'assistant', content: 'Hola' } }] }) };
+    };
+    const chat = createModelClient({ url: 'http://model.test/v1/', model: 'm1', key: 'secret', reasoning: 'none', fetchImpl });
+    assert.deepEqual(await chat([{ role: 'user', content: 'Hola' }], [{ type: 'function' }]), { role: 'assistant', content: 'Hola' });
+    assert.equal(requests[0].url, 'http://model.test/v1/chat/completions');
+    assert.equal(requests[0].headers.Authorization, 'Bearer secret');
+    assert.deepEqual(requests[0].body, { model: 'm1', messages: [{ role: 'user', content: 'Hola' }], tools: [{ type: 'function' }], reasoning_effort: 'none' });
+
+    const plain = createModelClient({ url: 'http://model.test/v1', model: 'm1', fetchImpl });
+    await plain([], []);
+    assert.equal(requests[1].headers.Authorization, undefined);
+    assert.equal('reasoning_effort' in requests[1].body, false);
+
+    const down = createModelClient({ url: 'http://model.test/v1', model: 'm1', fetchImpl: async () => ({ ok: false, status: 429 }) });
+    await assert.rejects(down([], []), /429/);
 });

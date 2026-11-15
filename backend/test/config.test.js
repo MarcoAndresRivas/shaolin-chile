@@ -27,6 +27,12 @@ test('the assistant key is optional, and a short one is refused', () => {
     assert.throws(() => loadConfig({ JWT_SECRET: VALID_SECRET, ASISTENTE_API_KEY: ' '.repeat(40) }), /ASISTENTE_API_KEY/);
 });
 
+test('the chat model is read from the environment and is empty by default', () => {
+    assert.deepEqual(loadConfig({ JWT_SECRET: VALID_SECRET }).asistenteModelo, { url: '', model: '', key: '', reasoning: '' });
+    const env = { JWT_SECRET: VALID_SECRET, ASISTENTE_MODELO_URL: 'http://m/v1', ASISTENTE_MODELO: 'm1', ASISTENTE_MODELO_KEY: 'k', ASISTENTE_MODELO_RAZONAMIENTO: 'none' };
+    assert.deepEqual(loadConfig(env).asistenteModelo, { url: 'http://m/v1', model: 'm1', key: 'k', reasoning: 'none' });
+});
+
 test('CORS origins default to the published site only', () => {
     const config = loadConfig({ JWT_SECRET: VALID_SECRET });
     assert.deepEqual(config.corsOrigins, DEFAULT_CORS_ORIGINS);

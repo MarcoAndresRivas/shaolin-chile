@@ -92,4 +92,21 @@ El asistente (n8n) llama a `/api/asistente` con la clave compartida en el encabe
 
 Ver [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Chat de la página
+
+El sitio muestra un chat con el asistente virtual en todas las páginas. Llama a `POST /api/chat` con `{ "mensaje": "...", "chat_id": "..." }` (`chat_id` es opcional y lo entrega la primera respuesta) y recibe `{ "chat_id", "respuesta" }`. Límite: 30 mensajes cada 10 minutos por visitante.
+
+El chat se enciende cuando el backend tiene `ASISTENTE_API_KEY` y un modelo de IA configurado. Sin eso responde 503 y el sitio ofrece WhatsApp.
+
+| Variable | Para qué |
+| --- | --- |
+| `ASISTENTE_MODELO_URL` | Dirección del proveedor, en formato OpenAI. Ollama local: `http://localhost:11434/v1` |
+| `ASISTENTE_MODELO` | Nombre del modelo, por ejemplo `qwen3.5:latest` |
+| `ASISTENTE_MODELO_KEY` | Clave del proveedor (Ollama local no la necesita) |
+| `ASISTENTE_MODELO_RAZONAMIENTO` | Opcional. `none` hace que los modelos con razonamiento respondan más rápido |
+
+Cambiar de proveedor (Ollama, Gemini, OpenRouter, Groq) es cambiar estas variables, no el código. La conversación se guarda solo después de que la persona autoriza guardar sus datos; las conversaciones en curso viven en la memoria del servidor y se pierden al reiniciarlo.
+
+Para probarlo en local, el origen del sitio de desarrollo (`http://localhost:4321`) debe estar en `CORS_ORIGINS`.
+
 Para probar el asistente por WhatsApp con un número aparte, ver `asistente-whatsapp/README.md`.
