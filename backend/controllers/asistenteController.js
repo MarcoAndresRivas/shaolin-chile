@@ -38,7 +38,7 @@ exports.saveConversacion = async (req, res) => {
     if (!CANALES.includes(canal)) return bad(res, `El canal no es válido (canal). Opciones: ${CANALES.join(', ')}.`);
     if (typeof chatId !== 'string' || !chatId.trim() || chatId.length > 100) return bad(res, 'chat_id debe tener entre 1 y 100 caracteres.');
     if (interesadoId !== null && !Number.isInteger(interesadoId)) return bad(res, 'interesado_id debe ser un número entero.');
-    if (!Array.isArray(mensajes) || mensajes.length < 1 || mensajes.length > 50) return bad(res, 'mensajes debe traer entre 1 y 50 mensajes.');
+    if (!Array.isArray(mensajes) || mensajes.length < 1 || mensajes.length > 20) return bad(res, 'mensajes debe traer entre 1 y 20 mensajes.');
 
     const rows = [];
     for (const mensaje of mensajes) {

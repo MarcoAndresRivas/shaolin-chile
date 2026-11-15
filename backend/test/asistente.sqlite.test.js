@@ -105,6 +105,7 @@ test('the assistant books a trial class and the note has no user', async () => {
         assert.match(note.nota, /Clase de prueba agendada/);
 
         assert.equal((await call('POST', `${BASE}/interesados/${id}/clase-prueba`, null, { sesion_id: 999 }, AUTH)).status, 404);
+        assert.equal((await call('POST', `${BASE}/interesados/${id}/clase-prueba`, null, undefined, AUTH)).status, 400, 'no body');
         assert.equal((await knex('clases_prueba')).length, 1);
     }, ENV);
 });
@@ -148,7 +149,7 @@ test('an invalid conversation is rejected and nothing is stored', async () => {
             [{ ...ok, interesado_id: 'uno' }, 'interesado_id'],
             [{ ...ok, mensajes: [] }, 'mensajes'],
             [{ ...ok, mensajes: 'Hola' }, 'mensajes'],
-            [{ ...ok, mensajes: Array(51).fill(ok.mensajes[0]) }, 'mensajes'],
+            [{ ...ok, mensajes: Array(21).fill(ok.mensajes[0]) }, 'mensajes'],
             [{ ...ok, mensajes: [ok.mensajes[0], { rol: 'sistema', texto: 'x' }] }, 'rol'],
             [{ ...ok, mensajes: [ok.mensajes[0], { rol: 'persona', texto: ' ' }] }, 'texto'],
             [{ ...ok, mensajes: [{ rol: 'persona', texto: 'x'.repeat(4001) }] }, 'texto'],

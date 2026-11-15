@@ -68,7 +68,7 @@ function loadConfig(env = process.env) {
 
     // Optional: without it the assistant routes stay off. A short key could be guessed.
     const asistenteApiKey = env.ASISTENTE_API_KEY || '';
-    if (asistenteApiKey && asistenteApiKey.length < 32) {
+    if (asistenteApiKey && asistenteApiKey.trim().length < 32) {
         throw new ConfigError('ASISTENTE_API_KEY must have at least 32 characters.');
     }
 

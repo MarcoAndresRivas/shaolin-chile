@@ -152,7 +152,7 @@ exports.addSeguimiento = async (req, res) => {
 };
 
 exports.agendarClasePrueba = async (req, res) => {
-    const { sesion_id } = req.body;
+    const { sesion_id } = req.body ?? {};
     try {
         const [people] = await req.db.execute('SELECT id, estado FROM interesados WHERE id = ?', [req.params.id]);
         if (!people.length) return notFound(res, 'Interesado no encontrado.');

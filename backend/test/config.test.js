@@ -24,6 +24,7 @@ test('the assistant key is optional, and a short one is refused', () => {
     assert.equal(loadConfig({ JWT_SECRET: VALID_SECRET }).asistenteApiKey, '');
     assert.equal(loadConfig({ JWT_SECRET: VALID_SECRET, ASISTENTE_API_KEY: 'k'.repeat(32) }).asistenteApiKey, 'k'.repeat(32));
     assert.throws(() => loadConfig({ JWT_SECRET: VALID_SECRET, ASISTENTE_API_KEY: 'k'.repeat(31) }), /ASISTENTE_API_KEY/);
+    assert.throws(() => loadConfig({ JWT_SECRET: VALID_SECRET, ASISTENTE_API_KEY: ' '.repeat(40) }), /ASISTENTE_API_KEY/);
 });
 
 test('CORS origins default to the published site only', () => {
