@@ -119,7 +119,12 @@ exports.getInteresado = async (req, res) => {
              LEFT JOIN sesiones se ON se.id = c.sesion_id WHERE c.interesado_id = ? ORDER BY c.id`,
             [req.params.id],
         );
-        res.json({ ...asLead(rows[0]), seguimientos, clases_prueba: clasesPrueba });
+        // Without chat_id: on WhatsApp it is the person's phone number.
+        const [conversaciones] = await req.db.execute(
+            'SELECT id, canal, rol, texto, fecha FROM conversaciones_asistente WHERE interesado_id = ? ORDER BY id',
+            [req.params.id],
+        );
+        res.json({ ...asLead(rows[0]), seguimientos, clases_prueba: clasesPrueba, conversaciones });
     } catch (error) {
         serverError('Error fetching interesado:', error, res);
     }

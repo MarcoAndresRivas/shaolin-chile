@@ -26,6 +26,7 @@ Rama: `feat/fase2-clases` (sobre `feat/fase1-sitio-astro`) · Entrega: cadena ap
 | T8a | S1 | inline | hecho (RED 10 fallos → GREEN 149/149) | commit de la API del asistente |
 | T8b | S1 | inline | pendiente (bloqueado: no existe una instancia de n8n) | — |
 | T8c | S1 | inline | hecho (agente 9/9, backend 150/150; conversación completa contra backend y Ollama reales) · pendiente: vincular un número real | commit del puente de WhatsApp |
+| T8d | S1 | inline | hecho (RED 1 fallo → GREEN; backend 151/151, web 50/50, build ok) · sin verificar en navegador | commit del portal (conversaciones) |
 
 - T1: sedes, disciplinas, clases (plantilla semanal) y sesiones; API de administración; pantalla de administración.
 - T2: reservas de sesiones (alumno) y asistencia (instructor).
@@ -37,6 +38,7 @@ Rama: `feat/fase2-clases` (sobre `feat/fase1-sitio-astro`) · Entrega: cadena ap
 - T8a: API que usa el asistente (`/api/asistente`, con clave compartida): sesiones próximas, registrar interesado, agendar clase de prueba y guardar la conversación.
 - T8b: flujo del agente en n8n y chat insertado en la página web.
 - T8c: puente de prueba por WhatsApp (`asistente-whatsapp/`, Baileys, no oficial) con modelo local en Ollama; el backend acepta `whatsapp` como origen y canal.
+- T8d: la ficha del interesado muestra la conversación con el asistente (API y portal).
 
 Ruta: todo inline; sin unidades paralelas ni disparador de writer.
 
@@ -57,3 +59,4 @@ Ruta: todo inline; sin unidades paralelas ni disparador de writer.
 - L13 (2026-11-15): verificador independiente sobre 4b68076 (riesgo: control de acceso nuevo): PASS, sin bloqueantes. Corregidas tres observaciones menores: agendar una clase de prueba sin cuerpo respondía 500 (ahora 400); el máximo de mensajes por llamada baja de 50 a 20, porque 50 mensajes de 4000 caracteres superan el límite de 100 KB del servidor; una clave de solo espacios ya no se acepta. Backend 149/149. Queda como observación: vincular los mensajes anteriores y guardar los nuevos son dos sentencias separadas.
 - L14 (2026-11-15): "antes de continuar instala gentle-ai" y "si, corre gentle-ai sync para habilitar la revision". Instalado gentle-ai 4.1.1 (`go install`) y sincronizada la configuración de Claude Code. Evaluación nativa de T8a (4b68076 y 57834cd): riesgo medio, revisión ofrecida y declinada por el usuario ("Omitir esta vez"); no se creó registro de revisión.
 - L15 (2026-11-15): "mira, recuerda que necesito implementarlo tanto en instagram como en whatsapp" y "continuemos con la opcion whatsmeow o baileys para probar con un numero aparte de whatsapp". Se eligió Baileys porque el backend es Node (whatsmeow es Go). T8c: `asistente-whatsapp/` con el bucle del asistente (`agent.js`, probado con modelo simulado) y la conexión (`index.js`, vinculación por código, sin QR). Decisiones: la persona del chat sale del estado del puente y nunca del modelo; no se registra sin consentimiento; la conversación se guarda solo después del registro; el día de la semana lo calcula el código (el modelo lo inventó en la primera prueba); la presentación como asistente virtual la agrega el código en el primer mensaje. Prueba de punta a punta sin WhatsApp (backend en SQLite temporal + qwen3.5 en Ollama): consultó clases, no inventó precios, pidió consentimiento, registró con origen whatsapp, agendó la clase de prueba y no dio consejo médico; 1 a 10 s por respuesta. No verificado: la conexión real con WhatsApp (necesita el teléfono del número de prueba). Riesgo aceptado por el usuario: librería no oficial, solo con número aparte.
+- L16 (2026-11-15): "ya cree el pull request, continuemos". PR de `feat/asistente-whatsapp-prueba` a main creado por el usuario. T8d en la rama `feat/portal-conversaciones` (apilada sobre la anterior): `GET /api/intranet/interesados/:id` devuelve `conversaciones` (sin `chat_id`, que en WhatsApp es el teléfono) y el panel de interesados las muestra cuando existen. No verificado en navegador.

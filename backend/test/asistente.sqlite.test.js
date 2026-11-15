@@ -175,3 +175,23 @@ test('whatsapp is an origin for people and a channel for conversations', async (
         assert.equal((await knex('conversaciones_asistente').first()).canal, 'whatsapp');
     }, ENV);
 });
+
+test('administration reads the conversation in the detail of the interested person, oldest first', async () => {
+    await withApi(USERS, async ({ call, login }) => {
+        const admin = await login('admin@x.cl');
+        const { body: { id } } = await call('POST', `${BASE}/interesados`, null, lead({ origen: 'whatsapp' }), AUTH);
+        const other = (await call('POST', `${BASE}/interesados`, null, lead({ email: 'otra@example.com' }), AUTH)).body.id;
+        await call('POST', `${BASE}/conversaciones`, null, {
+            canal: 'whatsapp', chat_id: 'wa-1', interesado_id: id, mensajes: [{ rol: 'persona', texto: 'Hola' }, { rol: 'asistente', texto: 'Hola, soy el asistente virtual.' }],
+        }, AUTH);
+        await call('POST', `${BASE}/conversaciones`, null, { canal: 'sitio', chat_id: 'web-9', interesado_id: other, mensajes: [{ rol: 'persona', texto: 'Otra persona' }] }, AUTH);
+
+        const detail = (await call('GET', `/api/intranet/interesados/${id}`, admin)).body;
+        assert.deepEqual(detail.conversaciones.map((m) => [m.canal, m.rol, m.texto]), [
+            ['whatsapp', 'persona', 'Hola'],
+            ['whatsapp', 'asistente', 'Hola, soy el asistente virtual.'],
+        ]);
+        assert.ok(detail.conversaciones.every((m) => m.fecha && !('chat_id' in m)), 'the chat id (a phone number on WhatsApp) is not exposed');
+        assert.deepEqual((await call('GET', `/api/intranet/interesados/${other}`, admin)).body.conversaciones.map((m) => m.texto), ['Otra persona']);
+    }, ENV);
+});
