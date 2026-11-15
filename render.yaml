@@ -25,6 +25,6 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: CORS_ORIGINS
-        value: https://marcoandresrivas.github.io
+        value: https://shaolin-chile.vercel.app,https://marcoandresrivas.github.io
       - key: PORT
         value: 10000

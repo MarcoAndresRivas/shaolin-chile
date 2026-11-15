@@ -75,8 +75,40 @@ Las pruebas usan SQLite (en memoria y en un archivo temporal), así que no neces
 
 - **Backend:** Render, según `render.yaml`. Variables obligatorias: `DB_*`, `JWT_SECRET` y `CORS_ORIGINS`.
 - **Orden al desplegar un cambio de esquema:** primero `npm run migrate` contra la base de producción, después desplegar el backend.
-- **Sitio:** GitHub Pages, desde la rama `gh-pages`.
+- **Sitio oficial:** Vercel (https://shaolin-chile.vercel.app). `vercel.json` hace que Vercel pruebe y compile `web/` y publique solo `web/dist`, en la raíz del dominio. Se actualiza con cada cambio en `main`.
+- **Copia en GitHub Pages:** https://marcoandresrivas.github.io/shaolin-chile/. `.github/workflows/deploy-web.yml` la publica cada vez que cambia `web/` en `main`.
+- El origen de cada sitio debe estar en `CORS_ORIGINS` del backend; si falta, el formulario, el portal y el chat no pueden llamar a la API desde ese dominio.
+
+## API del asistente virtual
+
+El asistente (n8n) llama a `/api/asistente` con la clave compartida en el encabezado `X-Asistente-Key`. La clave se define en la variable `ASISTENTE_API_KEY` del backend (mínimo 32 caracteres; se genera igual que `JWT_SECRET`). Sin esa variable, estas rutas responden 503.
+
+| Ruta | Para qué |
+| --- | --- |
+| `GET /api/asistente/sesiones` | Próximas sesiones programadas: fecha, horario, sede y disciplina |
+| `POST /api/asistente/interesados` | Registra a la persona; mismos campos que `POST /api/interesados`, con `origen` `sitio`, `instagram` o `whatsapp` y `consentimiento: true` |
+| `POST /api/asistente/interesados/:id/clase-prueba` | Agenda la clase de prueba: `{ "sesion_id": 12 }` |
+| `POST /api/asistente/conversaciones` | Guarda mensajes: `{ "canal": "sitio", "chat_id": "...", "interesado_id": 3, "mensajes": [{ "rol": "persona", "texto": "..." }] }`. `interesado_id` es opcional; al enviarlo, los mensajes anteriores del mismo chat quedan vinculados a esa persona |
 
 ## Contribuir
 
 Ver [CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Chat de la página
+
+El sitio muestra un chat con el asistente virtual en todas las páginas. Llama a `POST /api/chat` con `{ "mensaje": "...", "chat_id": "..." }` (`chat_id` es opcional y lo entrega la primera respuesta) y recibe `{ "chat_id", "respuesta" }`. Límite: 30 mensajes cada 10 minutos por visitante.
+
+El chat se enciende cuando el backend tiene `ASISTENTE_API_KEY` y un modelo de IA configurado. Sin eso responde 503 y el sitio ofrece WhatsApp.
+
+| Variable | Para qué |
+| --- | --- |
+| `ASISTENTE_MODELO_URL` | Dirección del proveedor, en formato OpenAI. Ollama local: `http://localhost:11434/v1` |
+| `ASISTENTE_MODELO` | Nombre del modelo, por ejemplo `qwen3.5:latest` |
+| `ASISTENTE_MODELO_KEY` | Clave del proveedor (Ollama local no la necesita) |
+| `ASISTENTE_MODELO_RAZONAMIENTO` | Opcional. `none` hace que los modelos con razonamiento respondan más rápido |
+
+Cambiar de proveedor (Ollama, Gemini, OpenRouter, Groq) es cambiar estas variables, no el código. La conversación se guarda solo después de que la persona autoriza guardar sus datos; las conversaciones en curso viven en la memoria del servidor y se pierden al reiniciarlo.
+
+Para probarlo en local, el origen del sitio de desarrollo (`http://localhost:4321`) debe estar en `CORS_ORIGINS`.
+
+Para probar el asistente por WhatsApp con un número aparte, ver `asistente-whatsapp/README.md`.

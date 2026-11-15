@@ -54,6 +54,8 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
     login: (email, password) => request('POST', '/api/login', { email, password }, { auth: false }),
     catalogo: () => request('GET', '/api/catalogo', undefined, { auth: false }),
     registrarInteresado: (data) => request('POST', '/api/interesados', data, { auth: false }),
+    // chatId continues a conversation; without it the server starts a new one.
+    chat: (mensaje, chatId) => request('POST', '/api/chat', { mensaje, ...(chatId && { chat_id: chatId }) }, { auth: false }),
     usuarios: () => request('GET', '/api/intranet/usuarios'),
     horarios: () => request('GET', '/api/intranet/horarios'),
     misReservas: () => request('GET', '/api/intranet/mis-reservas'),

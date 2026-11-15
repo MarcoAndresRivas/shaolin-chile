@@ -11,7 +11,8 @@ const { createApp } = require('../src/app');
 const { withServer } = require('./helpers');
 
 // users: [[nombre, email, roles]]. Each password is `${nombre}-pw`.
-async function withApi(users, fn, { env = {} } = {}) {
+// assistantModel replaces the real AI model of the site's chat.
+async function withApi(users, fn, { env = {}, assistantModel } = {}) {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'shaolin-api-'));
     const config = loadConfig({
         JWT_SECRET: 'a-long-random-secret-used-only-in-tests-0123456789',
@@ -26,7 +27,7 @@ async function withApi(users, fn, { env = {} } = {}) {
             await upsertUser(knex, { nombre, email, password: `${nombre}-pw`, roles });
         }
         database = await createDatabase(config);
-        await withServer(createApp({ config, db: database.db }), async (baseUrl) => {
+        await withServer(createApp({ config, db: database.db, assistantModel }), async (baseUrl) => {
             const call = async (method, url, token, body, headers = {}) => {
                 const res = await fetch(`${baseUrl}${url}`, {
                     method,

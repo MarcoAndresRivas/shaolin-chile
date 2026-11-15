@@ -304,3 +304,15 @@ test('the grades and exams endpoints use their routes and methods', async () => 
         ],
     );
 });
+
+test('the chat is public: the first message starts a conversation and the chat id continues it', async () => {
+  const { fetchImpl, calls } = fakeFetch(200, { chat_id: 'c1', respuesta: 'Hola' });
+  const api = createApi({ baseUrl: '', fetchImpl, getToken: () => null });
+  assert.deepEqual(await api.chat('Hola'), { chat_id: 'c1', respuesta: 'Hola' });
+  await api.chat('Gracias', 'c1');
+  assert.deepEqual(
+    calls.map((c) => `${c.options.method} ${c.url} ${c.options.body}`),
+    ['POST /api/chat {"mensaje":"Hola"}', 'POST /api/chat {"mensaje":"Gracias","chat_id":"c1"}'],
+  );
+  assert.equal(calls[0].options.headers.Authorization, undefined);
+});

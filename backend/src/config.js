@@ -66,9 +66,23 @@ function loadConfig(env = process.env) {
         throw new ConfigError('JWT_SECRET uses a known public value. Set a new random secret.');
     }
 
+    // Optional: without it the assistant routes stay off. A short key could be guessed.
+    const asistenteApiKey = env.ASISTENTE_API_KEY || '';
+    if (asistenteApiKey && asistenteApiKey.trim().length < 32) {
+        throw new ConfigError('ASISTENTE_API_KEY must have at least 32 characters.');
+    }
+
     return {
         port: Number(env.PORT) || 3000,
         jwtSecret,
+        asistenteApiKey,
+        // The AI model of the site's chat: any provider with the OpenAI chat format.
+        asistenteModelo: {
+            url: env.ASISTENTE_MODELO_URL || '',
+            model: env.ASISTENTE_MODELO || '',
+            key: env.ASISTENTE_MODELO_KEY || '',
+            reasoning: env.ASISTENTE_MODELO_RAZONAMIENTO || '',
+        },
         corsOrigins: parseOrigins(env.CORS_ORIGINS),
         ...loadDbConfig(env),
     };

@@ -107,6 +107,24 @@ function LeadDetail({ id, onChanged, onUnauthorized }) {
         </button>
       </div>
 
+      {lead.conversaciones?.length > 0 && (
+        <>
+          <h3>Conversación con el asistente</h3>
+          <ul className="list">
+            {lead.conversaciones.map((m) => (
+              <li key={m.id} className="list__item">
+                <div>
+                  <p className="list__title">{m.texto}</p>
+                  <p className="muted">
+                    {String(m.fecha).slice(0, 16).replace('T', ' ')} · {m.rol === 'asistente' ? 'Asistente' : lead.nombre} · {m.canal}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
       <h3>Seguimiento</h3>
       <ul className="list">
         {lead.seguimientos.map((n) => (

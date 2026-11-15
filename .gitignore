@@ -31,3 +31,6 @@ backend/data/
 # Astro
 web/dist/
 web/.astro/
+
+# WhatsApp test bridge: the linked session (credentials)
+asistente-whatsapp/auth/

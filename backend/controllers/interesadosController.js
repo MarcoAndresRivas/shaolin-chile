@@ -6,7 +6,7 @@ const { todayInChile } = require('../src/dates');
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+\d][\d\s()-]{5,24}$/;
-const PUBLIC_ORIGINS = ['sitio', 'instagram'];
+const PUBLIC_ORIGINS = ['sitio', 'instagram', 'whatsapp'];
 const ESTADOS = ['nuevo', 'contactado', 'clase_prueba', 'inscrito', 'descartado'];
 const TRIAL_ESTADOS = ['agendada', 'asistio', 'no_asistio', 'cancelada'];
 const OPEN_ESTADOS = ['nuevo', 'contactado', 'clase_prueba'];
@@ -119,7 +119,12 @@ exports.getInteresado = async (req, res) => {
              LEFT JOIN sesiones se ON se.id = c.sesion_id WHERE c.interesado_id = ? ORDER BY c.id`,
             [req.params.id],
         );
-        res.json({ ...asLead(rows[0]), seguimientos, clases_prueba: clasesPrueba });
+        // Without chat_id: on WhatsApp it is the person's phone number.
+        const [conversaciones] = await req.db.execute(
+            'SELECT id, canal, rol, texto, fecha FROM conversaciones_asistente WHERE interesado_id = ? ORDER BY id',
+            [req.params.id],
+        );
+        res.json({ ...asLead(rows[0]), seguimientos, clases_prueba: clasesPrueba, conversaciones });
     } catch (error) {
         serverError('Error fetching interesado:', error, res);
     }
@@ -152,7 +157,7 @@ exports.addSeguimiento = async (req, res) => {
 };
 
 exports.agendarClasePrueba = async (req, res) => {
-    const { sesion_id } = req.body;
+    const { sesion_id } = req.body ?? {};
     try {
         const [people] = await req.db.execute('SELECT id, estado FROM interesados WHERE id = ?', [req.params.id]);
         if (!people.length) return notFound(res, 'Interesado no encontrado.');
