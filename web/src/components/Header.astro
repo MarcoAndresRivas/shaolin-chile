@@ -1,0 +1,347 @@
+---
+import { PALETTES } from '../lib/palettes.js';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const home = `${base}/`;
+const links = [
+  { href: `${home}#nosotros`, label: 'Nosotros' },
+  { href: `${home}#disciplinas`, label: 'Disciplinas' },
+  { href: `${home}#beneficios`, label: 'Beneficios' },
+  { href: `${home}#sedes`, label: 'Sedes' },
+  { href: `${base}/instructores/`, label: 'Instructores' },
+  { href: `${home}#galeria`, label: 'Galería' },
+];
+---
+
+<header class="header">
+  <div class="container header__inner">
+    <a class="brand" href={home} aria-label="Shaolin Chile, inicio">
+      <span class="brand__mark" aria-hidden="true">少林</span>
+      <span class="brand__text">
+        <strong>Shaolin Chile</strong>
+        <small>Kung Fu tradicional</small>
+      </span>
+    </a>
+
+    <div class="header__tools">
+      <div class="palette">
+        <button class="palette__toggle" type="button" aria-expanded="false" aria-controls="palette-menu" aria-label="Cambiar la paleta de colores" title="Cambiar la paleta de colores">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1 .8-1.7 1.8-1.7H17a4 4 0 0 0 4-4C21 6.4 17 3 12 3Z" />
+            <circle cx="7.5" cy="11" r="1" fill="currentColor" />
+            <circle cx="10" cy="7" r="1" fill="currentColor" />
+            <circle cx="15" cy="7" r="1" fill="currentColor" />
+          </svg>
+        </button>
+        <div id="palette-menu" class="palette__menu" role="group" aria-label="Paleta de colores" hidden>
+          {PALETTES.map((palette) => (
+            <button type="button" class="palette__option" data-palette={palette.id} aria-pressed="false">
+              <span class="palette__swatches" aria-hidden="true">
+                {palette.swatches.map((color) => <span style={`background:${color}`} />)}
+              </span>
+              {palette.name}
+            </button>
+          ))}
+        </div>
+      </div>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+        <span class="sr-only">Abrir menú</span>
+        <span class="menu-toggle__bar" aria-hidden="true"></span>
+      </button>
+    </div>
+
+    <nav id="site-nav" class="nav" aria-label="Principal">
+      <ul>
+        {links.map((link) => <li><a href={link.href}>{link.label}</a></li>)}
+      </ul>
+      <a class="nav__login" href={`${base}/ingresar/`}>Ingresar</a>
+      <a class="btn btn--red nav__cta" href={`${home}#clase-de-prueba`}>Clase de prueba</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  // Palette picker: the choice is kept in this browser and applied before the page paints (see Base.astro).
+  const paletteToggle = document.querySelector<HTMLButtonElement>('.palette__toggle');
+  const paletteMenu = document.getElementById('palette-menu');
+  const options = [...document.querySelectorAll<HTMLButtonElement>('.palette__option')];
+  if (paletteToggle && paletteMenu) {
+    const current = () => document.documentElement.dataset.palette ?? 'clasica';
+    const markCurrent = () => options.forEach((option) => option.setAttribute('aria-pressed', String(option.dataset.palette === current())));
+    const setMenu = (open: boolean) => {
+      paletteMenu.hidden = !open;
+      paletteToggle.setAttribute('aria-expanded', String(open));
+    };
+    markCurrent();
+    paletteToggle.addEventListener('click', () => setMenu(paletteMenu.hidden));
+    options.forEach((option) =>
+      option.addEventListener('click', () => {
+        document.documentElement.dataset.palette = option.dataset.palette;
+        try {
+          localStorage.setItem('shaolin_palette', option.dataset.palette ?? '');
+        } catch {
+          // Private window or blocked storage: the palette still changes for this visit.
+        }
+        const meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
+        markCurrent();
+        setMenu(false);
+        paletteToggle.focus();
+      }),
+    );
+    document.addEventListener('click', (event) => {
+      if (!paletteMenu.hidden && !(event.target as HTMLElement).closest('.palette')) setMenu(false);
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !paletteMenu.hidden) {
+        setMenu(false);
+        paletteToggle.focus();
+      }
+    });
+  }
+
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const nav = document.getElementById('site-nav');
+  if (toggle && nav) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      nav.classList.toggle('is-open', open);
+    };
+    toggle.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+    nav.addEventListener('click', (event) => {
+      if ((event.target as HTMLElement).closest('a')) setOpen(false);
+    });
+  }
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgb(var(--bg-rgb) / 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border);
+  }
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 72px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+  }
+  .brand__mark {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--red);
+    color: var(--gold-soft);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.05em;
+  }
+  .brand__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+  .brand__text strong {
+    font-family: var(--font-display);
+    color: var(--gold);
+    font-size: 1.15rem;
+  }
+  .brand__text small {
+    color: var(--muted);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .header__tools {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    order: 3;
+  }
+  .palette {
+    position: relative;
+  }
+  .palette__toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--gold);
+    cursor: pointer;
+  }
+  .palette__toggle:hover,
+  .palette__toggle[aria-expanded='true'] {
+    border-color: var(--gold);
+  }
+  .palette__menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 60;
+    display: grid;
+    min-width: 200px;
+    padding: 8px;
+    gap: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  }
+  .palette__menu[hidden] {
+    display: none;
+  }
+  .palette__option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .palette__option:hover {
+    background: var(--surface);
+  }
+  .palette__option[aria-pressed='true'] {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+  .palette__swatches {
+    display: inline-flex;
+  }
+  .palette__swatches span {
+    width: 18px;
+    height: 18px;
+    margin-left: -5px;
+    border: 2px solid var(--surface-2);
+    border-radius: 50%;
+  }
+  .palette__swatches span:first-child {
+    margin-left: 0;
+    outline: 1px solid var(--border);
+  }
+  .nav {
+    order: 2;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+  .nav ul {
+    display: flex;
+    gap: 22px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .nav ul a {
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--text);
+    transition: color 0.2s;
+  }
+  .nav ul a:hover {
+    color: var(--gold);
+  }
+  .nav__login {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--gold);
+    text-decoration: none;
+  }
+  .nav__login:hover {
+    color: var(--gold-soft);
+  }
+  .nav__cta {
+    padding: 10px 18px;
+  }
+  .menu-toggle {
+    display: none;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    cursor: pointer;
+    position: relative;
+  }
+  .menu-toggle__bar,
+  .menu-toggle__bar::before,
+  .menu-toggle__bar::after {
+    position: absolute;
+    left: 11px;
+    width: 20px;
+    height: 2px;
+    background: var(--text);
+    content: '';
+  }
+  .menu-toggle__bar {
+    top: 21px;
+  }
+  .menu-toggle__bar::before {
+    left: 0;
+    top: -6px;
+  }
+  .menu-toggle__bar::after {
+    left: 0;
+    top: 6px;
+  }
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 980px) {
+    .menu-toggle {
+      display: block;
+    }
+    .nav {
+      display: none;
+      position: absolute;
+      top: 72px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+      padding: 20px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav.is-open {
+      display: flex;
+    }
+    .nav ul {
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav ul a {
+      display: block;
+      padding: 10px 0;
+      font-size: 1rem;
+    }
+  }
+</style>

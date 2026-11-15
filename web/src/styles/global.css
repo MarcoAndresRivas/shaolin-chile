@@ -1,0 +1,241 @@
+:root {
+  --bg: #0b0b0c;
+  --surface: #141416;
+  --surface-2: #1c1c1f;
+  --border: #2a2a2e;
+  --text: #f2efe9;
+  --muted: #a9a49b;
+  --gold: #d4af37;
+  --gold-soft: #e6c869;
+  --red: #9e1b1b;
+  --red-strong: #b82222;
+  /* Used by the page chrome and by the pieces that cannot hard-code a color. */
+  --bg-rgb: 11 11 12;
+  --footer-bg: #080809;
+  --on-gold: #141414; /* text on a --gold background */
+  --soft: #d8d3ca; /* body text a little softer than --text */
+  --danger: #b82222; /* errors stay red in every palette */
+  --alert-text: #ffb4b4;
+  --radius: 10px;
+  --max: 1180px;
+  --font-display: 'Cinzel', Georgia, serif;
+  --font-body: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+/* Palettes: the visitor picks one with the button in the header. The default (Clásica) is the :root block above. */
+:root[data-palette='jade'] {
+  --bg: #08110e;
+  --bg-rgb: 8 17 14;
+  --surface: #0f1b17;
+  --surface-2: #15261f;
+  --border: #223a31;
+  --text: #edf5f0;
+  --muted: #9db3a8;
+  --gold: #5fc59a;
+  --gold-soft: #8fe0bd;
+  --red: #1f6f54;
+  --red-strong: #23805f;
+  --footer-bg: #060d0b;
+  --on-gold: #06140f;
+  --soft: #cfe0d6;
+  --danger: #c0392b;
+  --alert-text: #ffb4b4;
+}
+
+:root[data-palette='noche'] {
+  --bg: #090d16;
+  --bg-rgb: 9 13 22;
+  --surface: #111826;
+  --surface-2: #172033;
+  --border: #26324a;
+  --text: #eef1f8;
+  --muted: #9aa6bd;
+  --gold: #7fb2ff;
+  --gold-soft: #a9cbff;
+  --red: #3555b8;
+  --red-strong: #4a6fd6;
+  --footer-bg: #070a12;
+  --on-gold: #07101f;
+  --soft: #cdd5e6;
+  --danger: #c0392b;
+  --alert-text: #ffb4b4;
+}
+
+:root[data-palette='pergamino'] {
+  --bg: #f6f0e4;
+  --bg-rgb: 246 240 228;
+  --surface: #fcf9f2;
+  --surface-2: #ffffff;
+  --border: #ddd2bc;
+  --text: #211d17;
+  --muted: #6b6253;
+  --gold: #8a5d00;
+  --gold-soft: #946300;
+  --red: #9e1b1b;
+  --red-strong: #b82222;
+  --footer-bg: #ece3d0;
+  --on-gold: #ffffff;
+  --soft: #4a4236;
+  --danger: #b82222;
+  --alert-text: #8f1d1d;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  line-height: 1.15;
+  margin: 0 0 0.5em;
+  text-wrap: balance;
+}
+
+p {
+  margin: 0 0 1em;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.section {
+  padding: 96px 0;
+}
+
+.section--alt {
+  background: var(--surface);
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--gold);
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+
+.eyebrow::before {
+  content: '';
+  width: 36px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.section-head {
+  max-width: 680px;
+  margin-bottom: 48px;
+}
+
+.section-head h2 {
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
+}
+
+.section-head p {
+  color: var(--muted);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: inherit;
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn--gold {
+  background: var(--gold);
+  color: var(--on-gold);
+}
+
+.btn--gold:hover {
+  background: var(--gold-soft);
+}
+
+.btn--red {
+  background: var(--red);
+  color: #fff;
+}
+
+.btn--red:hover {
+  background: var(--red-strong);
+}
+
+/* Follows the text color: white over the dark hero, dark on the light palette. */
+.btn--ghost {
+  border-color: color-mix(in srgb, var(--text) 70%, transparent);
+  color: var(--text);
+}
+
+.btn--ghost:hover {
+  background: color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.pending {
+  color: var(--muted);
+  font-style: italic;
+}
+
+:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .section {
+    padding: 64px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

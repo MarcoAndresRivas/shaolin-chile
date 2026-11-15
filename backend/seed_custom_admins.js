@@ -1,53 +1,25 @@
-require('dotenv').config();
-const mysql = require('mysql2/promise');
-const bcrypt = require('bcrypt');
+// Creates or updates the team's administrator accounts.
+// Usage: set SEED_MAXI_PASSWORD, SEED_BENJA_PASSWORD and SEED_MARCO_PASSWORD
+// in backend/.env, then `npm run seed:team`.
+require('dotenv').config({ quiet: true });
+const { requireEnv, runSeed } = require('./src/seedUser');
 
-async function seedCustomAdmins() {
-    let connection;
-    try {
-        console.log('Conectando al servidor MySQL para crear administradores...');
-        connection = await mysql.createConnection({
-            host: process.env.DB_SERVER || 'localhost',
-            user: process.env.DB_USER || 'root',
-            password: process.env.DB_PASSWORD || '',
-            database: process.env.DB_DATABASE || 'shaolin_chile'
-        });
+const TEAM = [
+    { nombre: 'Maxi Muñoz Cretier', email: 'maxi@shaolinchile.cl', passwordVar: 'SEED_MAXI_PASSWORD' },
+    { nombre: 'Benja Muñoz Cretier', email: 'benja@shaolinchile.cl', passwordVar: 'SEED_BENJA_PASSWORD' },
+    { nombre: 'Marco Rivas Molina', email: 'marco@shaolinchile.cl', passwordVar: 'SEED_MARCO_PASSWORD' },
+];
 
-        const admins = [
-            { nombre: 'Maxi Muñoz Cretier', email: 'maxi@shaolinchile.cl', rawPass: 'maxi2026' },
-            { nombre: 'Benja Muñoz Cretier', email: 'benja@shaolinchile.cl', rawPass: 'benja2026' },
-            { nombre: 'Marco Rivas Molina', email: 'marco@shaolinchile.cl', rawPass: 'marco2026' }
-        ];
-
-        const rolId = 2; // Administrador
-        const saltRounds = 10;
-
-        for (const admin of admins) {
-            console.log(`Procesando usuario: ${admin.nombre} (${admin.email})...`);
-            const passwordHash = await bcrypt.hash(admin.rawPass, saltRounds);
-
-            const query = `
-                INSERT INTO usuarios (nombre, email, password_hash, rol_id)
-                VALUES (?, ?, ?, ?)
-                ON DUPLICATE KEY UPDATE 
-                nombre = VALUES(nombre), 
-                password_hash = VALUES(password_hash), 
-                rol_id = VALUES(rol_id)
-            `;
-
-            await connection.execute(query, [admin.nombre, admin.email, passwordHash, rolId]);
-            console.log(`✅ ${admin.nombre} creado como Administrador.`);
-        }
-
-        console.log('¡Todos los administradores fueron creados exitosamente!');
-
-    } catch (error) {
-        console.error('Error al crear administradores:', error);
-    } finally {
-        if (connection) {
-            await connection.end();
-        }
-    }
+let users;
+try {
+    users = TEAM.map(({ passwordVar, ...user }) => ({
+        ...user,
+        password: requireEnv(process.env, passwordVar),
+        roles: ['Administrador'],
+    }));
+} catch (error) {
+    console.error(error.message);
+    process.exit(1);
 }
 
-seedCustomAdmins();
+runSeed(users);

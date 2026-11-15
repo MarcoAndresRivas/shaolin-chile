@@ -1,5 +1,28 @@
 const jwt = require('jsonwebtoken');
 
+const ADMIN_ROLES = ['Director', 'Administrador', 'Desarrollador'];
+
+// Tokens issued before usuario_roles existed only carry the legacy rol_id.
+// They expire after 8 hours; until then they keep their previous permissions.
+const LEGACY_ROLE_NAMES = {
+    1: 'Desarrollador',
+    2: 'Administrador',
+    3: 'Colaborador',
+    4: 'Externo',
+    5: 'Alumno',
+};
+
+function rolesOf(user) {
+    if (!user) return [];
+    if (Array.isArray(user.roles)) return user.roles;
+    const legacy = LEGACY_ROLE_NAMES[user.rol_id];
+    return legacy ? [legacy] : [];
+}
+
+function hasAnyRole(user, allowed) {
+    return rolesOf(user).some((role) => allowed.includes(role));
+}
+
 exports.verifyToken = (req, res, next) => {
     const token = req.headers['authorization'];
 
@@ -11,7 +34,7 @@ exports.verifyToken = (req, res, next) => {
         // Bearer <token>
         const tokenString = token.startsWith('Bearer ') ? token.slice(7, token.length) : token;
 
-        const decoded = jwt.verify(tokenString, process.env.JWT_SECRET || 'fallback_secret');
+        const decoded = jwt.verify(tokenString, req.app.locals.config.jwtSecret);
         req.user = decoded;
         next();
     } catch (err) {
@@ -19,11 +42,11 @@ exports.verifyToken = (req, res, next) => {
     }
 };
 
-// Middleware to check if user has Admin role (rol_id 1 or 2)
 exports.isAdmin = (req, res, next) => {
-    if (req.user && (req.user.rol_id === 1 || req.user.rol_id === 2)) {
-        next();
-    } else {
-        return res.status(403).json({ error: 'Acceso denegado. Requiere privilegios de administrador.' });
-    }
+    if (hasAnyRole(req.user, ADMIN_ROLES)) return next();
+    return res.status(403).json({ error: 'Acceso denegado. Requiere privilegios de administrador.' });
 };
+
+exports.rolesOf = rolesOf;
+exports.hasAnyRole = hasAnyRole;
+exports.ADMIN_ROLES = ADMIN_ROLES;

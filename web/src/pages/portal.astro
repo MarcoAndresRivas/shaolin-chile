@@ -1,0 +1,12 @@
+---
+import Base from '../layouts/Base.astro';
+import Portal from '../components/portal/Portal.jsx';
+---
+
+<Base title="Portal" description="Portal de alumnos y administración de Shaolin Chile." noindex>
+  <section class="section">
+    <div class="container">
+      <Portal client:only="react" />
+    </div>
+  </section>
+</Base>

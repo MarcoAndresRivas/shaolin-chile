@@ -1,55 +1,33 @@
-const express = require('express');
-const cors = require('cors');
-const mysql = require('mysql2/promise');
-require('dotenv').config();
+require('dotenv').config({ quiet: true });
+const { loadConfig } = require('./src/config');
+const { createApp } = require('./src/app');
+const { createDatabase } = require('./src/db');
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+async function main() {
+    let config;
+    try {
+        config = loadConfig(process.env);
+    } catch (error) {
+        console.error(`Configuration error: ${error.message}`);
+        process.exit(1);
+    }
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+    const database = await createDatabase(config);
+    const app = createApp({ config, db: database.db });
 
-// Database Setup
-const dbConfig = {
-    host: process.env.DB_SERVER || 'localhost',
-    user: process.env.DB_USER || 'root',
-    password: process.env.DB_PASSWORD || '',
-    database: process.env.DB_DATABASE || 'shaolin_chile',
-    port: process.env.DB_PORT || 3306,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-};
-
-if (process.env.DB_SSL === 'true' || (process.env.DB_SERVER && process.env.DB_SERVER.includes('aivencloud'))) {
-    dbConfig.ssl = { rejectUnauthorized: false };
+    app.listen(config.port, async () => {
+        console.log(`Server is running on port ${config.port}`);
+        const target = config.dbClient === 'sqlite' ? `SQLite file ${config.sqliteFile}` : 'the MySQL database';
+        try {
+            await database.ping();
+            console.log(`Connected to ${target}.`);
+        } catch (err) {
+            console.error(`Error connecting to ${target}:`, err.message);
+        }
+    });
 }
 
-const pool = mysql.createPool(dbConfig);
-
-// Pass db pool to routes
-app.use((req, res, next) => {
-    req.db = pool;
-    next();
-});
-
-// Routes
-const authRoutes = require('./routes/auth');
-const intranetRoutes = require('./routes/intranet');
-
-app.use('/api', authRoutes);
-app.use('/api/intranet', intranetRoutes);
-
-app.listen(PORT, async () => {
-    console.log(`Server is running on port ${PORT}`);
-
-    // Check DB Connection
-    try {
-        const connection = await pool.getConnection();
-        console.log('Connected to the MySQL database.');
-        connection.release();
-    } catch (err) {
-        console.error('Error connecting to MySQL database:', err.message);
-    }
+main().catch((error) => {
+    console.error('Startup failed:', error);
+    process.exit(1);
 });
