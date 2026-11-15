@@ -11,6 +11,8 @@
 .chat__panel {
   display: grid;
   grid-template-rows: auto 1fr auto;
+  /* minmax(0, ...) keeps a wide child from stretching the panel past its width. */
+  grid-template-columns: minmax(0, 1fr);
   width: min(360px, calc(100vw - 32px));
   height: min(520px, calc(100dvh - 96px));
   background: var(--surface);
@@ -125,6 +127,10 @@
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+}
+
+.chat__row .btn {
+  padding: 0 16px;
 }
 
 .chat__note {

@@ -24,23 +24,15 @@ const systemPrompt = (canal) => `Eres el asistente virtual de Shaolin Chile, una
 Reglas:
 - En tu primer mensaje preséntate como asistente virtual.
 - Responde en español, breve y con respeto. Escribe texto simple, sin Markdown ni asteriscos.
-- Cuando necesites datos, usa la herramienta en ese mismo momento. Nunca digas que vas a revisar algo sin haberlo revisado.
-- Lo único que sabes de la escuela son las clases que entrega la herramienta ver_clases. No inventes precios, horarios, direcciones ni ningún otro dato: si no lo tienes, di que una persona del equipo responderá.
-- Al mencionar una clase, usa el día, la fecha y el horario tal como los entrega ver_clases.
+- Lo único que sabes de la escuela son las clases de la lista "Clases programadas" que está al final. No existe ninguna otra clase. No inventes clases, precios, horarios, direcciones ni ningún otro dato: si no lo tienes, di que una persona del equipo responderá.
+- Al mencionar una clase, copia el día, la fecha, el horario, la sede y la disciplina tal como están en la lista. Escribe las horas con números (por ejemplo 10:00), nunca con palabras.
+- Si preguntan qué clases hay, muestra las de la lista sin pedir antes más datos.
 - No entregues consejos médicos ni sobre lesiones.
 - Antes de registrar a alguien, pídele su nombre y su correo, y pregúntale si autoriza a Shaolin Chile a guardar esos datos para contactarlo. Usa registrar_interesado solo si responde que sí.
-- Para agendar una clase de prueba, primero registra a la persona y después usa agendar_clase_prueba con el id de una clase que entregó ver_clases.
+- Para agendar una clase de prueba, primero registra a la persona y después usa agendar_clase_prueba con el id de una clase de la lista.
 - Si hay un reclamo, o la persona pide hablar con alguien, di que una persona del equipo responderá.`;
 
 const TOOLS = [
-    {
-        type: 'function',
-        function: {
-            name: 'ver_clases',
-            description: 'Lista las próximas clases programadas: id, día, fecha, horario, sede y disciplina.',
-            parameters: { type: 'object', properties: {} },
-        },
-    },
     {
         type: 'function',
         function: {
@@ -64,7 +56,7 @@ const TOOLS = [
             description: 'Agenda una clase de prueba para la persona ya registrada en este chat.',
             parameters: {
                 type: 'object',
-                properties: { sesion_id: { type: 'integer', description: 'id de la clase, tomado de ver_clases' } },
+                properties: { sesion_id: { type: 'integer', description: 'id de la clase, tomado de la lista de clases programadas' } },
                 required: ['sesion_id'],
             },
         },
@@ -87,12 +79,6 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
     // Every action the model can take. The person of the chat comes from
     // `state`, never from the model, so it cannot act on someone else.
     const actions = {
-        async ver_clases() {
-            const { body } = await api('GET', '/sesiones');
-            if (!Array.isArray(body)) return { error: 'No se pudieron consultar las clases.' };
-            // The weekday comes from here, so the model does not have to work it out.
-            return body.slice(0, 30).map((sesion) => ({ ...sesion, dia: WEEKDAY.format(new Date(`${sesion.fecha}T12:00:00Z`)) }));
-        },
         async registrar_interesado(args, state) {
             if (args.consentimiento !== true) return { error: 'Falta el consentimiento de la persona para guardar sus datos.' };
             const { status, body } = await api('POST', '/interesados', {
@@ -109,6 +95,24 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
         },
     };
 
+    // The classes are read here and handed to the model on every message: a
+    // model left to ask for them sometimes answers with classes it made up.
+    async function classesText() {
+        const unknown = 'No se pudieron consultar. Di que una persona del equipo informará las clases.';
+        try {
+            const { body } = await api('GET', '/sesiones');
+            if (!Array.isArray(body)) return unknown;
+            if (!body.length) return 'No hay clases programadas por ahora.';
+            // The weekday comes from here, so the model does not have to work it out.
+            return body.slice(0, 30)
+                .map((s) => `- id ${s.id}: ${WEEKDAY.format(new Date(`${s.fecha}T12:00:00Z`))} ${s.fecha}, de ${s.hora_inicio} a ${s.hora_fin}, ${s.disciplina}, sede ${s.sede}`)
+                .join('\n');
+        } catch (error) {
+            console.error('The assistant could not read the classes:', error.message);
+            return unknown;
+        }
+    }
+
     async function run(name, args, state) {
         if (!Object.hasOwn(actions, name)) return { error: `La herramienta ${name} no existe.` };
         try {
@@ -122,7 +126,8 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
     // state: { history: [], interesadoId: null }, one per chat. Returns the text to send.
     async function handle(state, text) {
         const today = new Intl.DateTimeFormat('es-CL', { dateStyle: 'full', timeZone: 'America/Santiago' }).format(now());
-        const messages = [{ role: 'system', content: `${systemPrompt(canal)}\n\nHoy es ${today}.` }, ...state.history, { role: 'user', content: text }];
+        const system = `${systemPrompt(canal)}\n\nHoy es ${today}.\n\nClases programadas:\n${await classesText()}`;
+        const messages = [{ role: 'system', content: system }, ...state.history, { role: 'user', content: text }];
 
         try {
             for (let step = 0; step < MAX_STEPS; step += 1) {

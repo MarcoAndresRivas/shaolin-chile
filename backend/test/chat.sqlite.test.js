@@ -52,7 +52,7 @@ test('a visitor chats without logging in, and the chat id keeps the conversation
 
 test('through the chat a person sees the classes, registers with consent and books a trial class', async () => {
     const script = [
-        use('ver_clases'), say('Hay una clase.'),
+        say('Hay una clase.'),
         use('registrar_interesado', { nombre: 'Juan Pérez', email: 'juan@example.com', consentimiento: true }),
         use('agendar_clase_prueba', { sesion_id: 0 }), // replaced below with the real id
         say('Quedaste agendado.'),
@@ -67,11 +67,11 @@ test('through the chat a person sees the classes, registers with consent and boo
         })).body;
         await call('POST', `/api/intranet/clases/${clase.id}/sesiones`, admin, { desde: fecha, hasta: fecha });
         const sesion = await knex('sesiones').first();
-        script[3] = use('agendar_clase_prueba', { sesion_id: sesion.id });
+        script[2] = use('agendar_clase_prueba', { sesion_id: sesion.id });
 
         const first = await call('POST', CHAT, null, { mensaje: '¿Qué clases hay?' });
-        const classes = JSON.parse(seen[1].at(-1).content);
-        assert.deepEqual(classes.map((c) => [c.id, c.fecha, c.hora_inicio]), [[sesion.id, fecha, '19:00']]);
+        const classes = seen[0][0].content.split('Clases programadas:\n')[1];
+        assert.match(classes, new RegExp(`^- id ${sesion.id}: \\S+ ${fecha}, de 19:00 a 20:30, ${disciplina.nombre.replace(/[()]/g, '\\$&')}, sede ${sede.ciudad}$`));
         assert.deepEqual(await knex('conversaciones_asistente'), [], 'nothing is stored before the person agrees');
 
         const second = await call('POST', CHAT, null, { chat_id: first.body.chat_id, mensaje: 'Soy Juan Pérez, juan@example.com. Sí, autorizo.' });

@@ -15,14 +15,15 @@ export default function ChatWidget({ whatsapp }) {
   const chatId = useRef(null);
   const input = useRef(null);
   const toggle = useRef(null);
-  const end = useRef(null);
+  const log = useRef(null);
 
   useEffect(() => {
     if (open) input.current?.focus();
   }, [open]);
 
   useEffect(() => {
-    end.current?.scrollIntoView({ block: 'end' });
+    // Scrolls the list itself: scrollIntoView would also move the page behind the chat.
+    if (log.current) log.current.scrollTop = log.current.scrollHeight;
   }, [messages, sending]);
 
   const close = () => {
@@ -66,7 +67,7 @@ export default function ChatWidget({ whatsapp }) {
             </button>
           </header>
 
-          <div className="chat__messages" role="log" aria-live="polite" tabIndex={0} aria-label="Mensajes">
+          <div className="chat__messages" ref={log} role="log" aria-live="polite" tabIndex={0} aria-label="Mensajes">
             {messages.map((message, index) => (
               <p key={index} className={`chat__message chat__message--${message.from}`}>
                 <span className="chat__who">{message.from === 'assistant' ? 'Asistente: ' : 'Tú: '}</span>
@@ -83,7 +84,6 @@ export default function ChatWidget({ whatsapp }) {
                 .
               </p>
             )}
-            <div ref={end} />
           </div>
 
           <form className="chat__form" onSubmit={send}>

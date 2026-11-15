@@ -19,10 +19,12 @@ function setup(script, responses = {}, canal = 'whatsapp') {
             return next;
         },
         api: async (method, path, body) => {
-            calls.push([method, path, body]);
+            // The classes are read on every message; `calls` keeps what the model asked for.
+            const classes = method === 'GET' && path === '/sesiones';
+            if (!classes) calls.push([method, path, body]);
             const response = responses[`${method} ${path}`];
             if (response instanceof Error) throw response;
-            return response ?? { status: 200, body: {} };
+            return response ?? { status: 200, body: classes ? [] : {} };
         },
     });
     return { agent, calls, seen, state: { history: [], interesadoId: null } };
@@ -43,14 +45,31 @@ test('the first answer always says it is a virtual assistant, and later ones do 
     assert.equal(await agent.handle(state, 'Gracias'), 'Claro.');
 });
 
-test('the model reads the upcoming classes through the API before answering', async () => {
-    const sesiones = [{ id: 7, fecha: '2026-12-05', hora_inicio: '10:00', hora_fin: '12:00', sede: 'Santiago', disciplina: 'Sanda' }];
-    const { agent, state, calls, seen } = setup([use('ver_clases'), say('Hay Sanda el 5 de diciembre.')], {
-        'GET /sesiones': { status: 200, body: sesiones },
-    });
-    assert.match(await agent.handle(state, '¿Qué clases hay?'), /Hay Sanda el 5 de diciembre.$/);
-    assert.deepEqual(calls, [['GET', '/sesiones', undefined]]);
-    assert.deepEqual(lastToolResult(seen), [{ ...sesiones[0], dia: 'sábado' }]);
+const classesIn = (seen) => seen.at(-1)[0].content.split('Clases programadas:\n')[1];
+
+test('the model always receives the real upcoming classes, with their weekday, without having to ask', async () => {
+    const sesiones = [
+        { id: 7, fecha: '2026-12-05', hora_inicio: '10:00', hora_fin: '12:00', sede: 'Santiago', disciplina: 'Sanda' },
+        { id: 9, fecha: '2026-12-07', hora_inicio: '19:00', hora_fin: '20:30', sede: 'Talca', disciplina: 'Tai Chi' },
+    ];
+    const { agent, state, seen } = setup([say('Hay Sanda el sábado.'), say('Sí.')], { 'GET /sesiones': { status: 200, body: sesiones } });
+    await agent.handle(state, 'Hola');
+    assert.equal(classesIn(seen), '- id 7: sábado 2026-12-05, de 10:00 a 12:00, Sanda, sede Santiago\n- id 9: lunes 2026-12-07, de 19:00 a 20:30, Tai Chi, sede Talca');
+    sesiones.pop();
+    await agent.handle(state, '¿Y ahora?');
+    assert.equal(classesIn(seen), '- id 7: sábado 2026-12-05, de 10:00 a 12:00, Sanda, sede Santiago', 'the list is read again on every message');
+});
+
+test('with no classes, or when they cannot be read, the model is told so instead of being left to guess', async () => {
+    const none = setup([say('No hay clases.')]);
+    await none.agent.handle(none.state, 'Hola');
+    assert.equal(classesIn(none.seen), 'No hay clases programadas por ahora.');
+
+    for (const failure of [{ status: 503, body: { error: 'off' } }, new Error('ECONNREFUSED')]) {
+        const down = setup([say('Te responderá una persona.')], { 'GET /sesiones': failure });
+        assert.match(await down.agent.handle(down.state, '¿Qué clases hay?'), /Te responderá una persona\.$/);
+        assert.match(classesIn(down.seen), /^No se pudieron consultar/);
+    }
 });
 
 test('nobody is registered without consent, and the API is not called', async () => {
@@ -96,12 +115,9 @@ test('an API refusal or failure reaches the model as an error instead of breakin
     assert.match(lastToolResult(refused.seen).error, /correo válido/);
     assert.equal(refused.state.interesadoId, null);
 
-    const odd = setup([use('ver_clases'), say('No pude consultar las clases.')], { 'GET /sesiones': { status: 503, body: { error: 'off' } } });
-    await odd.agent.handle(odd.state, 'clases?');
-    assert.ok(lastToolResult(odd.seen).error);
-
-    const down = setup([use('ver_clases'), say('No pude consultar las clases.')], { 'GET /sesiones': new Error('ECONNREFUSED') });
-    assert.match(await down.agent.handle(down.state, 'clases?'), /No pude consultar las clases.$/);
+    const down = setup([use('agendar_clase_prueba', { sesion_id: 7 }), say('No pude agendar.')], { 'POST /interesados/12/clase-prueba': new Error('ECONNREFUSED') });
+    down.state.interesadoId = 12;
+    assert.match(await down.agent.handle(down.state, 'Agéndame'), /No pude agendar\.$/);
     assert.ok(lastToolResult(down.seen).error);
 
     const unknown = setup([use('borrar_todo'), say('No puedo hacer eso.')]);
@@ -111,7 +127,7 @@ test('an API refusal or failure reaches the model as an error instead of breakin
 });
 
 test('when the model fails, loops or says nothing, the person is sent to a human and the history stays clean', async () => {
-    for (const script of [[new Error('model down')], Array(10).fill(null).map(() => use('ver_clases')), [say('  ')]]) {
+    for (const script of [[new Error('model down')], Array(10).fill(null).map(() => use('agendar_clase_prueba', { sesion_id: 1 })), [say('  ')]]) {
         const { agent, state } = setup(script);
         assert.equal(await agent.handle(state, 'Hola'), FALLBACK);
         assert.deepEqual(state.history, []);
@@ -120,7 +136,7 @@ test('when the model fails, loops or says nothing, the person is sent to a human
 
 test('the history sent to the model is capped, and tool traffic is not kept between messages', async () => {
     const script = [];
-    for (let i = 0; i < 15; i += 1) script.push(use('ver_clases'), say(`respuesta ${i}`));
+    for (let i = 0; i < 15; i += 1) script.push(use('agendar_clase_prueba', { sesion_id: 1 }), say(`respuesta ${i}`));
     const { agent, state, seen } = setup(script);
     for (let i = 0; i < 15; i += 1) await agent.handle(state, `mensaje ${i}`);
     assert.equal(state.history.length, 20);
