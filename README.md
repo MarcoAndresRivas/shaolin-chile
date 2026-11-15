@@ -75,7 +75,9 @@ Las pruebas usan SQLite (en memoria y en un archivo temporal), así que no neces
 
 - **Backend:** Render, según `render.yaml`. Variables obligatorias: `DB_*`, `JWT_SECRET` y `CORS_ORIGINS`.
 - **Orden al desplegar un cambio de esquema:** primero `npm run migrate` contra la base de producción, después desplegar el backend.
-- **Sitio:** GitHub Pages, desde la rama `gh-pages`.
+- **Sitio oficial:** Vercel (https://shaolin-chile.vercel.app). `vercel.json` hace que Vercel pruebe y compile `web/` y publique solo `web/dist`, en la raíz del dominio. Se actualiza con cada cambio en `main`.
+- **Copia en GitHub Pages:** https://marcoandresrivas.github.io/shaolin-chile/. `.github/workflows/deploy-web.yml` la publica cada vez que cambia `web/` en `main`.
+- El origen de cada sitio debe estar en `CORS_ORIGINS` del backend; si falta, el formulario, el portal y el chat no pueden llamar a la API desde ese dominio.
 
 ## API del asistente virtual
 
