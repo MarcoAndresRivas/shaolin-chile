@@ -29,6 +29,7 @@ function createApp({ config, db }) {
     app.use('/api', require('../routes/public')({ rateLimit }));
     app.use('/api', require('../routes/auth'));
     app.use('/api/intranet', require('../routes/intranet'));
+    app.use('/api/asistente', require('../routes/asistente'));
 
     return app;
 }

@@ -23,7 +23,8 @@ Rama: `feat/fase2-clases` (sobre `feat/fase1-sitio-astro`) · Entrega: cadena ap
 | T5 | S1 | inline | hecho (RED 8 fallos → GREEN) | b0e6cec (backend), commit del portal (web) |
 | T6 | S1 | inline | hecho (RED 12 fallos → GREEN) | 4f1f293 (backend), commit del portal (web) |
 | T7 | S1, S2 | inline | hecho (RED 12 fallos → GREEN) | 75dc2a1 (backend), commits del portal (web) |
-| T8 | S1 | inline | pendiente | — |
+| T8a | S1 | inline | hecho (RED 10 fallos → GREEN 149/149) | commit de la API del asistente |
+| T8b | S1 | inline | pendiente (bloqueado: no existe una instancia de n8n) | — |
 
 - T1: sedes, disciplinas, clases (plantilla semanal) y sesiones; API de administración; pantalla de administración.
 - T2: reservas de sesiones (alumno) y asistencia (instructor).
@@ -32,7 +33,8 @@ Rama: `feat/fase2-clases` (sobre `feat/fase1-sitio-astro`) · Entrega: cadena ap
 - T5: cuentas familiares (apoderado y alumnos a cargo).
 - T6: estado de cuenta, cargos, pagos por transferencia y morosidad.
 - T7: grados, requisitos y exámenes.
-- T8: asistente virtual en la página web (n8n).
+- T8a: API que usa el asistente (`/api/asistente`, con clave compartida): sesiones próximas, registrar interesado, agendar clase de prueba y guardar la conversación.
+- T8b: flujo del agente en n8n y chat insertado en la página web.
 
 Ruta: todo inline; sin unidades paralelas ni disparador de writer.
 
@@ -49,3 +51,4 @@ Ruta: todo inline; sin unidades paralelas ni disparador de writer.
 - L9 (2026-11-13): "hace la separacion en pestañas del portal". Pestañas accesibles (tablist/tab/tabpanel, flechas, Inicio/Fin) con el hash en la URL; solo se monta la pestaña activa. Administración: Interesados, Escuela, Finanzas, Exámenes y grados, Personas. Instructor: Mis clases, Exámenes, Disponibilidad. Alumno: Clases, Mi cuenta, Mi grado. Verificado en Chrome: clic, recarga conserva la pestaña, enlace directo (#personas), teclado y celular de 420px (la barra se desplaza y nada supera el ancho de la pantalla; la primera medición era engañosa y el desborde era real, corregido con min-width: 0). Web 43/43.
 - L10 (2026-11-13): "hace la mejora, y luego muestrame en la web". Una sola barra de pestañas por persona: cada rol aporta sus pestañas y el portal las une (`mergeTabs`: si una pestaña se repite, gana la primera; el administrador ya incluye lo que muestra la del instructor). Marta (alumna y apoderada) ve: Mi familia, Clases, Mi cuenta, Mi grado. Web 45/45; verificado en Chrome.
 - L11 (2026-11-13): "a la foto principal le saques la imagen que sale +15 años de legado, y me gustaria que se pudiera elegir cambiar los colores, presionando un boton". Se quita la insignia "+15 Años de Legado" de la foto de Nosotros (y su dato en site.js: la cifra seguía sin confirmar por José). Selector de paleta en el encabezado: Clásica, Jade, Noche azul y Pergamino (claro); se guarda en el navegador y se aplica antes de pintar. El hero conserva su look oscuro en todas las paletas porque sobre la foto. Los errores siguen en rojo en todas (`--danger`). Tests: contraste WCAG AA de cada par de colores en cada paleta (web 50/50). Verificado en Chrome: cambio, persistencia, otra página, Escape, valor guardado inválido y celular.
+- L12 (2026-11-15): "si, actualiza, revisa y continuemos con el plan". Se trajo `main` a `docs/plan-maestro` (merge local, sin conflictos) y se verificó: backend 140/140, web 50/50. T8 se divide: T8a (API del asistente) no depende de ninguna decisión abierta y queda hecho en la rama `feat/fase2-asistente`: backend 149/149. La clave `ASISTENTE_API_KEY` es opcional y sin ella las rutas responden 503; una clave de menos de 32 caracteres impide arrancar. El registro por el asistente no usa el límite por IP del formulario, porque todas las personas llegan desde el mismo servidor. T8b sigue bloqueado por decisiones del plan: dónde corre n8n, qué modelo de IA usa y la base de conocimiento validada por José. Pendientes: las conversaciones se guardan pero la administración aún no las ve en el portal; `backend/.env.example` no se pudo editar (regla de permisos), la variable está documentada en el README. No se probó contra MySQL ni con el revisor nativo (`gentle-ai` no está instalado en este equipo).

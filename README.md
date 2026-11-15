@@ -77,6 +77,17 @@ Las pruebas usan SQLite (en memoria y en un archivo temporal), así que no neces
 - **Orden al desplegar un cambio de esquema:** primero `npm run migrate` contra la base de producción, después desplegar el backend.
 - **Sitio:** GitHub Pages, desde la rama `gh-pages`.
 
+## API del asistente virtual
+
+El asistente (n8n) llama a `/api/asistente` con la clave compartida en el encabezado `X-Asistente-Key`. La clave se define en la variable `ASISTENTE_API_KEY` del backend (mínimo 32 caracteres; se genera igual que `JWT_SECRET`). Sin esa variable, estas rutas responden 503.
+
+| Ruta | Para qué |
+| --- | --- |
+| `GET /api/asistente/sesiones` | Próximas sesiones programadas: fecha, horario, sede y disciplina |
+| `POST /api/asistente/interesados` | Registra a la persona; mismos campos que `POST /api/interesados`, con `origen` `sitio` o `instagram` y `consentimiento: true` |
+| `POST /api/asistente/interesados/:id/clase-prueba` | Agenda la clase de prueba: `{ "sesion_id": 12 }` |
+| `POST /api/asistente/conversaciones` | Guarda mensajes: `{ "canal": "sitio", "chat_id": "...", "interesado_id": 3, "mensajes": [{ "rol": "persona", "texto": "..." }] }`. `interesado_id` es opcional; al enviarlo, los mensajes anteriores del mismo chat quedan vinculados a esa persona |
+
 ## Contribuir
 
 Ver [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -66,9 +66,16 @@ function loadConfig(env = process.env) {
         throw new ConfigError('JWT_SECRET uses a known public value. Set a new random secret.');
     }
 
+    // Optional: without it the assistant routes stay off. A short key could be guessed.
+    const asistenteApiKey = env.ASISTENTE_API_KEY || '';
+    if (asistenteApiKey && asistenteApiKey.length < 32) {
+        throw new ConfigError('ASISTENTE_API_KEY must have at least 32 characters.');
+    }
+
     return {
         port: Number(env.PORT) || 3000,
         jwtSecret,
+        asistenteApiKey,
         corsOrigins: parseOrigins(env.CORS_ORIGINS),
         ...loadDbConfig(env),
     };

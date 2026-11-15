@@ -438,7 +438,7 @@ test('rolling back the finance migration refuses when financial records exist', 
     try {
         await knex.migrate.latest();
         await knex('planes').insert({ nombre: 'Mensual', monto: 30000, periodicidad: 'mensual' });
-        await knex.migrate.down(); // grades, which come after and are empty
+        await rollBackThrough(knex, '20261113000008_grados_examenes.js'); // what comes after is empty
         await assert.rejects(knex.migrate.down(), /planes/);
         assert.equal((await knex('planes')).length, 1);
     } finally {
@@ -466,10 +466,26 @@ test('a charge is generated once per subscription and period', async () => {
     }
 });
 
+test('rolling back the assistant migration removes its table, unless it holds conversations', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        await knex('conversaciones_asistente').insert({ canal: 'sitio', chat_id: 'c1', rol: 'persona', texto: 'Hola' });
+        await assert.rejects(knex.migrate.down(), /conversaciones_asistente/);
+        await knex('conversaciones_asistente').del();
+        await knex.migrate.down();
+        assert.equal(await knex.schema.hasTable('conversaciones_asistente'), false);
+        assert.ok(await knex.schema.hasTable('grados'), 'the grades migration stays');
+    } finally {
+        await knex.destroy();
+    }
+});
+
 test('rolling back the grades migration removes its tables', async () => {
     const knex = memoryDb();
     try {
         await knex.migrate.latest();
+        await rollBackThrough(knex, '20261113000009_asistente.js');
         await knex.migrate.down();
         for (const table of ['grados', 'examenes', 'historial_grados', 'inscripciones_examen']) {
             assert.equal(await knex.schema.hasTable(table), false, table);
@@ -486,6 +502,7 @@ test('rolling back the grades migration refuses when grades exist', async () => 
         await knex.migrate.latest();
         const [disciplinaId] = await knex('disciplinas').pluck('id');
         await knex('grados').insert({ disciplina_id: disciplinaId, orden: 1, nombre: 'Blanco' });
+        await rollBackThrough(knex, '20261113000009_asistente.js');
         await assert.rejects(knex.migrate.down(), /grados/);
         assert.equal((await knex('grados')).length, 1);
     } finally {

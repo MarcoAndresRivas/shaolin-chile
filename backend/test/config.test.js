@@ -20,6 +20,12 @@ test('loadConfig returns the JWT secret when it is set', () => {
     assert.equal(loadConfig({ JWT_SECRET: VALID_SECRET }).jwtSecret, VALID_SECRET);
 });
 
+test('the assistant key is optional, and a short one is refused', () => {
+    assert.equal(loadConfig({ JWT_SECRET: VALID_SECRET }).asistenteApiKey, '');
+    assert.equal(loadConfig({ JWT_SECRET: VALID_SECRET, ASISTENTE_API_KEY: 'k'.repeat(32) }).asistenteApiKey, 'k'.repeat(32));
+    assert.throws(() => loadConfig({ JWT_SECRET: VALID_SECRET, ASISTENTE_API_KEY: 'k'.repeat(31) }), /ASISTENTE_API_KEY/);
+});
+
 test('CORS origins default to the published site only', () => {
     const config = loadConfig({ JWT_SECRET: VALID_SECRET });
     assert.deepEqual(config.corsOrigins, DEFAULT_CORS_ORIGINS);
