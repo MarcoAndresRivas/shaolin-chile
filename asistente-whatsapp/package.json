@@ -1,0 +1,18 @@
+{
+  "name": "asistente-whatsapp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Test bridge: WhatsApp (unofficial, Baileys) to the Shaolin Chile assistant. Not for production.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "baileys": "7.0.0-rc14",
+    "pino": "9.14.0"
+  }
+}

@@ -84,10 +84,12 @@ El asistente (n8n) llama a `/api/asistente` con la clave compartida en el encabe
 | Ruta | Para qué |
 | --- | --- |
 | `GET /api/asistente/sesiones` | Próximas sesiones programadas: fecha, horario, sede y disciplina |
-| `POST /api/asistente/interesados` | Registra a la persona; mismos campos que `POST /api/interesados`, con `origen` `sitio` o `instagram` y `consentimiento: true` |
+| `POST /api/asistente/interesados` | Registra a la persona; mismos campos que `POST /api/interesados`, con `origen` `sitio`, `instagram` o `whatsapp` y `consentimiento: true` |
 | `POST /api/asistente/interesados/:id/clase-prueba` | Agenda la clase de prueba: `{ "sesion_id": 12 }` |
 | `POST /api/asistente/conversaciones` | Guarda mensajes: `{ "canal": "sitio", "chat_id": "...", "interesado_id": 3, "mensajes": [{ "rol": "persona", "texto": "..." }] }`. `interesado_id` es opcional; al enviarlo, los mensajes anteriores del mismo chat quedan vinculados a esa persona |
 
 ## Contribuir
 
 Ver [CONTRIBUTING.md](CONTRIBUTING.md).
+
+Para probar el asistente por WhatsApp con un número aparte, ver `asistente-whatsapp/README.md`.

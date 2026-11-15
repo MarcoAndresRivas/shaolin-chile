@@ -162,3 +162,16 @@ test('an invalid conversation is rejected and nothing is stored', async () => {
         assert.equal((await knex('conversaciones_asistente')).length, 0);
     }, ENV);
 });
+
+test('whatsapp is an origin for people and a channel for conversations', async () => {
+    await withApi(USERS, async ({ call, knex }) => {
+        const { status, body } = await call('POST', `${BASE}/interesados`, null, lead({ origen: 'whatsapp' }), AUTH);
+        assert.equal(status, 201);
+        const saved = await call('POST', `${BASE}/conversaciones`, null, {
+            canal: 'whatsapp', chat_id: 'wa-1', interesado_id: body.id, mensajes: [{ rol: 'persona', texto: 'Hola' }],
+        }, AUTH);
+        assert.equal(saved.status, 201);
+        assert.equal((await knex('interesados').first()).origen, 'whatsapp');
+        assert.equal((await knex('conversaciones_asistente').first()).canal, 'whatsapp');
+    }, ENV);
+});

@@ -10,7 +10,7 @@ exports.up = async function up(knex) {
     const interesadosUnsigned = await isUnsignedKey(knex, 'interesados');
     await createTableIfMissing(knex, 'conversaciones_asistente', (t) => {
         t.increments('id');
-        t.string('canal', 20).notNullable(); // sitio | instagram
+        t.string('canal', 20).notNullable(); // sitio | instagram | whatsapp
         t.string('chat_id', 100).notNullable();
         foreignId(t, 'interesado_id', interesadosUnsigned).nullable().references('id').inTable('interesados').onDelete('CASCADE');
         t.string('rol', 20).notNullable(); // persona | asistente

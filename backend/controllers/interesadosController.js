@@ -6,7 +6,7 @@ const { todayInChile } = require('../src/dates');
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+\d][\d\s()-]{5,24}$/;
-const PUBLIC_ORIGINS = ['sitio', 'instagram'];
+const PUBLIC_ORIGINS = ['sitio', 'instagram', 'whatsapp'];
 const ESTADOS = ['nuevo', 'contactado', 'clase_prueba', 'inscrito', 'descartado'];
 const TRIAL_ESTADOS = ['agendada', 'asistio', 'no_asistio', 'cancelada'];
 const OPEN_ESTADOS = ['nuevo', 'contactado', 'clase_prueba'];

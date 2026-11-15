@@ -3,7 +3,7 @@
 
 const { todayInChile } = require('../src/dates');
 
-const CANALES = ['sitio', 'instagram'];
+const CANALES = ['sitio', 'instagram', 'whatsapp'];
 const ROLES = ['persona', 'asistente'];
 
 const bad = (res, message) => res.status(400).json({ error: message });
