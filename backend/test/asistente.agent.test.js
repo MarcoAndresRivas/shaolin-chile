@@ -20,11 +20,13 @@ function setup(script, responses = {}, canal = 'whatsapp') {
         },
         api: async (method, path, body) => {
             // The classes are read on every message; `calls` keeps what the model asked for.
+            // The classes and the offers are read on every message; `calls` keeps what the model asked for.
             const classes = method === 'GET' && path === '/sesiones';
-            if (!classes) calls.push([method, path, body]);
+            const offers = method === 'GET' && path === '/ofertas';
+            if (!classes && !offers) calls.push([method, path, body]);
             const response = responses[`${method} ${path}`];
             if (response instanceof Error) throw response;
-            return response ?? { status: 200, body: classes ? [] : {} };
+            return response ?? { status: 200, body: classes ? [] : offers ? { seminarios: [], cursos: [] } : {} };
         },
     });
     return { agent, calls, seen, state: { history: [], interesadoId: null } };
@@ -252,4 +254,65 @@ test('the model client speaks the OpenAI chat format and fails loudly on an erro
 
     const down = createModelClient({ url: 'http://model.test/v1', model: 'm1', fetchImpl: async () => ({ ok: false, status: 429 }) });
     await assert.rejects(down([], []), /429/);
+});
+
+const offersIn = (seen) => seen.at(-1)[0].content.split('A la venta:\n')[1].split('\n\nClases programadas:')[0];
+
+test('the model receives the seminars and courses for sale, with prices, seats and the offer', async () => {
+    const ofertas = {
+        seminarios: [{
+            titulo: 'Seminario de diciembre', sede: null, oferta: 'Oferta: los dos días por $59.000', precio_pack: 59000,
+            dias: [
+                { id: 3, fecha: '2026-12-04', hora_inicio: null, hora_fin: null, precio: 35000, cupo_disponible: 50, cerrado: false },
+                { id: 4, fecha: '2026-12-05', hora_inicio: '10:00', hora_fin: '13:00', precio: 35000, cupo_disponible: 0, cerrado: true },
+            ],
+        }],
+        cursos: [{ id: 8, titulo: 'Curso de prueba', precio: 25000, lecciones: [{ titulo: 'Intro' }, { titulo: 'Forma' }] }],
+    };
+    const { agent, state, seen } = setup([say('Hay un seminario.')], { 'GET /ofertas': { status: 200, body: ofertas } });
+    await agent.handle(state, '¿Qué seminarios hay?');
+    assert.equal(offersIn(seen), [
+        '- Seminario "Seminario de diciembre", sede por confirmar. Oferta: los dos días por $59.000. Precio por persona si va a todos los días: $59.000.',
+        '  - día id 3: viernes 2026-12-04, horario por confirmar, $35.000 por persona, 50 cupos disponibles',
+        '  - día id 4: sábado 2026-12-05, de 10:00 a 13:00, $35.000 por persona, inscripciones cerradas',
+        '- Curso online id 8: "Curso de prueba", $25.000, con acceso a los videos y descarga. Lecciones: Intro; Forma.',
+    ].join('\n'));
+
+    const down = setup([say('Te responderá una persona.')], { 'GET /ofertas': { status: 503, body: {} } });
+    await down.agent.handle(down.state, 'Hola');
+    assert.match(offersIn(down.seen), /^No se pudieron consultar/);
+});
+
+test('a booking needs consent, sends the days and courses, and ends with the transfer message from the system', async () => {
+    const mensaje = '🗓️ Para confirmar tu reserva y asegurar tu cupo, es necesario realizar una transferencia de *$59.000*. Tu código de reserva es SC-ABC234.';
+    const { agent, state, calls } = setup([
+        use('reservar', { nombre: 'Juana Pérez', email: 'juana@example.com', consentimiento: false, seminario_dia_ids: [3, 4] }),
+        use('reservar', { nombre: 'Juana Pérez', email: 'juana@example.com', consentimiento: true, seminario_dia_ids: [3, 4], cantidad: 2, curso_ids: [8] }),
+        say('¡Listo! Tu reserva quedó creada.'),
+    ], {
+        'POST /compras': { status: 201, body: { codigo: 'SC-ABC234', mensaje } },
+        'POST /interesados': { status: 201, body: { id: 12 } },
+    }, 'instagram');
+    state.history.push({ role: 'user', content: 'Hola' }, { role: 'assistant', content: 'Soy el asistente virtual.' });
+
+    const reply = await agent.handle(state, 'Sí, autorizo');
+    assert.equal(reply, `¡Listo! Tu reserva quedó creada.\n\n${mensaje}`);
+    assert.deepEqual(calls[0], ['POST', '/compras', {
+        nombre: 'Juana Pérez', email: 'juana@example.com', consentimiento: true, origen: 'instagram',
+        items: [{ seminario_dia_id: 3, cantidad: 2 }, { seminario_dia_id: 4, cantidad: 2 }, { curso_id: 8 }],
+    }], 'nothing was booked before consent');
+    assert.equal(calls.length, 2);
+    assert.equal(calls[1][1], '/interesados', 'the person is followed up as interested');
+    assert.equal(state.interesadoId, 12);
+    assert.equal(state.notice, null, 'the transfer message is sent once');
+});
+
+test('a refused booking is reported to the model and no transfer message is sent', async () => {
+    const { agent, state, seen } = setup([
+        use('reservar', { nombre: 'Juana', email: 'juana@example.com', consentimiento: true, seminario_dia_ids: [4] }),
+        say('Ese día ya no tiene cupos.'),
+    ], { 'POST /compras': { status: 409, body: { error: 'No quedan cupos suficientes.' } } });
+    state.history.push({ role: 'user', content: 'Hola' }, { role: 'assistant', content: 'Soy el asistente virtual.' });
+    assert.equal(await agent.handle(state, 'Quiero el sábado'), 'Ese día ya no tiene cupos.');
+    assert.deepEqual(lastToolResult(seen), { error: 'No quedan cupos suficientes.' });
 });

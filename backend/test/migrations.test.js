@@ -470,6 +470,7 @@ test('rolling back the assistant migration removes its table, unless it holds co
     const knex = memoryDb();
     try {
         await knex.migrate.latest();
+        await rollBackThrough(knex, '20261120000010_ventas.js');
         await knex('conversaciones_asistente').insert({ canal: 'sitio', chat_id: 'c1', rol: 'persona', texto: 'Hola' });
         await assert.rejects(knex.migrate.down(), /conversaciones_asistente/);
         await knex('conversaciones_asistente').del();
@@ -521,6 +522,23 @@ test('a discipline cannot have two grades in the same position, nor a student th
         const [examenId] = await knex('examenes').insert({ fecha: '2026-12-05' });
         await knex('inscripciones_examen').insert({ examen_id: examenId, alumno_id: alumno, grado_id: gradoId });
         await assert.rejects(knex('inscripciones_examen').insert({ examen_id: examenId, alumno_id: alumno, grado_id: gradoId }));
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('rolling back the sales migration removes its tables, unless they hold sales', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [id] = await knex('seminarios').insert({ titulo: 'Seminario', estado: 'publicado' });
+        await assert.rejects(knex.migrate.down(), /seminarios/);
+        await knex('seminarios').where({ id }).del();
+        await knex.migrate.down();
+        for (const table of ['seminarios', 'seminario_dias', 'cursos', 'curso_lecciones', 'compras', 'compra_items']) {
+            assert.equal(await knex.schema.hasTable(table), false, table);
+        }
+        assert.ok(await knex.schema.hasTable('conversaciones_asistente'), 'the assistant migration stays');
     } finally {
         await knex.destroy();
     }
