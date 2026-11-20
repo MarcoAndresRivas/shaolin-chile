@@ -209,7 +209,8 @@ test('the seed creates the December seminar and the test course once', async () 
             ['2026-12-04', '09:00', '17:00', 35000, 50],
             ['2026-12-05', '09:00', '17:00', 35000, 50],
         ]);
-        assert.equal((await knex('seminarios').first()).precio_pack, 59000);
+        const seminario = await knex('seminarios').first();
+        assert.deepEqual([seminario.precio_pack, seminario.sede], [59000, 'SECPLAN Municipalidad de Hualpén']);
         assert.equal(await knex('curso_lecciones').count({ n: '*' }).first().then((r) => Number(r.n)), 4);
     });
 });

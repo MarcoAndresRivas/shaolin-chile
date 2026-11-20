@@ -1,12 +1,12 @@
 // The first seminar and a test course, so the site can sell from day one.
-// Prices, dates and hours come from the director; what is still unknown (the
-// venue, the course videos) is left empty and shown as "Por confirmar".
+// Prices, dates, hours and venue come from the director; what is still unknown
+// (the course videos) is left empty and shown as "Por confirmar".
 // Safe to repeat: an offer that already exists (same title) is left as it is.
 
 const SEMINARIO = {
     titulo: 'Seminario de Kung Fu Shaolin — Diciembre',
     descripcion: 'Entrenamiento de Kung Fu tradicional y Qi Gong con el equipo de Shaolin Chile. Cada día tiene dos bloques: de 09:00 a 12:45 y de 14:45 a 17:00, con dos horas para almorzar entre ambos. Puedes inscribirte en un día o en los dos.',
-    sede: null,
+    sede: 'SECPLAN Municipalidad de Hualpén',
     imagen: 'seminario.jpg',
     precio_pack: 59000,
     oferta: 'Oferta: los dos días por $59.000 por persona (ahorras $11.000)',
