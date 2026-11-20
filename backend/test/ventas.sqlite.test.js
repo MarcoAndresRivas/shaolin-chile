@@ -53,6 +53,7 @@ test('buying both days of a seminar costs the offer price and holds the seats', 
         assert.match(body.codigo, /^SC-/);
         assert.match(body.mensaje, /transferencia de \$59\.000/);
         assert.match(body.mensaje, /comprobante \+ Nombre Completo/);
+        assert.match(body.mensaje, /correspondiente al valor de Seminario de prueba \(\S+ \d+ de \S+ y \S+ \d+ de \S+\)\. ✨/, 'the days of one seminar are named together');
 
         const [compra] = await knex('compras');
         assert.deepEqual([compra.email, compra.origen, Boolean(compra.consentimiento)], ['juana@example.com', 'sitio', true]);

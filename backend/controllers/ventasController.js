@@ -117,12 +117,30 @@ function readItems(items) {
 }
 
 const weekday = new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
-const dayLabel = (fecha) => weekday.format(new Date(`${fecha}T12:00:00Z`));
+const dayLabel = (fecha) => weekday.format(new Date(`${fecha}T12:00:00Z`)).replace(',', '');
+const listOf = (parts) => (parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')} y ${parts.at(-1)}`);
 
-// What the purchase pays for, in words: "el Seminario X (viernes 4 de diciembre)".
+// What the purchase pays for, in words, with the days of each seminar together:
+// "Seminario X (viernes 4 de diciembre y sábado 5 de diciembre) y Curso Y".
 function conceptOf(lines) {
-    const parts = lines.map((line) => line.descripcion);
-    return parts.length === 1 ? parts[0] : `${parts.slice(0, -1).join(', ')} y ${parts.at(-1)}`;
+    const parts = [];
+    const seminars = new Map();
+    for (const line of lines) {
+        if (line.tipo !== 'seminario_dia') {
+            parts.push(line.descripcion);
+            continue;
+        }
+        if (!seminars.has(line.titulo)) {
+            seminars.set(line.titulo, []);
+            parts.push(seminars.get(line.titulo));
+        }
+        seminars.get(line.titulo).push(line);
+    }
+    return listOf(parts.map((part) => {
+        if (typeof part === 'string') return part;
+        const people = Math.max(...part.map((line) => line.cantidad));
+        return `${part[0].titulo} (${listOf(part.map((line) => dayLabel(line.fecha)))})${people > 1 ? ` para ${people} personas` : ''}`;
+    }));
 }
 
 // Shared by the site and the assistant: `origen` is the channel the person bought from.
@@ -151,7 +169,8 @@ async function createPurchase(db, config, body, now = new Date()) {
             ? await connection.execute(
                 `SELECT d.id, d.seminario_id, d.fecha, d.hora_inicio, d.precio, d.cupo, d.vendidos, s.titulo, s.precio_pack
                  FROM seminario_dias d JOIN seminarios s ON s.id = d.seminario_id
-                 WHERE d.id IN (${placeholders(dayIds)}) AND s.estado = 'publicado'`,
+                 WHERE d.id IN (${placeholders(dayIds)}) AND s.estado = 'publicado'
+                 ORDER BY d.fecha, d.hora_inicio, d.id`,
                 dayIds,
             )
             : [[]];
@@ -179,7 +198,7 @@ async function createPurchase(db, config, body, now = new Date()) {
             }
             lines.push({
                 tipo: 'seminario_dia', seminario_id: dia.seminario_id, seminario_dia_id: dia.id, curso_id: null,
-                descripcion: `${dia.titulo} (${dayLabel(dia.fecha)})`, cantidad, precio_unitario: dia.precio,
+                descripcion: `${dia.titulo} (${dayLabel(dia.fecha)})`, cantidad, precio_unitario: dia.precio, titulo: dia.titulo, fecha: dia.fecha,
             });
         }
         for (const curso of cursos) {
