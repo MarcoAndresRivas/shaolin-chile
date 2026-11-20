@@ -2,7 +2,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { withApi } = require('./apiHarness');
-const { seedOfertas, DIAS } = require('../src/seedOfertas');
+const { seedOfertas } = require('../src/seedOfertas');
 
 const USERS = [
     ['Admin', 'admin@x.cl', ['Administrador']],
@@ -205,7 +205,10 @@ test('the seed creates the December seminar and the test course once', async () 
         assert.equal((await seedOfertas(knex)).length, 2);
         assert.deepEqual(await seedOfertas(knex), [], 'repeating changes nothing');
         const dias = await knex('seminario_dias');
-        assert.deepEqual(dias.map((d) => [d.fecha, d.precio, d.cupo]), DIAS.map((d) => [d.fecha, d.precio, d.cupo]));
+        assert.deepEqual(dias.map((d) => [d.fecha, d.hora_inicio, d.hora_fin, d.precio, d.cupo]), [
+            ['2026-12-04', '09:00', '17:00', 35000, 50],
+            ['2026-12-05', '09:00', '17:00', 35000, 50],
+        ]);
         assert.equal((await knex('seminarios').first()).precio_pack, 59000);
         assert.equal(await knex('curso_lecciones').count({ n: '*' }).first().then((r) => Number(r.n)), 4);
     });
