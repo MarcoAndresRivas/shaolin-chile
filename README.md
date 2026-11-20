@@ -45,7 +45,10 @@ Requisitos: Node.js 18 o superior. No hace falta instalar MySQL: en local la API
    npm run seed:admin
    npm run seed:alumno
    npm run seed:team
+   npm run seed:ofertas
    ```
+
+   `seed:ofertas` crea el primer seminario (4 y 5 de diciembre, $35.000 por día, los dos días por $59.000) y un curso de prueba. Los datos de transferencia que se muestran al comprar se configuran con las variables `PAGO_*` de `.env` (ver `backend/.env.example`).
 
 6. Levantar la API en `http://localhost:3000`:
 

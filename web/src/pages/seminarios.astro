@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+import Ofertas from '../components/Ofertas.jsx';
+import { contact } from '../data/site.js';
+---
+
+<Base title="Seminarios y cursos" description="Reserva tu cupo en los seminarios de Kung Fu Shaolin y compra los cursos online con videos de las clases.">
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Seminarios y cursos online</p>
+        <h1>Entrena con nosotros</h1>
+        <p>Elige los días del seminario o un curso online, reserva tu cupo y paga por transferencia.</p>
+      </div>
+      <Ofertas client:load whatsapp={contact.whatsapp} />
+    </div>
+  </section>
+</Base>

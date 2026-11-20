@@ -1,0 +1,215 @@
+.shop {
+  display: grid;
+  gap: 28px;
+}
+
+.shop .muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.shop__empty {
+  padding: 32px;
+  text-align: center;
+  color: var(--muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.shop__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+
+.offer {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.offer__image {
+  width: 100%;
+  /* The text sets the card's height; the photo fills it instead of stretching it. */
+  height: 0;
+  min-height: max(100%, 320px);
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.offer__body {
+  display: grid;
+  gap: 14px;
+  align-content: start;
+  padding: 28px;
+}
+
+.offer__body h2 {
+  margin: 0;
+}
+
+.offer__body p {
+  margin: 0;
+}
+
+.offer__badge {
+  justify-self: start;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--red);
+  color: #fff;
+  font-weight: 700;
+}
+
+.offer__price {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.offer__lessons {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--soft);
+}
+
+.offer__days {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.offer__days legend {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.day {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.day--off {
+  opacity: 0.6;
+}
+
+.day__name {
+  font-weight: 600;
+}
+
+.day__name::first-letter {
+  text-transform: uppercase;
+}
+
+.qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.qty button {
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.qty button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qty output {
+  min-width: 2ch;
+  text-align: center;
+  font-weight: 700;
+}
+
+.shop__checkout h2 {
+  margin: 0;
+}
+
+.shop__lines {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.shop__lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.shop__discount {
+  color: var(--gold);
+}
+
+.shop__total {
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.shop__done {
+  gap: 14px;
+}
+
+.shop__code {
+  font-size: 1.1rem;
+}
+
+.shop__message {
+  max-width: 560px;
+  margin: 0;
+  white-space: pre-line;
+  text-align: left;
+}
+
+@media (max-width: 760px) {
+  .offer {
+    grid-template-columns: 1fr;
+  }
+  .offer__image {
+    height: auto;
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+  }
+  .offer__body {
+    padding: 22px;
+  }
+  .day {
+    flex-wrap: wrap;
+  }
+}
+
+.shop .success {
+  margin: 0;
+  color: var(--gold);
+}
+
+.shop h3 {
+  margin: 8px 0;
+}

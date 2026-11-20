@@ -239,3 +239,7 @@ p {
     scroll-behavior: auto;
   }
 }
+
+.container--narrow {
+  max-width: 760px;
+}

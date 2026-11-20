@@ -56,6 +56,12 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
     registrarInteresado: (data) => request('POST', '/api/interesados', data, { auth: false }),
     // chatId continues a conversation; without it the server starts a new one.
     chat: (mensaje, chatId) => request('POST', '/api/chat', { mensaje, ...(chatId && { chat_id: chatId }) }, { auth: false }),
+    // Seminars and courses: the catalog, buying, and the buyer's own purchase (code + email).
+    ofertas: () => request('GET', '/api/ofertas', undefined, { auth: false }),
+    comprar: (data) => request('POST', '/api/compras', data, { auth: false }),
+    miCompra: (codigo, email) => request('GET', `/api/compras/${encodeURIComponent(codigo)}?email=${encodeURIComponent(email)}`, undefined, { auth: false }),
+    avisarTransferencia: (codigo, email, referencia) =>
+      request('POST', `/api/compras/${encodeURIComponent(codigo)}/pago`, { email, referencia }, { auth: false }),
     usuarios: () => request('GET', '/api/intranet/usuarios'),
     horarios: () => request('GET', '/api/intranet/horarios'),
     misReservas: () => request('GET', '/api/intranet/mis-reservas'),
@@ -119,5 +125,8 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
     confirmarNominacion: (examenId, alumnoId) => request('PUT', `/api/intranet/examenes/${examenId}/nominaciones/${alumnoId}/confirmar`),
     guardarResultados: (examenId, resultados) => request('PUT', `/api/intranet/examenes/${examenId}/resultados`, { resultados }),
     cancelarSesion: (id, motivo) => request('POST', `/api/intranet/sesiones/${id}/cancelar`, { motivo }),
+    compras: (estado) => request('GET', '/api/intranet/ventas/compras' + (estado ? `?estado=${estado}` : '')),
+    validarCompra: (id) => request('PUT', `/api/intranet/ventas/compras/${id}/validar`),
+    anularCompra: (id) => request('PUT', `/api/intranet/ventas/compras/${id}/anular`),
   };
 }
