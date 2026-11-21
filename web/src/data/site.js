@@ -172,6 +172,7 @@ export const galleryHead = { title: 'Galería', intro: 'Momentos de entrenamient
 
 // Instagram videos shown on the seminars page to promote them.
 export const seminarVideos = [
+  { id: 'DgAvAsZsJxw', kind: 'p', title: 'Shaolin Ba Duan Jin - 少林八段锦', alt: 'Dos practicantes al aire libre ejecutando una pieza del Ba Duan Jin bajo los árboles' },
   { id: 'Df7R3voxT1K', kind: 'p', title: 'Shaolin Xiao Hong Quan - 少林小洪拳', alt: 'Dos practicantes ejecutando la forma Xiao Hong Quan al aire libre' },
   { id: 'DfSMGdxhmQx', kind: 'reel', title: 'Entrenar cuerpo, mente y espíritu', alt: 'Entrenamiento de postura con bastones al aire libre' },
   { id: 'Dfz7VqMsdYM', kind: 'reel', title: 'Eficacia y espíritu', alt: 'Instructor en postura de concentración al aire libre' },
