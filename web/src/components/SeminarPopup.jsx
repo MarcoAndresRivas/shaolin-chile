@@ -6,15 +6,16 @@ import './SeminarPopup.css';
 const BASE = import.meta.env.BASE_URL;
 const seenKey = (id) => `seminar-popup-seen:${id}`;
 
+// Remembered for the visit only (sessionStorage): a new visit shows it again.
 // Storage can be blocked (private windows): then the popup simply shows again.
 function wasSeen(id) {
-  try { return localStorage.getItem(seenKey(id)) === '1'; } catch { return false; }
+  try { return sessionStorage.getItem(seenKey(id)) === '1'; } catch { return false; }
 }
 function markSeen(id) {
-  try { localStorage.setItem(seenKey(id), '1'); } catch { /* nothing to keep */ }
+  try { sessionStorage.setItem(seenKey(id), '1'); } catch { /* nothing to keep */ }
 }
 
-// On entering the home page, announces the current seminar once per seminar.
+// On entering the home page, announces the current seminar once per visit.
 // No prices: they show only when paying. Without a seminar it shows nothing.
 export default function SeminarPopup() {
   const dialog = useRef(null);
