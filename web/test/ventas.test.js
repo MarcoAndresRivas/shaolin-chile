@@ -128,3 +128,20 @@ test('the delivery form needs a choice, and an address for shipping', async () =
   assert.deepEqual(Object.keys(validateDelivery({ entrega: '' })), ['entrega']);
   assert.deepEqual(Object.keys(validateDelivery({ entrega: 'envio', direccion: ' ', comuna: '', region: 'B' })), ['direccion', 'comuna', 'region']);
 });
+
+test('the current seminar is the first published one with a day still open', async () => {
+  const { currentSeminar } = await import('../src/lib/ventas.js');
+  const past = { id: 1, dias: [{ id: 1, fecha: '2026-10-01', cerrado: true }] };
+  const next = { id: 2, dias: [{ id: 2, fecha: '2026-12-04', cerrado: true }, { id: 3, fecha: '2026-12-05', cerrado: false }] };
+  assert.equal(currentSeminar({ seminarios: [past, next] }), next);
+  assert.equal(currentSeminar({ seminarios: [past] }), null);
+  assert.equal(currentSeminar({ seminarios: [] }), null);
+  assert.equal(currentSeminar(null), null);
+});
+
+test('the seminar dates read as one phrase in Spanish', async () => {
+  const { seminarDates } = await import('../src/lib/ventas.js');
+  assert.equal(seminarDates({ dias: [{ fecha: '2026-12-04' }, { fecha: '2026-12-05' }] }), 'viernes 4 y sábado 5 de diciembre');
+  assert.equal(seminarDates({ dias: [{ fecha: '2026-12-05' }] }), 'sábado 5 de diciembre');
+  assert.equal(seminarDates({ dias: [{ fecha: '2026-11-30' }, { fecha: '2026-12-01' }] }), 'lunes 30 de noviembre y martes 1 de diciembre');
+});
