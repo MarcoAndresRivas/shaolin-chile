@@ -1,0 +1,80 @@
+.seminar-popup {
+  width: min(520px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: var(--text);
+  overflow: auto;
+}
+
+.seminar-popup::backdrop {
+  background: rgb(0 0 0 / 0.7);
+}
+
+.seminar-popup__card {
+  position: relative;
+}
+
+.seminar-popup__close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 0.6);
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.seminar-popup__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.seminar-popup__body {
+  display: grid;
+  gap: 10px;
+  padding: 24px;
+}
+
+.seminar-popup__body h2 {
+  margin: 0;
+  font-size: clamp(1.4rem, 5vw, 1.9rem);
+}
+
+.seminar-popup__body p {
+  margin: 0;
+}
+
+.seminar-popup__when {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.seminar-popup__when::first-letter {
+  text-transform: uppercase;
+}
+
+.seminar-popup__where {
+  color: var(--muted);
+}
+
+.seminar-popup__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.seminar-popup__actions .btn {
+  flex: 1 1 160px;
+  text-align: center;
+}
