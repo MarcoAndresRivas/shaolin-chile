@@ -17,9 +17,19 @@ const weekdayOf = (iso) => new Date(`${iso}T00:00:00Z`).getUTCDay() || 7;
 
 const lead = (overrides = {}) => ({ nombre: 'Juan Pérez', email: 'juan@example.com', consentimiento: true, ...overrides });
 
+test('the trial class catalog offers only the Concepción sede: Santiago and Talca are inactive', async () => {
+    await withApi(USERS, async ({ call, knex }) => {
+        const { status, body } = await call('GET', '/api/catalogo', null);
+        assert.equal(status, 200);
+        assert.deepEqual(body.sedes.map((s) => s.ciudad), ['Concepción']);
+        const stored = await knex('sedes').select('ciudad', 'activa').orderBy('id');
+        assert.deepEqual(stored.map((s) => [s.ciudad, Boolean(s.activa)]), [['Concepción', true], ['Santiago', false], ['Talca', false]], 'the sedes are kept, only deactivated');
+    });
+});
+
 test('the catalog of sedes and disciplines is public and lists only active ones', async () => {
     await withApi(USERS, async ({ call, knex }) => {
-        await knex('sedes').where({ ciudad: 'Talca' }).update({ activa: false });
+        await knex('sedes').where({ ciudad: 'Santiago' }).update({ activa: true });
         const { status, body } = await call('GET', '/api/catalogo', null);
         assert.equal(status, 200);
         assert.deepEqual(body.sedes.map((s) => s.ciudad), ['Concepción', 'Santiago']);
@@ -142,7 +152,7 @@ test('administration lists people newest first, with names of sede and disciplin
     await withApi(USERS, async ({ call, login, knex }) => {
         const admin = await login('admin@x.cl');
         const catalog = (await call('GET', '/api/catalogo', null)).body;
-        await call('POST', PUBLIC, null, lead({ nombre: 'Primero', email: 'a@example.com', sede_id: catalog.sedes[2].id, disciplina_id: catalog.disciplinas[0].id }));
+        await call('POST', PUBLIC, null, lead({ nombre: 'Primero', email: 'a@example.com', sede_id: catalog.sedes[0].id, disciplina_id: catalog.disciplinas[0].id }));
         const second = await call('POST', PUBLIC, null, lead({ nombre: 'Segundo', email: 'b@example.com' }));
         await knex('interesados').where({ id: second.body.id }).update({ estado: 'contactado' });
         await knex('interesados').where({ email: 'a@example.com' }).update({ fecha_creacion: '2020-01-01 00:00:00' });
@@ -150,7 +160,7 @@ test('administration lists people newest first, with names of sede and disciplin
         const all = (await call('GET', ADMIN, admin)).body;
         assert.deepEqual(all.map((p) => p.nombre), ['Segundo', 'Primero']);
         const first = all[1];
-        assert.deepEqual({ sede: first.sede, disciplina: first.disciplina, estado: first.estado }, { sede: 'Talca', disciplina: 'Kung Fu Tradicional', estado: 'nuevo' });
+        assert.deepEqual({ sede: first.sede, disciplina: first.disciplina, estado: first.estado }, { sede: 'Concepción', disciplina: 'Kung Fu Tradicional', estado: 'nuevo' });
         assert.ok(all.every((p) => !('consentimiento_fecha' in p) || p.consentimiento === true));
 
         const onlyContacted = (await call('GET', `${ADMIN}?estado=contactado`, admin)).body;
