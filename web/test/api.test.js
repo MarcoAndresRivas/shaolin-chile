@@ -305,6 +305,22 @@ test('the grades and exams endpoints use their routes and methods', async () => 
     );
 });
 
+test('the Duan Pin endpoints edit a level, load the ladder and record a date of birth', async () => {
+    const { fetchImpl, calls } = fakeFetch(200, {});
+    const api = createApi({ baseUrl: '', fetchImpl, getToken: () => 'abc' });
+    await api.actualizarGrado(3, { formas: 'Xiao Hong Quan' });
+    await api.cargarDuanPin();
+    await api.fechaNacimiento(7, '2014-03-20');
+    assert.deepEqual(
+        calls.map((c) => `${c.options.method} ${c.url} ${c.options.body ?? ''}`.trim()),
+        [
+            'PUT /api/intranet/grados/3 {"formas":"Xiao Hong Quan"}',
+            'POST /api/intranet/grados/duan-pin',
+            'PUT /api/intranet/alumnos/7/fecha-nacimiento {"fecha_nacimiento":"2014-03-20"}',
+        ],
+    );
+});
+
 test('the chat is public: the first message starts a conversation and the chat id continues it', async () => {
   const { fetchImpl, calls } = fakeFetch(200, { chat_id: 'c1', respuesta: 'Hola' });
   const api = createApi({ baseUrl: '', fetchImpl, getToken: () => null });
