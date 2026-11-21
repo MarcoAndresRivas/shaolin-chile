@@ -83,6 +83,18 @@ function loadConfig(env = process.env) {
             key: env.ASISTENTE_MODELO_KEY || '',
             reasoning: env.ASISTENTE_MODELO_RAZONAMIENTO || '',
         },
+        // Bank transfer details shown when someone buys a seminar or a course.
+        // Each one is optional: the message leaves out what is not set.
+        pago: {
+            banco: env.PAGO_BANCO || '',
+            tipoCuenta: env.PAGO_TIPO_CUENTA || '',
+            numeroCuenta: env.PAGO_NUMERO_CUENTA || '',
+            titular: env.PAGO_TITULAR || '',
+            rut: env.PAGO_RUT || '',
+            email: env.PAGO_EMAIL || '',
+            // Where people send the receipt from the site, e.g. "por WhatsApp al +56 9 8615 7545".
+            comprobanteA: env.PAGO_COMPROBANTE_A || '',
+        },
         corsOrigins: parseOrigins(env.CORS_ORIGINS),
         ...loadDbConfig(env),
     };

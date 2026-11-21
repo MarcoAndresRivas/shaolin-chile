@@ -9,6 +9,7 @@ const interesadosController = require('../controllers/interesadosController');
 const familiasController = require('../controllers/familiasController');
 const finanzasController = require('../controllers/finanzasController');
 const gradosController = require('../controllers/gradosController');
+const ventasController = require('../controllers/ventasController');
 
 // All intranet routes are protected by verifyToken
 router.use(verifyToken);
@@ -96,6 +97,18 @@ router.put('/examenes/:id', isAdmin, gradosController.updateExamen);
 router.post('/examenes/:id/nominaciones', gradosController.nominar);
 router.put('/examenes/:id/nominaciones/:alumnoId/confirmar', isAdmin, gradosController.confirmar);
 router.put('/examenes/:id/resultados', isAdmin, gradosController.resultados);
+
+// --- Sales: seminars, courses and purchases paid by transfer (administration) ---
+router.get('/ventas/catalogo', isAdmin, ventasController.getCatalogoAdmin);
+router.post('/ventas/seminarios', isAdmin, ventasController.saveSeminario);
+router.put('/ventas/seminarios/:id', isAdmin, ventasController.saveSeminario);
+router.post('/ventas/seminarios/:id/dias', isAdmin, ventasController.addDia);
+router.post('/ventas/cursos', isAdmin, ventasController.saveCurso);
+router.put('/ventas/cursos/:id', isAdmin, ventasController.saveCurso);
+router.post('/ventas/cursos/:id/lecciones', isAdmin, ventasController.addLeccion);
+router.get('/ventas/compras', isAdmin, ventasController.getCompras);
+router.put('/ventas/compras/:id/validar', isAdmin, ventasController.validarCompra);
+router.put('/ventas/compras/:id/anular', isAdmin, ventasController.anularCompra);
 
 // --- Reservas / Booking (Alumno) ---
 router.post('/reservar', intranetController.bookHorario); // Alumno books a class

@@ -5,6 +5,8 @@
 // chat(messages, tools) -> the model's message ({ content, tool_calls? })
 // api(method, path, body) -> { status, body } from /api/asistente
 
+const { pesos } = require('./ventas');
+
 const MAX_STEPS = 5; // model turns per incoming message, so a confused model cannot loop forever
 const MAX_HISTORY = 20; // messages remembered per chat
 const MAX_TEXT = 2000; // characters read from one incoming message
@@ -23,8 +25,11 @@ const systemPrompt = (canal) => `Eres el asistente virtual de Shaolin Chile, una
 
 Reglas:
 - En tu primer mensaje preséntate como asistente virtual.
-- Responde en español, breve y con respeto. Escribe texto simple, sin Markdown ni asteriscos.
-- Lo único que sabes de la escuela son las clases de la lista "Clases programadas" que está al final. No existe ninguna otra clase. No inventes clases, precios, horarios, direcciones ni ningún otro dato: si no lo tienes, di que una persona del equipo responderá.
+- Responde en español, breve, cercano y con respeto. Escribe texto simple, sin Markdown ni asteriscos. Puedes usar algún emoji, sin exagerar.
+- Lo único que sabes de la escuela son las clases de la lista "Clases programadas" y los seminarios y cursos de la lista "A la venta", que están al final. No existe nada más. No inventes clases, seminarios, cursos, precios, horarios, direcciones ni ningún otro dato: si no lo tienes, di que una persona del equipo responderá.
+- Si preguntan por seminarios o cursos, cuenta lo que está en "A la venta": el precio por persona, la oferta si existe y los cupos. Luego pregunta: "🥷 ¿Te gustaría hacer la reserva?".
+- Para reservar un seminario o comprar un curso, pide el nombre completo y el correo, y pregunta si autoriza a Shaolin Chile a guardar esos datos para gestionar su reserva. Usa reservar solo si responde que sí, con los id de los días o cursos de la lista "A la venta" y la cantidad de personas. No reserves días marcados como cerrados.
+- Después de reservar, el sistema envía el monto exacto y cómo pagar. Tú solo confirma en una frase que la reserva quedó creada; no escribas montos ni datos bancarios.
 - Al mencionar una clase, copia el día, la fecha, el horario, la sede y la disciplina tal como están en la lista. Escribe las horas con números (por ejemplo 10:00), nunca con palabras.
 - Si preguntan qué clases hay, muestra las de la lista sin pedir antes más datos.
 - No entregues consejos médicos ni sobre lesiones.
@@ -44,6 +49,25 @@ const TOOLS = [
                     nombre: { type: 'string' },
                     email: { type: 'string' },
                     consentimiento: { type: 'boolean', description: 'true solo si la persona autorizó guardar sus datos' },
+                },
+                required: ['nombre', 'email', 'consentimiento'],
+            },
+        },
+    },
+    {
+        type: 'function',
+        function: {
+            name: 'reservar',
+            description: 'Reserva días de un seminario o compra cursos online. Solo después de que la persona autorizó guardar sus datos.',
+            parameters: {
+                type: 'object',
+                properties: {
+                    nombre: { type: 'string', description: 'nombre completo' },
+                    email: { type: 'string' },
+                    consentimiento: { type: 'boolean', description: 'true solo si la persona autorizó guardar sus datos' },
+                    seminario_dia_ids: { type: 'array', items: { type: 'integer' }, description: 'id de los días del seminario, de la lista "A la venta"' },
+                    cantidad: { type: 'integer', description: 'cuántas personas van a cada día (1 si no lo dijo)' },
+                    curso_ids: { type: 'array', items: { type: 'integer' }, description: 'id de los cursos, de la lista "A la venta"' },
                 },
                 required: ['nombre', 'email', 'consentimiento'],
             },
@@ -88,6 +112,30 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
             state.interesadoId = body.id;
             return { registrado: true };
         },
+        async reservar(args, state) {
+            if (args.consentimiento !== true) return { error: 'Falta el consentimiento de la persona para guardar sus datos.' };
+            const ids = (value) => (Array.isArray(value) ? value.map(Number).filter(Number.isInteger) : []);
+            const cantidad = Number.isInteger(Number(args.cantidad)) && Number(args.cantidad) > 0 ? Number(args.cantidad) : 1;
+            const items = [
+                ...ids(args.seminario_dia_ids).map((id) => ({ seminario_dia_id: id, cantidad })),
+                ...ids(args.curso_ids).map((id) => ({ curso_id: id })),
+            ];
+            if (!items.length) return { error: 'Indica los días del seminario o los cursos que la persona quiere.' };
+            const { status, body } = await api('POST', '/compras', {
+                nombre: args.nombre, email: args.email, consentimiento: true, origen: canal, items,
+            });
+            if (status >= 400) return { error: body?.error ?? 'No se pudo reservar.' };
+            // The amount and how to pay are sent by the code, word for word, never retyped by the model.
+            state.notice = body.mensaje;
+            // The person is also followed up as interested, so the team sees the conversation.
+            if (!state.interesadoId) {
+                const lead = await api('POST', '/interesados', {
+                    nombre: args.nombre, email: args.email, consentimiento: true, origen: canal, mensaje: `Reserva ${body.codigo}`,
+                }).catch(() => null);
+                if (lead && lead.status < 400) state.interesadoId = lead.body.id;
+            }
+            return { reservado: true, codigo: body.codigo };
+        },
         async agendar_clase_prueba(args, state) {
             if (!state.interesadoId) return { error: 'La persona todavía no está registrada. Primero usa registrar_interesado.' };
             const { status, body } = await api('POST', `/interesados/${state.interesadoId}/clase-prueba`, { sesion_id: Number(args.sesion_id) });
@@ -113,6 +161,31 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
         }
     }
 
+    // The seminars and courses for sale, read on every message like the classes.
+    async function offersText() {
+        const unknown = 'No se pudieron consultar. Di que una persona del equipo informará los seminarios y cursos.';
+        try {
+            const { status, body } = await api('GET', '/ofertas');
+            if (status >= 400 || !Array.isArray(body?.seminarios) || !Array.isArray(body?.cursos)) return unknown;
+            const lines = [];
+            for (const s of body.seminarios.slice(0, 10)) {
+                lines.push(`- Seminario "${s.titulo}", sede ${s.sede ?? 'por confirmar'}.${s.oferta ? ` ${s.oferta}.` : ''}${s.precio_pack ? ` Precio por persona si va a todos los días: ${pesos(s.precio_pack)}.` : ''}`);
+                for (const d of s.dias.slice(0, 10)) {
+                    const hours = d.hora_inicio ? `de ${d.hora_inicio}${d.hora_fin ? ` a ${d.hora_fin}` : ''}` : 'horario por confirmar';
+                    const seats = d.cerrado ? 'inscripciones cerradas' : `${d.cupo_disponible} cupos disponibles`;
+                    lines.push(`  - día id ${d.id}: ${WEEKDAY.format(new Date(`${d.fecha}T12:00:00Z`))} ${d.fecha}, ${hours}, ${pesos(d.precio)} por persona, ${seats}`);
+                }
+            }
+            for (const c of body.cursos.slice(0, 10)) {
+                lines.push(`- Curso online id ${c.id}: "${c.titulo}", ${pesos(c.precio)}, con acceso a los videos y descarga. Lecciones: ${c.lecciones.map((l) => l.titulo).join('; ') || 'por confirmar'}.`);
+            }
+            return lines.length ? lines.join('\n') : 'No hay seminarios ni cursos a la venta por ahora.';
+        } catch (error) {
+            console.error('The assistant could not read the offers:', error.message);
+            return unknown;
+        }
+    }
+
     async function run(name, args, state) {
         if (!Object.hasOwn(actions, name)) return { error: `La herramienta ${name} no existe.` };
         try {
@@ -126,7 +199,7 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
     // state: { history: [], interesadoId: null }, one per chat. Returns the text to send.
     async function handle(state, text) {
         const today = new Intl.DateTimeFormat('es-CL', { dateStyle: 'full', timeZone: 'America/Santiago' }).format(now());
-        const system = `${systemPrompt(canal)}\n\nHoy es ${today}.\n\nClases programadas:\n${await classesText()}`;
+        const system = `${systemPrompt(canal)}\n\nHoy es ${today}.\n\nA la venta:\n${await offersText()}\n\nClases programadas:\n${await classesText()}`;
         const messages = [{ role: 'system', content: system }, ...state.history, { role: 'user', content: text }];
 
         try {
@@ -137,6 +210,11 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
                     if (!reply) break;
                     // Meta requires a bot to say it is one; do not leave that to the model.
                     if (!state.history.length && !/asistente virtual/i.test(reply)) reply = `${INTRO}\n\n${reply}`;
+                    // After a booking, the exact amount and how to pay, in the school's words.
+                    if (state.notice) {
+                        reply = `${reply}\n\n${state.notice}`;
+                        state.notice = null;
+                    }
                     // Only what was said is remembered; the tool traffic is not.
                     state.history.push({ role: 'user', content: text }, { role: 'assistant', content: reply });
                     state.history.splice(0, Math.max(0, state.history.length - MAX_HISTORY));

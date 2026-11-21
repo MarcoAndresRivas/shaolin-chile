@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { api } from '../lib/client.js';
 import './ChatWidget.css';
 
-const GREETING = 'Hola, soy el asistente virtual de Shaolin Chile. Puedo contarte qué clases vienen y agendarte una clase de prueba.';
+const GREETING = 'Hola, soy el asistente virtual de Shaolin Chile. 🥷 Puedo contarte de las clases, el seminario de diciembre y los cursos online, y ayudarte a reservar.';
 
 // A floating chat with the virtual assistant. When the assistant cannot be
 // reached, it offers WhatsApp so the visitor is not left without an answer.

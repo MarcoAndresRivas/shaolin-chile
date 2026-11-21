@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+import MiCompra from '../components/MiCompra.jsx';
+---
+
+<Base title="Mi compra" description="Revisa tu reserva de seminario o curso, avisa tu transferencia y accede a tus videos." noindex>
+  <section class="section">
+    <div class="container container--narrow">
+      <div class="section-head">
+        <p class="eyebrow">Seminarios y cursos</p>
+        <h1>Mi compra</h1>
+        <p>Escribe el código de reserva y el correo que usaste al comprar.</p>
+      </div>
+      <MiCompra client:load />
+    </div>
+  </section>
+</Base>

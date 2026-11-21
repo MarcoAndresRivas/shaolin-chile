@@ -2,6 +2,7 @@ const crypto = require('node:crypto');
 const express = require('express');
 const interesadosController = require('../controllers/interesadosController');
 const asistenteController = require('../controllers/asistenteController');
+const ventasController = require('../controllers/ventasController');
 
 const router = express.Router();
 
@@ -25,5 +26,7 @@ router.get('/sesiones', asistenteController.getSesiones);
 router.post('/interesados', interesadosController.registrar);
 router.post('/interesados/:id/clase-prueba', interesadosController.agendarClasePrueba);
 router.post('/conversaciones', asistenteController.saveConversacion);
+router.get('/ofertas', ventasController.getOfertas);
+router.post('/compras', ventasController.crearCompra);
 
 module.exports = router;

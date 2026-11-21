@@ -27,7 +27,9 @@ function createApp({ config, db, assistantModel }) {
 
     // Interested people register from the public site: at most 5 requests per IP per hour.
     const rateLimit = createRateLimiter({ max: 5, windowMs: 60 * 60 * 1000 });
-    app.use('/api', require('../routes/public')({ rateLimit }));
+    // Buying and reading a purchase: at most 20 requests per IP per hour.
+    const salesLimit = createRateLimiter({ max: 20, windowMs: 60 * 60 * 1000 });
+    app.use('/api', require('../routes/public')({ rateLimit, salesLimit }));
     app.use('/api', require('../routes/auth'));
     app.use('/api/intranet', require('../routes/intranet'));
     app.use('/api/asistente', require('../routes/asistente'));
