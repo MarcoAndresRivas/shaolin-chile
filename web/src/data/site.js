@@ -38,7 +38,7 @@ export const history = {
   highlights: [
     'Instructores avalados a nivel internacional',
     'Conexión directa con China y la sede central en Argentina',
-    'Múltiples sedes a lo largo de Chile',
+    'Parte de la Federación Chilena de Shaolin',
     'Clases adaptadas para todas las edades y niveles',
   ],
   paragraphs: [
@@ -99,27 +99,40 @@ export const benefits = [
   { title: 'Equilibrio interior', text: 'Energía, coordinación y conexión mente-cuerpo mediante el Qi Gong.' },
 ];
 
-export const locationsHead = { eyebrow: 'Presentes en Todo el País', title: 'Nuestras Sedes en Chile' };
+export const locationsHead = {
+  eyebrow: 'Una misma tradición',
+  title: 'Escuelas de la Federación',
+  intro:
+    'Shaolin Chile es parte de la Federación Chilena de Shaolin, junto a escuelas amigas a lo largo del país, y de la comunidad Shaolin Chan Internacional.',
+};
 
-// Street addresses are still pending from Jose: keep them null.
+// The schools of the federation. Street addresses are still pending from Jose: keep them null.
 export const locations = [
   {
-    name: 'Sede Administrativa Nacional',
+    name: 'Escuela de Concepción',
     city: 'Concepción',
     address: null,
-    description: 'Centro neurálgico de nuestras operaciones y formación continua en el país.',
+    description: 'Formación en Kung Fu tradicional, Sanda y Tai Chi para todas las edades.',
   },
   {
-    name: 'Sede Región Metropolitana',
+    name: 'Escuela de Santiago',
     city: 'Santiago Centro',
     address: null,
-    description: 'Acercando el arte marcial tradicional a la capital del país.',
+    description: 'El arte marcial tradicional en la capital del país.',
+  },
+];
+
+// Where the school belongs: shown as a quiet line under the schools.
+export const affiliations = [
+  {
+    name: 'Federación Chilena de Shaolin',
+    handle: '@federacionchilenadeshaolin',
+    url: 'https://www.instagram.com/federacionchilenadeshaolin/',
   },
   {
-    name: 'Sede Región del Maule',
-    city: 'Talca',
-    address: null,
-    description: 'Escuela dedicada a la formación integral de niños, jóvenes y adultos.',
+    name: 'Shaolin Chan Internacional',
+    handle: '@shaolin_chan_internacional',
+    url: 'https://www.instagram.com/shaolin_chan_internacional/',
   },
 ];
 
