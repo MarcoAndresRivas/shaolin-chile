@@ -6,6 +6,8 @@ const path = require('node:path');
 const { createSqliteDb } = require('./sqliteAdapter');
 
 const MIGRATIONS_DIR = path.join(__dirname, '..', '..', 'migrations');
+// DATE columns as 'YYYY-MM-DD' text, like SQLite: the code compares and slices them as strings.
+const DATE_AS_TEXT = ['DATE'];
 
 // Knex configuration for migrations and seeds.
 function buildKnexConfig(config) {
@@ -21,7 +23,7 @@ function buildKnexConfig(config) {
     }
     return {
         client: 'mysql2',
-        connection: { ...config.db, charset: 'utf8mb4' },
+        connection: { ...config.db, charset: 'utf8mb4', dateStrings: DATE_AS_TEXT },
         migrations,
     };
 }
@@ -38,7 +40,7 @@ async function createDatabase(config) {
         };
     }
     const mysql = require('mysql2/promise');
-    const pool = mysql.createPool({ ...config.db, waitForConnections: true, connectionLimit: 10, queueLimit: 0 });
+    const pool = mysql.createPool({ ...config.db, dateStrings: DATE_AS_TEXT, waitForConnections: true, connectionLimit: 10, queueLimit: 0 });
     return {
         db: pool,
         ping: async () => (await pool.getConnection()).release(),

@@ -14,6 +14,8 @@ const USERS = [
     ['Marta', 'marta@x.cl', ['Alumno']],
 ];
 const BASE = '/api/intranet';
+// A pass records the three parts of a Duan Pin exam and its jury.
+const PASS = { conducta_ok: true, nota_tecnica: 8, evaluadores: 'Ines' };
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const isoDate = (offsetDays) => new Date(Date.now() + offsetDays * DAY_MS).toISOString().slice(0, 10);
@@ -205,20 +207,20 @@ test('results: only confirmed students, only once the exam date has come; passin
         await call('POST', `${BASE}/examenes/${future}/nominaciones`, ines, { alumno_id: ids.pepe, disciplina_id: disciplina.id });
         await call('PUT', `${BASE}/examenes/${future}/nominaciones/${ids.pepe}/confirmar`, admin);
 
-        const early = await call('PUT', `${BASE}/examenes/${future}/resultados`, admin, { resultados: [{ alumno_id: ids.pepe, resultado: 'aprobado' }] });
+        const early = await call('PUT', `${BASE}/examenes/${future}/resultados`, admin, { resultados: [{ alumno_id: ids.pepe, resultado: 'aprobado', ...PASS }] });
         assert.equal(early.status, 400);
         assert.match(early.body.error, /fecha/);
 
         // The same flow for an exam that has already happened (dated yesterday).
         const past = (await exam(ctx, { fecha: isoDate(-1), nombre: 'Examen de ayer' })).body.id;
         await call('POST', `${BASE}/examenes/${past}/nominaciones`, ines, { alumno_id: ids.pepe, disciplina_id: disciplina.id });
-        const unconfirmed = await call('PUT', `${BASE}/examenes/${past}/resultados`, admin, { resultados: [{ alumno_id: ids.pepe, resultado: 'aprobado' }] });
+        const unconfirmed = await call('PUT', `${BASE}/examenes/${past}/resultados`, admin, { resultados: [{ alumno_id: ids.pepe, resultado: 'aprobado', ...PASS }] });
         assert.equal(unconfirmed.status, 400, 'not confirmed yet');
         await call('PUT', `${BASE}/examenes/${past}/nominaciones/${ids.pepe}/confirmar`, admin);
 
         assert.equal((await call('PUT', `${BASE}/examenes/${past}/resultados`, admin, { resultados: [{ alumno_id: ids.pepe, resultado: 'quizas' }] })).status, 400);
         assert.equal((await call('PUT', `${BASE}/examenes/${past}/resultados`, await login('pepe@x.cl'), { resultados: [] })).status, 403);
-        const saved = await call('PUT', `${BASE}/examenes/${past}/resultados`, admin, { resultados: [{ alumno_id: ids.pepe, resultado: 'aprobado' }] });
+        const saved = await call('PUT', `${BASE}/examenes/${past}/resultados`, admin, { resultados: [{ alumno_id: ids.pepe, resultado: 'aprobado', ...PASS }] });
         assert.equal(saved.status, 200);
 
         const progress = (await call('GET', `${BASE}/progreso/mio`, await login('pepe@x.cl'))).body;
