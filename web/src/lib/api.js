@@ -1,7 +1,7 @@
 // Client for the Express API (backend/). Every function returns the parsed
 // JSON body or throws ApiError with the server's message.
 
-const PRODUCTION_API = 'https://shaolin-chile-backend.onrender.com';
+const PRODUCTION_API = 'https://shaolin-chile.vercel.app';
 const LOCAL_API = 'http://localhost:3000';
 
 export class ApiError extends Error {

@@ -96,7 +96,7 @@ test('the API URL is the configured one, else local or production by host', () =
   assert.equal(apiBaseUrl({ configured: 'https://x.test/', hostname: 'localhost' }), 'https://x.test');
   assert.equal(apiBaseUrl({ hostname: 'localhost' }), 'http://localhost:3000');
   assert.equal(apiBaseUrl({ hostname: '127.0.0.1' }), 'http://localhost:3000');
-  assert.equal(apiBaseUrl({ hostname: 'marcoandresrivas.github.io' }), 'https://shaolin-chile-backend.onrender.com');
+  assert.equal(apiBaseUrl({ hostname: 'marcoandresrivas.github.io' }), 'https://shaolin-chile.vercel.app');
 });
 
 test('the school endpoints use their routes, methods and query strings', async () => {

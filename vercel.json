@@ -1,7 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "cd web && npm ci",
-  "buildCommand": "cd web && npm test && npm run build",
-  "outputDirectory": "web/dist"
+  "installCommand": "cd web && npm ci && cd ../backend && npm ci --omit=dev",
+  "buildCommand": "cd web && npm test && npm run build && cd ../backend && sh scripts/prepare-db.sh",
+  "outputDirectory": "web/dist",
+  "rewrites": [{ "source": "/api/(.*)", "destination": "/api" }]
 }
