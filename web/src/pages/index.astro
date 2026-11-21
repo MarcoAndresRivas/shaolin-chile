@@ -192,7 +192,7 @@ const historyImage = instagramImage('Bppn2h8lX4g');
       <TrialClassForm
         client:visible
         disciplines={disciplines.filter((d) => d.slug !== 'cursos-online').map((d) => d.name)}
-        locations={locations.map((l) => l.city)}
+        locations={['Concepción']} // the federation lists other schools, but trial classes are only in Concepción
         whatsapp={contact.whatsapp}
       />
     </div>
