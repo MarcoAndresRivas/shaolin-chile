@@ -16,7 +16,7 @@ Branch: `feat/duan-pin` (from `main`). Delivery strategy: ask-on-risk (stacked P
 | ID | Specs | Route | Status | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | S1, S2, S3, S4 | inline | done | RED 6/6 → GREEN 7/7 (plus birth date endpoint); existing exam tests send the three parts; rollback test; backend 204/204; Risk items 1 (migration) and 3 (results API now requires the parts to pass; only consumer is the portal, updated in T3) → verifier at feature end |
-| T2 | S1, S3, S5 | inline | pending | |
+| T2 | S1, S3, S5 | inline | done | RED → GREEN 2/2; backend suite below |
 | T3 | S2, S4 | inline | pending | |
 
 - T1: backend: grade columns (serie, nivel, etapa, grado de Pin, edad mínima, formas, teoría y combate requeridos); exam result columns (conducta, nota técnica, nota teórica, combate, evaluadores, observaciones); editing a grade; age in eligibility; results with the three parts.
