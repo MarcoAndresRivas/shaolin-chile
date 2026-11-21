@@ -11,6 +11,7 @@
 const { hasAnyRole, ADMIN_ROLES } = require('../middleware/authMiddleware');
 const { isGuardianOf } = require('../src/familia');
 const { todayInChile } = require('../src/dates');
+const { ladder } = require('../src/seedDuanPin');
 
 const RESULTS = ['aprobado', 'reprobado', 'ausente'];
 const EXAM_STATES_SETTABLE = ['programado', 'cancelado'];
@@ -139,6 +140,33 @@ exports.setFechaNacimiento = async (req, res) => {
     }
 };
 
+// Administration loads the Duan Pin ladder for Kung Fu Tradicional, only while it has no grades.
+exports.loadDuanPin = async (req, res) => {
+    try {
+        const [[disciplina]] = await req.db.execute('SELECT id, nombre FROM disciplinas WHERE slug = ?', ['kung-fu-tradicional']);
+        if (!disciplina) return notFound(res, 'No existe la disciplina Kung Fu Tradicional.');
+        const [existing] = await req.db.execute('SELECT id FROM grados WHERE disciplina_id = ? LIMIT 1', [disciplina.id]);
+        if (existing.length) return conflict(res, `${disciplina.nombre} ya tiene grados: no se cambió nada.`);
+        const levels = ladder(disciplina.id);
+        const keys = Object.keys(levels[0]);
+        const sql = `INSERT INTO grados (${keys.join(', ')}) VALUES (${keys.map(() => '?').join(', ')})`;
+        const connection = await req.db.getConnection();
+        try {
+            await connection.beginTransaction();
+            for (const level of levels) await connection.execute(sql, keys.map((k) => (typeof level[k] === 'boolean' ? Number(level[k]) : level[k])));
+            await connection.commit();
+        } catch (failure) {
+            await connection.rollback();
+            throw failure;
+        } finally {
+            connection.release();
+        }
+        res.status(201).json({ creados: levels.length, message: `Se cargaron ${levels.length} niveles Duan Pin en ${disciplina.nombre}.` });
+    } catch (error) {
+        serverError('Error loading Duan Pin:', error, res);
+    }
+};
+
 // The head instructor edits a level's content; its place in the ladder does not change.
 exports.updateGrado = async (req, res) => {
     const { out, error } = readGradeContent(req.body ?? {}, false);
@@ -171,7 +199,8 @@ exports.placeAlumno = async (req, res) => {
 async function progressOf(db, alumnoId) {
     const today = todayInChile();
     const [grados] = await db.execute(
-        `SELECT g.id, g.disciplina_id, d.nombre AS disciplina, g.orden, g.nombre, g.clases_minimas, g.meses_minimos, g.edad_minima
+        `SELECT g.id, g.disciplina_id, d.nombre AS disciplina, g.orden, g.nombre, g.clases_minimas, g.meses_minimos, g.edad_minima,
+                g.serie, g.etapa, g.formas, g.tecnicas, g.requiere_teoria, g.requiere_combate
          FROM grados g JOIN disciplinas d ON d.id = g.disciplina_id ORDER BY g.disciplina_id, g.orden`,
     );
     const [historial] = await db.execute(
@@ -220,7 +249,14 @@ async function progressOf(db, alumnoId) {
             disciplina_id: disciplinaId,
             disciplina: ladder[0].disciplina,
             actual: actualGrade ? { id: actualGrade.id, nombre: actualGrade.nombre, orden: actualGrade.orden, fecha: last.fecha } : null,
-            siguiente: siguiente ? { id: siguiente.id, nombre: siguiente.nombre, orden: siguiente.orden } : null,
+            // What to prepare for the next level: its place, forms, techniques and exam parts.
+            siguiente: siguiente
+                ? {
+                    id: siguiente.id, nombre: siguiente.nombre, orden: siguiente.orden, serie: siguiente.serie, etapa: siguiente.etapa,
+                    formas: siguiente.formas, tecnicas: siguiente.tecnicas,
+                    requiere_teoria: Boolean(siguiente.requiere_teoria), requiere_combate: Boolean(siguiente.requiere_combate),
+                }
+                : null,
             requisitos,
             habilitado,
         });
