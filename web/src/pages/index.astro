@@ -11,6 +11,7 @@ import {
   benefits,
   benefitsHead,
   benefitsIntro,
+  affiliations,
   locations,
   locationsHead,
   schedules,
@@ -105,11 +106,12 @@ const historyImage = instagramImage('Bppn2h8lX4g');
     </div>
   </section>
 
-  <section id="sedes" class="section section--alt">
+  <section id="escuelas" class="section section--alt">
     <div class="container">
       <div class="section-head">
         <p class="eyebrow">{locationsHead.eyebrow}</p>
         <h2>{locationsHead.title}</h2>
+        <p>{locationsHead.intro}</p>
       </div>
       <div class="locations">
         {
@@ -126,6 +128,20 @@ const historyImage = instagramImage('Bppn2h8lX4g');
         }
       </div>
 
+      <ul class="affiliations" aria-label="Somos parte de">
+        {
+          affiliations.map((item) => (
+            <li>
+              <a href={item.url} target="_blank" rel="noopener">
+                <span class="affiliations__name">{item.name}</span>
+                <span class="affiliations__handle">{item.handle}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+
       <h3 class="schedules__title">Horarios de clases</h3>
       <div class="schedules">
         {
@@ -138,7 +154,7 @@ const historyImage = instagramImage('Bppn2h8lX4g');
           ))
         }
       </div>
-      <p class="schedules__note">Consulta por WhatsApp la sede y el horario que más te acomoden.</p>
+      <p class="schedules__note">Consulta por WhatsApp la escuela y el horario que más te acomoden.</p>
     </div>
   </section>
 
@@ -385,7 +401,7 @@ const historyImage = instagramImage('Bppn2h8lX4g');
 
   .locations {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 22px;
   }
   .location {
@@ -412,6 +428,35 @@ const historyImage = instagramImage('Bppn2h8lX4g');
   .location__address {
     margin: 0;
     font-size: 0.9rem;
+  }
+
+  .affiliations {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 32px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .affiliations a {
+    display: grid;
+    justify-items: center;
+    gap: 2px;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .affiliations a:hover .affiliations__name {
+    color: var(--gold);
+  }
+  .affiliations__name {
+    font-family: var(--font-display);
+    letter-spacing: 0.08em;
+    font-size: 0.95rem;
+    color: var(--text);
+  }
+  .affiliations__handle {
+    font-size: 0.8rem;
   }
 
   .gallery {
