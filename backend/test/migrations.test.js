@@ -527,11 +527,33 @@ test('a discipline cannot have two grades in the same position, nor a student th
     }
 });
 
+test('rolling back the Duan Pin migration removes its columns, unless levels or exam scores exist', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [disciplina] = await knex('disciplinas').select('id');
+        const [gradoId] = await knex('grados').insert({ disciplina_id: disciplina.id, orden: 1, nombre: '1.º Duan', serie: 'duan', nivel: 1 });
+        await assert.rejects(rollBackThrough(knex, '20261121000014_duan_pin.js'), /Duan Pin/);
+        await knex('grados').where({ id: gradoId }).update({ serie: null });
+        await rollBackThrough(knex, '20261121000014_duan_pin.js');
+        for (const column of ['serie', 'nivel', 'etapa', 'grado_pin', 'edad_minima', 'formas', 'requiere_teoria', 'requiere_combate']) {
+            assert.equal(await knex.schema.hasColumn('grados', column), false, column);
+        }
+        for (const column of ['conducta_ok', 'nota_tecnica', 'nota_teoria', 'combate_ok', 'evaluadores', 'observaciones']) {
+            assert.equal(await knex.schema.hasColumn('inscripciones_examen', column), false, column);
+        }
+        assert.equal(Number((await knex('grados').count({ n: '*' }).first()).n), 1, 'the grade row stays');
+    } finally {
+        await knex.destroy();
+    }
+});
+
 test('rolling back the sales migration removes its tables, unless they hold sales', async () => {
     const knex = memoryDb();
     try {
         await knex.migrate.latest();
         const [id] = await knex('seminarios').insert({ titulo: 'Seminario', estado: 'publicado' });
+        await rollBackThrough(knex, '20261121000014_duan_pin.js');
         await assert.rejects(knex.migrate.down(), /seminarios/);
         await knex('seminarios').where({ id }).del();
         await knex.migrate.down();
