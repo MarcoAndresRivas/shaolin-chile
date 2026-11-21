@@ -1,0 +1,18 @@
+---
+import Base from '../layouts/Base.astro';
+import Tienda from '../components/Tienda.jsx';
+import { contact } from '../data/site.js';
+---
+
+<Base title="Tienda" description="Zapatillas Feiyue, bastones de ratán, focos y vestimenta de entrenamiento. Envío a todo Chile, o retiro en el seminario para los productos sugeridos.">
+  <section class="section">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">Tienda Shaolin Chile</p>
+        <h1>Implementos y vestimenta</h1>
+        <p>Elige tus productos, paga por transferencia y recíbelos con envío a todo Chile. Los sugeridos para el seminario también se pueden retirar ahí.</p>
+      </div>
+      <Tienda client:load whatsapp={contact.whatsapp} />
+    </div>
+  </section>
+</Base>
