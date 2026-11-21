@@ -202,12 +202,15 @@ test('only administration manages products, and the purchases list says which it
     });
 });
 
-test('the product seed creates the real list once: six on sale, two by order as drafts, each with its photo', async () => {
+test('the product seed creates the real list once: fifteen on sale, three by order as drafts, each with its photo', async () => {
     await withApi(USERS, async ({ call, knex }) => {
         const { seedProductos } = require('../src/seedProductos');
         assert.deepEqual(await seedProductos(knex), [
             'Zapatillas Feiyue', 'Bastón de ratán 1,8 m', 'Guantes foco Mitt', 'Paletas dobles para patear (par)',
             'Escudo curvo ThaiPad', 'Chaleco Shaolin', 'Espada Jian de entrenamiento', 'Kwandao desmontable 1,85 m',
+            'Traje de Tai Chi', 'Zapatillas de cuero blancas Tai Chi', 'Traje de Nanquan', 'Traje de competencia Changquan',
+            'Traje de Sanda', 'Bastón de 3 secciones (San Jie Gun)', 'Doble espada Shuang Jian', 'Empeineras Wesing',
+            'Canillera Wesing', 'Doble gancho de entrenamiento',
         ]);
         assert.deepEqual(await seedProductos(knex), [], 'repeating changes nothing');
         const { productos } = (await call('GET', '/api/ofertas', null)).body;
@@ -218,10 +221,19 @@ test('the product seed creates the real list once: six on sale, two by order as 
             ['Paletas dobles para patear (par)', 22990, 'Única'],
             ['Escudo curvo ThaiPad', 22990, 'Única'],
             ['Chaleco Shaolin', 22990, 'Única'],
+            ['Traje de Tai Chi', 47990, 'Blanco Negro Azul Gris'],
+            ['Zapatillas de cuero blancas Tai Chi', 41990, '38 39 40 41 42 43'],
+            ['Traje de Nanquan', 38990, 'Rojo 165-175 cm Rojo 175-185 cm Dorado 165-175 cm Dorado 175-185 cm'],
+            ['Traje de competencia Changquan', 48990, '160-170 cm'],
+            ['Traje de Sanda', 28990, 'Rojo 170 cm Rojo 180 cm Rojo 190 cm Azul 170 cm Azul 180 cm Azul 190 cm'],
+            ['Bastón de 3 secciones (San Jie Gun)', 53990, 'Única'],
+            ['Doble espada Shuang Jian', 88990, 'Única'],
+            ['Empeineras Wesing', 28990, 'Rojo Azul'],
+            ['Canillera Wesing', 53990, 'L Azul'],
         ]);
         assert.ok(productos.every((p) => p.cierre_preventa === '2026-11-27'));
         assert.deepEqual(productos.filter((p) => p.sugerido_seminario).map((p) => p.titulo), ['Zapatillas Feiyue', 'Bastón de ratán 1,8 m', 'Guantes foco Mitt', 'Paletas dobles para patear (par)']);
-        assert.deepEqual((await knex('productos').where({ estado: 'borrador' })).map((p) => p.titulo), ['Espada Jian de entrenamiento', 'Kwandao desmontable 1,85 m']);
+        assert.deepEqual((await knex('productos').where({ estado: 'borrador' })).map((p) => p.titulo), ['Espada Jian de entrenamiento', 'Kwandao desmontable 1,85 m', 'Doble gancho de entrenamiento']);
         const photos = path.join(__dirname, '..', '..', 'web', 'public', 'ofertas');
         for (const { imagen } of await knex('productos')) assert.ok(fs.existsSync(path.join(photos, imagen)), `the photo ${imagen} is on the site`);
     });
