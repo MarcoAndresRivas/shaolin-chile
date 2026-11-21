@@ -76,7 +76,7 @@ Las pruebas usan SQLite (en memoria y en un archivo temporal), así que no neces
 
 ## Despliegue
 
-- **Backend:** contenedor construido con `backend/Dockerfile` (contexto `backend/`), alojado en Northflank con su base MySQL. Variables obligatorias: `DB_CLIENT=mysql`, `DB_SERVER`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`, `JWT_SECRET` y `CORS_ORIGINS`.
+- **Backend:** contenedor construido con `backend/Dockerfile` (contexto `backend/`), alojado en Northflank con su base MySQL. Variables obligatorias: `DB_CLIENT=mysql`, `DB_SERVER`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`, `JWT_SECRET` y `CORS_ORIGINS`. Para una demo sin base aparte: `DB_CLIENT=sqlite` y `SQLITE_FILE=/data/shaolin.sqlite`, con un volumen montado en `/data` para que los datos sobrevivan a los reinicios.
 - **Al arrancar**, `backend/scripts/start.sh` aplica las migraciones pendientes. Con `SEED_DEMO=true` además carga los datos de demostración (seminario, curso, productos, escala Duan Pin, un admin y un alumno, con `SEED_ADMIN_PASSWORD` y `SEED_ALUMNO_PASSWORD`); se puede repetir sin duplicar nada. Quitar `SEED_DEMO` cuando el sitio pase a ser real.
 - **Sitio oficial:** Vercel (https://shaolin-chile.vercel.app). `vercel.json` hace que Vercel pruebe y compile `web/` y publique solo `web/dist`, en la raíz del dominio. Se actualiza con cada cambio en `main`.
 - **Copia en GitHub Pages:** https://marcoandresrivas.github.io/shaolin-chile/. `.github/workflows/deploy-web.yml` la publica cada vez que cambia `web/` en `main`.
