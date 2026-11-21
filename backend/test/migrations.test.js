@@ -527,11 +527,27 @@ test('a discipline cannot have two grades in the same position, nor a student th
     }
 });
 
+test('the sedes migration deactivates Santiago and Talca, and rolling it back reactivates them', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const active = async () => (await knex('sedes').select('ciudad', 'activa').orderBy('id')).map((s) => [s.ciudad, Boolean(s.activa)]);
+        assert.deepEqual(await active(), [['Concepción', true], ['Santiago', false], ['Talca', false]]);
+        await knex.migrate.latest();
+        assert.deepEqual(await active(), [['Concepción', true], ['Santiago', false], ['Talca', false]], 'running it again changes nothing');
+        await rollBackThrough(knex, '20261121000011_sedes_solo_concepcion.js');
+        assert.deepEqual(await active(), [['Concepción', true], ['Santiago', true], ['Talca', true]]);
+    } finally {
+        await knex.destroy();
+    }
+});
+
 test('rolling back the sales migration removes its tables, unless they hold sales', async () => {
     const knex = memoryDb();
     try {
         await knex.migrate.latest();
         const [id] = await knex('seminarios').insert({ titulo: 'Seminario', estado: 'publicado' });
+        await rollBackThrough(knex, '20261121000011_sedes_solo_concepcion.js');
         await assert.rejects(knex.migrate.down(), /seminarios/);
         await knex('seminarios').where({ id }).del();
         await knex.migrate.down();
