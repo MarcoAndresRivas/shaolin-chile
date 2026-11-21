@@ -10,7 +10,7 @@
 
 const { hasAnyRole, ADMIN_ROLES } = require('../middleware/authMiddleware');
 const { isGuardianOf } = require('../src/familia');
-const { todayInChile } = require('../src/dates');
+const { todayInChile, isoDay } = require('../src/dates');
 const { ladder } = require('../src/seedDuanPin');
 
 const RESULTS = ['aprobado', 'reprobado', 'ausente'];
@@ -211,7 +211,7 @@ async function progressOf(db, alumnoId) {
     );
 
     const [[person]] = await db.execute('SELECT fecha_nacimiento FROM detalles_alumno WHERE usuario_id = ?', [alumnoId]);
-    const birth = person?.fecha_nacimiento ? String(person.fecha_nacimiento).slice(0, 10) : null;
+    const birth = isoDay(person?.fecha_nacimiento);
     const edad = birth ? ageOn(birth, today) : null;
 
     const disciplinas = [];
