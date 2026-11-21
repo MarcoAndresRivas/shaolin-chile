@@ -87,6 +87,8 @@ router.get('/morosidad', isAdmin, finanzasController.getMorosidad);
 // --- Grades, progress, exams, nominations (instructor or admin) and results (admin) ---
 router.get('/grados', gradosController.getGrados);
 router.post('/grados', isAdmin, gradosController.createGrado);
+router.put('/grados/:id', isAdmin, gradosController.updateGrado);
+router.put('/alumnos/:id/fecha-nacimiento', isAdmin, gradosController.setFechaNacimiento);
 router.post('/alumnos/:id/grados', isAdmin, gradosController.placeAlumno);
 router.get('/progreso/mio', gradosController.miProgreso);
 router.get('/habilitados', gradosController.habilitados);
