@@ -106,7 +106,7 @@ test('invalid purchases are refused and nothing is stored', async () => {
             [buyer([{ seminario_dia_id: dia1, cantidad: 11 }]), 'hasta 10'],
             [buyer([{ seminario_dia_id: 999 }]), 'no existe'],
             [buyer([{ seminario_dia_id: draftDay }]), 'no existe'],
-            [buyer([{ algo: 1 }]), 'seminario_dia_id o curso_id'],
+            [buyer([{ algo: 1 }]), 'seminario_dia_id, curso_id o producto_talla_id'],
         ];
         for (const [body, hint] of cases) {
             const { status, body: answer } = await call('POST', '/api/compras', null, body);
