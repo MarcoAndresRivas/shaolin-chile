@@ -12,7 +12,8 @@
     "seed:admin": "node seed_admin.js",
     "seed:alumno": "node seed_alumno.js",
     "seed:team": "node seed_custom_admins.js",
-    "seed:ofertas": "node seed_ofertas.js"
+    "seed:ofertas": "node seed_ofertas.js",
+    "seed:productos": "node seed_productos.js"
   },
   "keywords": [],
   "author": "",

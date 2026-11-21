@@ -2,6 +2,8 @@
 // stock next to seminars and courses, paid by transfer, shipped or picked up at the seminar.
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const { withApi } = require('./apiHarness');
 
 const USERS = [
@@ -197,6 +199,31 @@ test('only administration manages products, and the purchases list says which it
         const admin = await login('admin@x.cl');
         const [compra] = (await call('GET', `${ADMIN}/compras`, admin)).body;
         assert.deepEqual(compra.items, [{ tipo: 'producto', descripcion: 'Polera del evento (talla M)', cantidad: 2, precio: 12000 }]);
+    });
+});
+
+test('the product seed creates the real list once: six on sale, two by order as drafts, each with its photo', async () => {
+    await withApi(USERS, async ({ call, knex }) => {
+        const { seedProductos } = require('../src/seedProductos');
+        assert.deepEqual(await seedProductos(knex), [
+            'Zapatillas Feiyue', 'Bastón de ratán 1,8 m', 'Guantes foco Mitt', 'Paletas dobles para patear (par)',
+            'Escudo curvo ThaiPad', 'Chaleco Shaolin', 'Espada Jian de entrenamiento', 'Kwandao desmontable 1,85 m',
+        ]);
+        assert.deepEqual(await seedProductos(knex), [], 'repeating changes nothing');
+        const { productos } = (await call('GET', '/api/ofertas', null)).body;
+        assert.deepEqual(productos.map((p) => [p.titulo, p.precio, p.tallas.map((t) => t.talla).join(' ')]), [
+            ['Zapatillas Feiyue', 25990, '35 36 37 38 39 40 41 43'],
+            ['Bastón de ratán 1,8 m', 24990, 'Única'],
+            ['Guantes foco Mitt', 16990, 'Rojo Azul'],
+            ['Paletas dobles para patear (par)', 22990, 'Única'],
+            ['Escudo curvo ThaiPad', 22990, 'Única'],
+            ['Chaleco Shaolin', 22990, 'Única'],
+        ]);
+        assert.ok(productos.every((p) => p.cierre_preventa === '2026-11-27'));
+        assert.deepEqual(productos.filter((p) => p.sugerido_seminario).map((p) => p.titulo), ['Zapatillas Feiyue', 'Bastón de ratán 1,8 m', 'Guantes foco Mitt', 'Paletas dobles para patear (par)']);
+        assert.deepEqual((await knex('productos').where({ estado: 'borrador' })).map((p) => p.titulo), ['Espada Jian de entrenamiento', 'Kwandao desmontable 1,85 m']);
+        const photos = path.join(__dirname, '..', '..', 'web', 'public', 'ofertas');
+        for (const { imagen } of await knex('productos')) assert.ok(fs.existsSync(path.join(photos, imagen)), `the photo ${imagen} is on the site`);
     });
 });
 
