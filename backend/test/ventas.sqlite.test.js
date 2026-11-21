@@ -200,7 +200,17 @@ test('the assistant reads the offers and books with the key, recording its chann
     }, { env: { ASISTENTE_API_KEY: KEY } });
 });
 
-test('the seed creates the December seminar and the test course once', async () => {
+test('the seed renames the old test course to the online coaching, without a second course', async () => {
+    await withApi(USERS, async ({ knex }) => {
+        await knex('cursos').insert({ titulo: 'Curso de prueba: Fundamentos del Kung Fu Shaolin', descripcion: 'Curso de prueba.', precio: 25000, estado: 'publicado' });
+        await seedOfertas(knex);
+        const cursos = await knex('cursos');
+        assert.deepEqual(cursos.map((c) => [c.titulo, c.precio]), [['Asesoría online', 25000]]);
+        assert.match(cursos[0].descripcion, /acceso a los videos/);
+    });
+});
+
+test('the seed creates the December seminar and the online coaching once', async () => {
     await withApi(USERS, async ({ knex }) => {
         assert.equal((await seedOfertas(knex)).length, 2);
         assert.deepEqual(await seedOfertas(knex), [], 'repeating changes nothing');

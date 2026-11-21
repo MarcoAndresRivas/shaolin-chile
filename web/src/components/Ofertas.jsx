@@ -190,7 +190,6 @@ export default function Ofertas({ whatsapp }) {
             <div className="offer__body">
               <p className="eyebrow">Curso online</p>
               <h2>{curso.titulo}</h2>
-              <p className="offer__price">{formatPesos(curso.precio)}</p>
               {curso.descripcion && <p>{curso.descripcion}</p>}
               {curso.lecciones.length > 0 && (
                 <ol className="offer__lessons">

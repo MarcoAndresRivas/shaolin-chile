@@ -58,12 +58,6 @@
   margin: 0;
 }
 
-.offer__price {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--gold);
-}
-
 .offer__lessons {
   margin: 0;
   padding-left: 20px;

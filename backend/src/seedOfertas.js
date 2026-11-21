@@ -17,9 +17,11 @@ const DIAS = [
     { fecha: '2026-12-05', hora_inicio: '09:00', hora_fin: '17:00', precio: 35000, cupo: 50 },
 ];
 
+// The course was first published under this title; the seed renames it in place.
+const OLD_CURSO_TITULO = 'Curso de prueba: Fundamentos del Kung Fu Shaolin';
 const CURSO = {
-    titulo: 'Curso de prueba: Fundamentos del Kung Fu Shaolin',
-    descripcion: 'Curso de prueba para la venta de videos. Al pagar recibes acceso a las clases grabadas, con derecho a descargarlas para tu uso personal.',
+    titulo: 'Asesoría online',
+    descripcion: 'Asesoría online de Kung Fu Shaolin. Al pagar recibes acceso a los videos de las clases grabadas, con derecho a descargarlos para tu uso personal.',
     imagen: 'curso.jpg',
     precio: 25000,
     estado: 'publicado',
@@ -43,6 +45,7 @@ async function seedOfertas(knex) {
         await knex('seminario_dias').insert(DIAS.map((dia) => ({ ...dia, seminario_id: id })));
         created.push(SEMINARIO.titulo);
     }
+    await knex('cursos').where({ titulo: OLD_CURSO_TITULO }).update({ titulo: CURSO.titulo, descripcion: CURSO.descripcion });
     if (!(await knex('cursos').where({ titulo: CURSO.titulo }).first())) {
         const id = await insertId(knex, 'cursos', CURSO);
         await knex('curso_lecciones').insert(LECCIONES.map((titulo, index) => ({ curso_id: id, orden: index + 1, titulo })));
