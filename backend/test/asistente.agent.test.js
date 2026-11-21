@@ -258,7 +258,7 @@ test('the model client speaks the OpenAI chat format and fails loudly on an erro
 
 const offersIn = (seen) => seen.at(-1)[0].content.split('A la venta:\n')[1].split('\n\nClases programadas:')[0];
 
-test('the model receives the seminars and courses for sale, with prices, seats and the offer', async () => {
+test('the model receives the seminars and courses for sale with their seats, and the prices and offer in a block apart', async () => {
     const ofertas = {
         seminarios: [{
             titulo: 'Seminario de diciembre', sede: null, oferta: 'Oferta: los dos días por $59.000', precio_pack: 59000,
@@ -272,10 +272,14 @@ test('the model receives the seminars and courses for sale, with prices, seats a
     const { agent, state, seen } = setup([say('Hay un seminario.')], { 'GET /ofertas': { status: 200, body: ofertas } });
     await agent.handle(state, '¿Qué seminarios hay?');
     assert.equal(offersIn(seen), [
-        '- Seminario "Seminario de diciembre", sede por confirmar. Oferta: los dos días por $59.000. Precio por persona si va a todos los días: $59.000.',
-        '  - día id 3: viernes 2026-12-04, horario por confirmar, $35.000 por persona, 50 cupos disponibles',
-        '  - día id 4: sábado 2026-12-05, de 10:00 a 13:00, $35.000 por persona, inscripciones cerradas',
-        '- Curso online id 8: "Curso de prueba", $25.000, con acceso a los videos y descarga. Lecciones: Intro; Forma.',
+        '- Seminario "Seminario de diciembre", sede por confirmar.',
+        '  - día id 3: viernes 2026-12-04, horario por confirmar, 50 cupos disponibles',
+        '  - día id 4: sábado 2026-12-05, de 10:00 a 13:00, inscripciones cerradas',
+        '- Curso online id 8: "Curso de prueba", con acceso a los videos y descarga. Lecciones: Intro; Forma.',
+        '',
+        'Precios (dalos solo si la persona pregunta cuánto cuesta):',
+        '- Seminario "Seminario de diciembre": día id 3, $35.000 por persona; día id 4, $35.000 por persona. Oferta: los dos días por $59.000. Precio por persona si va a todos los días: $59.000.',
+        '- Curso online id 8: $25.000.',
     ].join('\n'));
 
     const down = setup([say('Te responderá una persona.')], { 'GET /ofertas': { status: 503, body: {} } });
@@ -315,4 +319,15 @@ test('a refused booking is reported to the model and no transfer message is sent
     state.history.push({ role: 'user', content: 'Hola' }, { role: 'assistant', content: 'Soy el asistente virtual.' });
     assert.equal(await agent.handle(state, 'Quiero el sábado'), 'Ese día ya no tiene cupos.');
     assert.deepEqual(lastToolResult(seen), { error: 'No quedan cupos suficientes.' });
+});
+
+test('the assistant presents seminars without prices and gives the price only when asked directly', async () => {
+    const { agent, state, seen } = setup([say('Hola.')], {
+        'GET /ofertas': { status: 200, body: { seminarios: [{ id: 1, titulo: 'Seminario', sede: 'Hualpén', oferta: null, precio_pack: 59000, dias: [{ id: 3, fecha: '2026-12-04', hora_inicio: '09:00', hora_fin: '17:00', precio: 35000, cupo_disponible: 50, cerrado: false }] }], cursos: [] } },
+    });
+    await agent.handle(state, 'Hola');
+    const prompt = seen[0][0].content;
+    assert.doesNotMatch(prompt, /cuenta lo que está en "A la venta": el precio por persona/, 'it no longer leads with the price');
+    assert.match(prompt, /No menciones precios ni ofertas a menos que la persona pregunte directamente cuánto cuesta/);
+    assert.match(prompt, /\$35\.000 por persona/, 'the prices stay in its data, to answer when asked');
 });

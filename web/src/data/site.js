@@ -170,6 +170,14 @@ export const gallery = [
 
 export const galleryHead = { title: 'Galería', intro: 'Momentos de entrenamiento en nuestra escuela.' };
 
+// Instagram videos shown on the seminars page to promote them.
+export const seminarVideos = [
+  { id: 'Df7R3voxT1K', kind: 'p', title: 'Shaolin Xiao Hong Quan - 少林小洪拳', alt: 'Dos practicantes ejecutando la forma Xiao Hong Quan al aire libre' },
+  { id: 'DfSMGdxhmQx', kind: 'reel', title: 'Entrenar cuerpo, mente y espíritu', alt: 'Entrenamiento de postura con bastones al aire libre' },
+  { id: 'Dfz7VqMsdYM', kind: 'reel', title: 'Eficacia y espíritu', alt: 'Instructor en postura de concentración al aire libre' },
+  { id: 'Dfun6qcB0jw', kind: 'reel', title: 'Shaolin Yin Shou Gun - 少林阴手棍', alt: 'Instructor con un bastón largo ejecutando la forma Yin Shou Gun al aire libre' },
+];
+
 export const cta = {
   title: '¿Listo para comenzar tu entrenamiento?',
   button: 'Solicita tu clase de prueba',
