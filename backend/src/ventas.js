@@ -69,17 +69,23 @@ function bankLines(pago = {}) {
 
 // The message that asks for the transfer, in the school's own words. Instagram
 // and WhatsApp show *text* in bold; the site shows plain text.
-// `retiro`: the purchase has products, which are handed out at the seminar.
-function reservationMessage({ codigo, total, concepto, canal = 'sitio', pago = {}, retiro = false }) {
+// `entrega`: how the products arrive, 'envio' (to `direccion`, shipping paid on delivery)
+// or 'retiro' (at the seminar, subject to stock); null when there are no products.
+// `soloProductos`: a store order, so it speaks of an order instead of seats and enrolment.
+function reservationMessage({ codigo, total, concepto, canal = 'sitio', pago = {}, entrega = null, direccion = null, soloProductos = false }) {
     const amount = canal === 'sitio' ? pesos(total) : `*${pesos(total)}*`;
     const bank = bankLines(pago);
     const sendTo = canal === 'sitio' && pago.comprobanteA ? ` ${pago.comprobanteA}` : '';
+    const what = soloProductos ? 'pedido' : 'reserva';
     return [
-        `🗓️ Para confirmar tu reserva y asegurar tu cupo, es necesario realizar una transferencia de ${amount}, correspondiente al valor de ${concepto}. ✨`,
+        soloProductos
+            ? `🛍️ Para confirmar tu pedido, es necesario realizar una transferencia de ${amount}, correspondiente al valor de ${concepto}. ✨`
+            : `🗓️ Para confirmar tu reserva y asegurar tu cupo, es necesario realizar una transferencia de ${amount}, correspondiente al valor de ${concepto}. ✨`,
         bank.length ? `Datos para la transferencia:\n${bank.join('\n')}` : 'Te enviaremos los datos para la transferencia.',
-        `Una vez realizada, envíanos tu comprobante + Nombre Completo${sendTo} para confirmar tu inscripción. 💕`,
-        ...(retiro ? ['Los productos se entregan en el seminario: retíralos en la mesa de venta con tu código de reserva. 🥋'] : []),
-        `Tu código de reserva es ${codigo}.`,
+        `Una vez realizada, envíanos tu comprobante + Nombre Completo${sendTo} para confirmar tu ${soloProductos ? 'pedido' : 'inscripción'}. 💕`,
+        ...(entrega === 'retiro' ? [`Los productos se retiran en el seminario, sujetos a disponibilidad: retíralos en la mesa de venta con tu código de ${what}. 🥋`] : []),
+        ...(entrega === 'envio' ? [`Enviaremos tu pedido a ${direccion}. El envío se paga al recibir. 📦`] : []),
+        `Tu código de ${what} es ${codigo}.`,
     ].join('\n\n');
 }
 

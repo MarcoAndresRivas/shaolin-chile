@@ -60,7 +60,7 @@ async function loadCatalog(db, now = new Date()) {
             cursos.map((c) => c.id),
         )
         : [[]];
-    const [productos] = await db.execute("SELECT id, titulo, descripcion, imagen, precio, cierre_preventa FROM productos WHERE estado = 'publicado' ORDER BY id");
+    const [productos] = await db.execute("SELECT id, titulo, descripcion, imagen, precio, cierre_preventa, sugerido_seminario FROM productos WHERE estado = 'publicado' ORDER BY id");
     const [tallas] = productos.length
         ? await db.execute(
             `SELECT id, producto_id, talla, stock, vendidos FROM producto_tallas WHERE producto_id IN (${placeholders(productos)}) ORDER BY id`,
@@ -80,7 +80,8 @@ async function loadCatalog(db, now = new Date()) {
         // What is left of each size, never the stock or what each buyer took.
         productos: productos.map((p) => ({
             ...p,
-            cerrado: presaleClosed(p, now),
+            sugerido_seminario: Boolean(p.sugerido_seminario),
+            cerrado: presaleClosed(p, now), // closes the pickup at the seminar; shipping stays open
             tallas: tallas.filter((t) => t.producto_id === p.id).map((t) => ({ id: t.id, talla: t.talla, disponible: Math.max(0, t.stock - t.vendidos) })),
         })),
     };
@@ -165,6 +166,21 @@ function conceptOf(lines) {
     }));
 }
 
+const ENTREGAS = ['envio', 'retiro'];
+
+// How an order with products is delivered: shipped to an address or picked up at the seminar.
+function readDelivery(body) {
+    if (!ENTREGAS.includes(body.entrega)) return 'Elige cómo recibir tus productos (entrega): envio o retiro.';
+    if (body.entrega === 'retiro') return { entrega: 'retiro', direccion: null, comuna: null, region: null };
+    const direccion = text(body.direccion);
+    const comuna = text(body.comuna);
+    const region = text(body.region);
+    if (direccion.length < 3 || direccion.length > 255 || comuna.length < 2 || comuna.length > 100 || region.length < 2 || region.length > 100) {
+        return 'Para el envío indica dirección, comuna y región.';
+    }
+    return { entrega: 'envio', direccion, comuna, region };
+}
+
 // Shared by the site and the assistant: `origen` is the channel the person bought from.
 async function createPurchase(db, config, body, now = new Date()) {
     const nombre = text(body.nombre);
@@ -179,6 +195,8 @@ async function createPurchase(db, config, body, now = new Date()) {
     if (!ORIGINS.includes(origen)) return { status: 400, error: `El origen no es válido (origen). Opciones: ${ORIGINS.join(', ')}.` };
     const items = readItems(body.items);
     if (typeof items === 'string') return { status: 400, error: items };
+    const delivery = items.sizes.size ? readDelivery(body) : { entrega: null, direccion: null, comuna: null, region: null };
+    if (typeof delivery === 'string') return { status: 400, error: delivery };
 
     const dayIds = [...items.days.keys()];
     const courseIds = [...items.courses];
@@ -202,7 +220,7 @@ async function createPurchase(db, config, body, now = new Date()) {
             : [[]];
         const [tallas] = sizeIds.length
             ? await connection.execute(
-                `SELECT t.id, t.talla, t.stock, t.vendidos, p.titulo, p.precio, p.cierre_preventa
+                `SELECT t.id, t.talla, t.stock, t.vendidos, p.titulo, p.precio, p.cierre_preventa, p.sugerido_seminario
                  FROM producto_tallas t JOIN productos p ON p.id = t.producto_id
                  WHERE t.id IN (${placeholders(sizeIds)}) AND p.estado = 'publicado'
                  ORDER BY t.id`,
@@ -239,7 +257,9 @@ async function createPurchase(db, config, body, now = new Date()) {
             lines.push({ tipo: 'curso', seminario_dia_id: null, curso_id: curso.id, producto_talla_id: null, descripcion: curso.titulo, cantidad: 1, precio_unitario: curso.precio });
         }
         for (const talla of tallas) {
-            if (presaleClosed(talla, now)) return fail(409, `La preventa de ${talla.titulo} ya cerró.`);
+            // Pickup is only for seminar suggestions, until the presale closes; shipping is always open.
+            if (delivery.entrega === 'retiro' && !talla.sugerido_seminario) return fail(400, `${talla.titulo} no se puede retirar en el seminario: elige envío.`);
+            if (delivery.entrega === 'retiro' && presaleClosed(talla, now)) return fail(409, `La preventa de ${talla.titulo} ya cerró.`);
             const cantidad = items.sizes.get(talla.id);
             // Same guard as the seats: only succeeds while there is stock.
             const [taken] = await connection.execute(
@@ -269,9 +289,9 @@ async function createPurchase(db, config, body, now = new Date()) {
 
         const codigo = newCode();
         const [created] = await connection.execute(
-            `INSERT INTO compras (codigo, nombre, email, telefono, origen, consentimiento, consentimiento_fecha, subtotal, descuento, total)
-             VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, ?, ?, ?)`,
-            [codigo, nombre, email, telefono || null, origen, subtotal, descuento, total],
+            `INSERT INTO compras (codigo, nombre, email, telefono, origen, consentimiento, consentimiento_fecha, subtotal, descuento, total, entrega, direccion, comuna, region)
+             VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?, ?)`,
+            [codigo, nombre, email, telefono || null, origen, subtotal, descuento, total, delivery.entrega, delivery.direccion, delivery.comuna, delivery.region],
         );
         for (const line of lines) {
             await connection.execute(
@@ -291,7 +311,7 @@ async function createPurchase(db, config, body, now = new Date()) {
                 descuento,
                 total,
                 items: lines.map(({ descripcion, cantidad, precio_unitario: precio }) => ({ descripcion, cantidad, precio })),
-                mensaje: reservationMessage({ codigo, total, concepto, canal: origen, pago: config.pago, retiro: lines.some((line) => line.tipo === 'producto') }),
+                mensaje: reservationMessage({ codigo, total, concepto, canal: origen, pago: config.pago, entrega: delivery.entrega, direccion: delivery.entrega === 'envio' ? `${delivery.direccion}, ${delivery.comuna}, ${delivery.region}` : null, soloProductos: lines.every((line) => line.tipo === 'producto') }),
                 pago: publicPago(config.pago),
             },
         };
@@ -374,7 +394,7 @@ exports.getCompras = async (req, res) => {
     if (estado && !ESTADOS_COMPRA.includes(estado)) return bad(res, `estado no es válido. Opciones: ${ESTADOS_COMPRA.join(', ')}.`);
     try {
         const [compras] = await req.db.execute(
-            `SELECT id, codigo, nombre, email, telefono, origen, subtotal, descuento, total, estado, referencia_pago, fecha_informe, fecha_creacion, fecha_validacion
+            `SELECT id, codigo, nombre, email, telefono, origen, subtotal, descuento, total, estado, entrega, direccion, comuna, region, referencia_pago, fecha_informe, fecha_creacion, fecha_validacion
              FROM compras ${estado ? 'WHERE estado = ?' : ''} ORDER BY fecha_creacion DESC, id DESC LIMIT 200`,
             estado ? [estado] : [],
         );
@@ -529,7 +549,16 @@ const saveOffer = (table, priceField, extra = () => null) => async (req, res) =>
 };
 exports.saveSeminario = saveOffer('seminarios', 'precio_pack');
 exports.saveCurso = saveOffer('cursos', 'precio');
-exports.saveProducto = saveOffer('productos', 'precio', readPresale);
+// Product-only fields: the presale date and whether it is suggested for the seminar.
+function readProductExtras(body, out) {
+    const error = readPresale(body, out);
+    if (error) return error;
+    if (body.sugerido_seminario === undefined) return null;
+    if (typeof body.sugerido_seminario !== 'boolean') return 'sugerido_seminario debe ser true o false.';
+    out.sugerido_seminario = body.sugerido_seminario ? 1 : 0;
+    return null;
+}
+exports.saveProducto = saveOffer('productos', 'precio', readProductExtras);
 
 exports.addTalla = async (req, res) => {
     const talla = text(req.body?.talla);

@@ -527,6 +527,22 @@ test('a discipline cannot have two grades in the same position, nor a student th
     }
 });
 
+test('rolling back the delivery migration removes its columns, unless an order has a delivery', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [id] = await knex('compras').insert({ codigo: 'SC-1', nombre: 'A', email: 'a@x.cl', origen: 'sitio', consentimiento: true, subtotal: 1, total: 1, entrega: 'envio' });
+        await assert.rejects(rollBackThrough(knex, '20261121000013_entrega_productos.js'), /delivery/);
+        await knex('compras').where({ id }).update({ entrega: null });
+        await rollBackThrough(knex, '20261121000013_entrega_productos.js');
+        for (const column of ['entrega', 'direccion', 'comuna', 'region']) assert.equal(await knex.schema.hasColumn('compras', column), false, column);
+        assert.equal(await knex.schema.hasColumn('productos', 'sugerido_seminario'), false);
+        assert.ok(await knex.schema.hasTable('producto_tallas'), 'the products migration stays');
+    } finally {
+        await knex.destroy();
+    }
+});
+
 test('rolling back the products migration removes its tables and column, unless products exist', async () => {
     const knex = memoryDb();
     try {

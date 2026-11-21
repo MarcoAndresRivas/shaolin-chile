@@ -1,5 +1,5 @@
 // Products (uniforms, event t-shirts, rattan staffs, shoes) sold with sizes and
-// stock next to seminars and courses, paid by transfer and picked up at the seminar.
+// stock next to seminars and courses, paid by transfer, shipped or picked up at the seminar.
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { withApi } = require('./apiHarness');
@@ -10,19 +10,24 @@ const USERS = [
 ];
 const DAY_MS = 24 * 60 * 60 * 1000;
 const isoDate = (offsetDays) => new Date(Date.now() + offsetDays * DAY_MS).toISOString().slice(0, 10);
-const buyer = (items) => ({ nombre: 'Juana Pérez', email: 'juana@example.com', consentimiento: true, items });
+// Product orders pick up at the seminar unless a test says otherwise.
+const buyer = (items, extra = { entrega: 'retiro' }) => ({ nombre: 'Juana Pérez', email: 'juana@example.com', consentimiento: true, items, ...extra });
+const ENVIO = { entrega: 'envio', direccion: 'Av. Colón 1234', comuna: 'Hualpén', region: 'Biobío' };
 const count = async (knex, table) => Number((await knex(table).count({ n: '*' }).first()).n);
 
-// A published t-shirt with sizes S (stock 2) and M (stock 5), a draft product and a closed presale.
+// A published t-shirt suggested for the seminar (S stock 2, M stock 5), a draft, a suggested staff whose
+// presale closed, and shoes that are not a seminar suggestion.
 async function products(knex) {
-    const [poleraId] = await knex('productos').insert({ titulo: 'Polera del evento', precio: 12000, estado: 'publicado', cierre_preventa: isoDate(5) });
+    const [poleraId] = await knex('productos').insert({ titulo: 'Polera del evento', precio: 12000, estado: 'publicado', cierre_preventa: isoDate(5), sugerido_seminario: true });
     const [tallaS] = await knex('producto_tallas').insert({ producto_id: poleraId, talla: 'S', stock: 2 });
     const [tallaM] = await knex('producto_tallas').insert({ producto_id: poleraId, talla: 'M', stock: 5 });
     const [draftId] = await knex('productos').insert({ titulo: 'Borrador', precio: 1000, estado: 'borrador' });
     const [draftTalla] = await knex('producto_tallas').insert({ producto_id: draftId, talla: 'Única', stock: 3 });
-    const [closedId] = await knex('productos').insert({ titulo: 'Vara de ratán', precio: 22000, estado: 'publicado', cierre_preventa: isoDate(-2) });
+    const [closedId] = await knex('productos').insert({ titulo: 'Vara de ratán', precio: 22000, estado: 'publicado', cierre_preventa: isoDate(-2), sugerido_seminario: true });
     const [closedTalla] = await knex('producto_tallas').insert({ producto_id: closedId, talla: '1,80 m', stock: 10 });
-    return { poleraId, tallaS, tallaM, draftTalla, closedTalla };
+    const [shoesId] = await knex('productos').insert({ titulo: 'Zapatillas', precio: 30000, estado: 'publicado' });
+    const [tallaZ] = await knex('producto_tallas').insert({ producto_id: shoesId, talla: '40', stock: 4 });
+    return { poleraId, tallaS, tallaM, draftTalla, closedTalla, tallaZ };
 }
 
 test('the catalog lists published products with their sizes and what is left, never what was sold', async () => {
@@ -31,7 +36,7 @@ test('the catalog lists published products with their sizes and what is left, ne
         await knex('producto_tallas').where({ id: tallaS }).update({ vendidos: 1 });
         const { status, body } = await call('GET', '/api/ofertas', null);
         assert.equal(status, 200);
-        assert.deepEqual(body.productos.map((p) => [p.titulo, p.precio, p.cerrado]), [['Polera del evento', 12000, false], ['Vara de ratán', 22000, true]]);
+        assert.deepEqual(body.productos.map((p) => [p.titulo, p.precio, p.cerrado, p.sugerido_seminario]), [['Polera del evento', 12000, false, true], ['Vara de ratán', 22000, true, true], ['Zapatillas', 30000, false, false]]);
         assert.deepEqual(body.productos[0].tallas.map((t) => [t.talla, t.disponible]), [['S', 1], ['M', 5]]);
         assert.ok(JSON.stringify(body.productos).indexOf('vendidos') === -1 && JSON.stringify(body.productos).indexOf('stock') === -1);
     });
@@ -45,7 +50,7 @@ test('buying a product size adds its price, takes the stock and says it is picke
         assert.deepEqual([body.subtotal, body.descuento, body.total], [24000, 0, 24000]);
         assert.deepEqual(body.items, [{ descripcion: 'Polera del evento (talla M)', cantidad: 2, precio: 12000 }]);
         assert.match(body.mensaje, /transferencia de \$24\.000/);
-        assert.match(body.mensaje, /Los productos se entregan en el seminario/);
+        assert.match(body.mensaje, /Los productos se retiran en el seminario, sujetos a disponibilidad/);
         assert.equal((await knex('producto_tallas').where({ id: tallaM }).first()).vendidos, 2);
         const [item] = await knex('compra_items');
         assert.deepEqual([item.tipo, item.producto_talla_id], ['producto', tallaM]);
@@ -206,5 +211,77 @@ test('the cancel message mentions the stock only when the purchase had products'
         const [seminarOnly, withProduct] = await knex('compras').orderBy('id');
         assert.equal((await call('PUT', `${ADMIN}/compras/${seminarOnly.id}/anular`, admin)).body.message, 'Compra anulada. Los cupos quedaron libres.');
         assert.equal((await call('PUT', `${ADMIN}/compras/${withProduct.id}/anular`, admin)).body.message, 'Compra anulada. Los cupos y el stock quedaron libres.');
+    });
+});
+
+test('an order of products only speaks of an order, not of seats or enrolment', async () => {
+    await withApi(USERS, async ({ call, knex }) => {
+        const { tallaM } = await products(knex);
+        const { body } = await call('POST', '/api/compras', null, buyer([{ producto_talla_id: tallaM, cantidad: 1 }]));
+        assert.match(body.mensaje, /^🛍️ Para confirmar tu pedido, es necesario realizar una transferencia de \$12\.000, correspondiente al valor de Polera del evento \(talla M\)\. ✨/);
+        assert.match(body.mensaje, /envíanos tu comprobante \+ Nombre Completo para confirmar tu pedido\./);
+        assert.match(body.mensaje, /Tu código de pedido es SC-/);
+        assert.doesNotMatch(body.mensaje, /cupo|inscripción/);
+    });
+});
+
+test('shipping is always available: the address is stored, the presale does not apply, and the message says how it arrives', async () => {
+    await withApi(USERS, async ({ call, knex }) => {
+        const { closedTalla, tallaZ } = await products(knex);
+        const { status, body } = await call('POST', '/api/compras', null, buyer([{ producto_talla_id: closedTalla, cantidad: 1 }, { producto_talla_id: tallaZ, cantidad: 1 }], ENVIO));
+        assert.equal(status, 201);
+        assert.match(body.mensaje, /Enviaremos tu pedido a Av\. Colón 1234, Hualpén, Biobío\. El envío se paga al recibir\. 📦/);
+        assert.doesNotMatch(body.mensaje, /se retiran en el seminario/);
+        const [compra] = await knex('compras');
+        assert.deepEqual([compra.entrega, compra.direccion, compra.comuna, compra.region], ['envio', 'Av. Colón 1234', 'Hualpén', 'Biobío']);
+    });
+});
+
+test('pickup at the seminar is only for suggested products, and an order with products must say how it is delivered', async () => {
+    await withApi(USERS, async ({ call, knex }) => {
+        const { tallaM, tallaZ } = await products(knex);
+        const notSuggested = await call('POST', '/api/compras', null, buyer([{ producto_talla_id: tallaZ, cantidad: 1 }]));
+        assert.deepEqual([notSuggested.status, notSuggested.body.error], [400, 'Zapatillas no se puede retirar en el seminario: elige envío.']);
+        const cases = [
+            [{}, 'Elige cómo recibir tus productos (entrega): envio o retiro.'],
+            [{ entrega: 'otro' }, 'Elige cómo recibir tus productos (entrega): envio o retiro.'],
+            [{ entrega: 'envio', direccion: 'Av. Colón 1234' }, 'Para el envío indica dirección, comuna y región.'],
+            [{ ...ENVIO, direccion: 'x'.repeat(256) }, 'Para el envío indica dirección, comuna y región.'],
+        ];
+        for (const [extra, error] of cases) {
+            const res = await call('POST', '/api/compras', null, buyer([{ producto_talla_id: tallaM, cantidad: 1 }], extra));
+            assert.deepEqual([res.status, res.body.error], [400, error]);
+        }
+        assert.equal(await count(knex, 'compras'), 0);
+        assert.equal((await knex('producto_tallas').where({ id: tallaM }).first()).vendidos, 0);
+    });
+});
+
+test('a seminar-only purchase stores no delivery, whatever the body says', async () => {
+    await withApi(USERS, async ({ call, knex }) => {
+        const [seminarioId] = await knex('seminarios').insert({ titulo: 'Seminario', estado: 'publicado' });
+        const [dia] = await knex('seminario_dias').insert({ seminario_id: seminarioId, fecha: isoDate(10), hora_inicio: '10:00', precio: 35000, cupo: 5 });
+        assert.equal((await call('POST', '/api/compras', null, buyer([{ seminario_dia_id: dia, cantidad: 1 }], ENVIO))).status, 201);
+        const [compra] = await knex('compras');
+        assert.deepEqual([compra.entrega, compra.direccion], [null, null]);
+    });
+});
+
+test('administration marks seminar suggestions and sees how each order is delivered', async () => {
+    await withApi(USERS, async ({ call, login, knex }) => {
+        const { tallaZ, tallaM } = await products(knex);
+        const admin = await login('admin@x.cl');
+        const [shoes] = await knex('productos').where({ titulo: 'Zapatillas' });
+        assert.equal((await call('PUT', `${ADMIN}/productos/${shoes.id}`, admin, { sugerido_seminario: true })).status, 200);
+        assert.equal((await call('PUT', `${ADMIN}/productos/${shoes.id}`, admin, { sugerido_seminario: 'si' })).body.error, 'sugerido_seminario debe ser true o false.');
+        assert.equal(Boolean((await knex('productos').where({ id: shoes.id }).first()).sugerido_seminario), true);
+
+        await call('POST', '/api/compras', null, buyer([{ producto_talla_id: tallaZ, cantidad: 1 }], ENVIO));
+        await call('POST', '/api/compras', null, buyer([{ producto_talla_id: tallaM, cantidad: 1 }]));
+        const compras = (await call('GET', `${ADMIN}/compras`, admin)).body;
+        assert.deepEqual(compras.map((c) => [c.entrega, c.direccion, c.comuna, c.region]).sort(), [
+            ['envio', 'Av. Colón 1234', 'Hualpén', 'Biobío'],
+            ['retiro', null, null, null],
+        ]);
     });
 });
