@@ -279,18 +279,18 @@ export default function Tienda({ whatsapp }) {
                 <div className="cart-address">
                   <div className="trial__row">
                     <label htmlFor="cart-direccion">Dirección (calle y número)</label>
-                    <input id="cart-direccion" type="text" autoComplete="street-address" value={delivery.direccion} onChange={setDeliveryField('direccion')} aria-invalid={Boolean(deliveryErrors.direccion)} />
+                    <input id="cart-direccion" type="text" maxLength={255} autoComplete="street-address" value={delivery.direccion} onChange={setDeliveryField('direccion')} aria-invalid={Boolean(deliveryErrors.direccion)} />
                     {deliveryErrors.direccion && <span className="trial__error">{deliveryErrors.direccion}</span>}
                   </div>
                   <div className="trial__grid">
                     <div className="trial__row">
                       <label htmlFor="cart-comuna">Comuna</label>
-                      <input id="cart-comuna" type="text" autoComplete="address-level2" value={delivery.comuna} onChange={setDeliveryField('comuna')} aria-invalid={Boolean(deliveryErrors.comuna)} />
+                      <input id="cart-comuna" type="text" maxLength={100} autoComplete="address-level2" value={delivery.comuna} onChange={setDeliveryField('comuna')} aria-invalid={Boolean(deliveryErrors.comuna)} />
                       {deliveryErrors.comuna && <span className="trial__error">{deliveryErrors.comuna}</span>}
                     </div>
                     <div className="trial__row">
                       <label htmlFor="cart-region">Región</label>
-                      <input id="cart-region" type="text" autoComplete="address-level1" value={delivery.region} onChange={setDeliveryField('region')} aria-invalid={Boolean(deliveryErrors.region)} />
+                      <input id="cart-region" type="text" maxLength={100} autoComplete="address-level1" value={delivery.region} onChange={setDeliveryField('region')} aria-invalid={Boolean(deliveryErrors.region)} />
                       {deliveryErrors.region && <span className="trial__error">{deliveryErrors.region}</span>}
                     </div>
                   </div>

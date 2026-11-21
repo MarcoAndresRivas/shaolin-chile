@@ -131,9 +131,16 @@ export function validateDelivery(values) {
   const errors = {};
   if (!['envio', 'retiro'].includes(values.entrega)) errors.entrega = 'Elige cómo recibir tu pedido.';
   if (values.entrega === 'envio') {
-    if ((values.direccion ?? '').trim().length < 3) errors.direccion = 'Escribe la calle y el número.';
-    if ((values.comuna ?? '').trim().length < 2) errors.comuna = 'Escribe la comuna.';
-    if ((values.region ?? '').trim().length < 2) errors.region = 'Escribe la región.';
+    // The same limits the server applies, so a long value gets its own message.
+    const direccion = (values.direccion ?? '').trim();
+    const comuna = (values.comuna ?? '').trim();
+    const region = (values.region ?? '').trim();
+    if (direccion.length < 3) errors.direccion = 'Escribe la calle y el número.';
+    else if (direccion.length > 255) errors.direccion = 'La dirección admite hasta 255 caracteres.';
+    if (comuna.length < 2) errors.comuna = 'Escribe la comuna.';
+    else if (comuna.length > 100) errors.comuna = 'La comuna admite hasta 100 caracteres.';
+    if (region.length < 2) errors.region = 'Escribe la región.';
+    else if (region.length > 100) errors.region = 'La región admite hasta 100 caracteres.';
   }
   return errors;
 }
