@@ -39,9 +39,24 @@ export default function ProgressPanel({ alumnoId, title = 'Mi grado', onUnauthor
           <p className="muted">{d.actual ? `Grado actual: ${d.actual.nombre} (desde ${d.actual.fecha})` : own ? 'Aún no tienes un grado registrado.' : 'Aún no tiene un grado registrado.'}</p>
           {d.siguiente ? (
             <>
-              <p>Próximo grado: {d.siguiente.nombre}</p>
+              <p>
+                Próximo grado: {d.siguiente.nombre}
+                {d.siguiente.etapa ? ` (etapa ${d.siguiente.etapa})` : ''}
+              </p>
+              {d.siguiente.formas && <p className="muted">Formas a preparar: {d.siguiente.formas}</p>}
+              {d.siguiente.tecnicas && <p className="muted">Técnicas: {d.siguiente.tecnicas}</p>}
+              <p className="muted">
+                El examen evalúa conducta y preceptos, técnica{d.siguiente.requiere_teoria ? ', teoría' : ''}
+                {d.siguiente.requiere_combate ? ' y combate' : ''}.
+              </p>
               <Requirement label="Clases asistidas" done={d.requisitos.clases.asistidas} needed={d.requisitos.clases.minimas} met={d.requisitos.clases.cumple} />
               <Requirement label="Meses en el grado" done={d.requisitos.meses.transcurridos ?? 0} needed={d.requisitos.meses.minimos} met={d.requisitos.meses.cumple} />
+              {d.requisitos.edad?.minima > 0 &&
+                (d.requisitos.edad.actual === null ? (
+                  <p className="muted">Edad mínima {d.requisitos.edad.minima} años: falta registrar la fecha de nacimiento en la escuela.</p>
+                ) : (
+                  <Requirement label="Edad (años)" done={d.requisitos.edad.actual} needed={d.requisitos.edad.minima} met={d.requisitos.edad.cumple} />
+                ))}
               {d.habilitado && <p className="success">{own ? 'Cumples' : 'Cumple'} los requisitos: {own ? 'tu instructor puede nominarte' : 'su instructor puede nominarlo'} al próximo examen.</p>}
             </>
           ) : (

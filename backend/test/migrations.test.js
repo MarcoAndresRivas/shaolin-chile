@@ -569,6 +569,13 @@ test('rolling back the Duan Pin migration removes its columns, unless levels or 
         const [gradoId] = await knex('grados').insert({ disciplina_id: disciplina.id, orden: 1, nombre: '1.º Duan', serie: 'duan', nivel: 1 });
         await assert.rejects(rollBackThrough(knex, '20261121000014_duan_pin.js'), /Duan Pin/);
         await knex('grados').where({ id: gradoId }).update({ serie: null });
+        // A fail recorded with only a theory score is still an exam record.
+        const [rol] = await knex('roles').select('id');
+        const [alumnoId] = await knex('usuarios').insert({ nombre: 'Ana', email: 'ana@x.cl', password_hash: 'x', rol_id: rol.id });
+        const [examId] = await knex('examenes').insert({ nombre: 'Examen', fecha: '2026-11-20' });
+        await knex('inscripciones_examen').insert({ examen_id: examId, alumno_id: alumnoId, grado_id: gradoId, estado: 'reprobado', nota_teoria: 40 });
+        await assert.rejects(rollBackThrough(knex, '20261121000014_duan_pin.js'), /exam scores/);
+        await knex('inscripciones_examen').del();
         await rollBackThrough(knex, '20261121000014_duan_pin.js');
         for (const column of ['serie', 'nivel', 'etapa', 'grado_pin', 'edad_minima', 'formas', 'requiere_teoria', 'requiere_combate']) {
             assert.equal(await knex.schema.hasColumn('grados', column), false, column);
