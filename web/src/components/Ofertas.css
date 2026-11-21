@@ -213,3 +213,63 @@
 .shop h3 {
   margin: 8px 0;
 }
+
+.shop__to-store {
+  display: grid;
+  gap: 4px;
+  padding: 18px 20px;
+  border: 1px solid var(--gold);
+  border-radius: 12px;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.shop__to-store:hover,
+.shop__to-store:focus-visible {
+  background: var(--surface);
+}
+
+/* Products suggested for the seminar: a short row that leads to the store. */
+.suggested {
+  display: grid;
+  gap: 16px;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.suggested h2 {
+  margin: 0;
+}
+
+.suggested__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.suggested__item {
+  display: grid;
+  gap: 8px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.suggested__item img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: contain;
+  padding: 10px;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.suggested__item:hover,
+.suggested__item:focus-visible {
+  color: var(--gold);
+}
