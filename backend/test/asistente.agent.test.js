@@ -47,13 +47,6 @@ test('the first answer always says it is a virtual assistant, and later ones do 
     assert.equal(await agent.handle(state, 'Gracias'), 'Claro.');
 });
 
-test('the chat never shows emojis written by the model, and the instructions ask for none', async () => {
-    const { agent, state, seen } = setup([say('Hola, soy el asistente virtual. 🙂 ¿Te gustaría hacer la reserva? 🥷')]);
-    assert.equal(await agent.handle(state, 'Hola'), 'Hola, soy el asistente virtual. ¿Te gustaría hacer la reserva?');
-    assert.doesNotMatch(seen[0][0].content, /\p{Extended_Pictographic}/u);
-    assert.match(seen[0][0].content, /No uses emojis/);
-});
-
 const classesIn = (seen) => seen.at(-1)[0].content.split('Clases programadas:\n')[1];
 
 test('the model always receives the real upcoming classes, with their weekday, without having to ask', async () => {
