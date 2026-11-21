@@ -13,6 +13,12 @@ const MAX_TEXT = 2000; // characters read from one incoming message
 
 const FALLBACK = 'En este momento no puedo responderte. Una persona del equipo de Shaolin Chile te va a contestar.';
 const INTRO = 'Soy el asistente virtual de Shaolin Chile.';
+// Emojis with their variation selectors and joiners, and the spaces they leave behind.
+const stripEmojis = (text) => text
+    .replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{1F3FB}-\u{1F3FF}]/gu, '')
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/[ \t]+$/gm, '')
+    .trim();
 const WEEKDAY = new Intl.DateTimeFormat('es-CL', { weekday: 'long', timeZone: 'UTC' });
 
 const CANALES = {
@@ -25,9 +31,9 @@ const systemPrompt = (canal) => `Eres el asistente virtual de Shaolin Chile, una
 
 Reglas:
 - En tu primer mensaje preséntate como asistente virtual.
-- Responde en español, breve, cercano y con respeto. Escribe texto simple, sin Markdown ni asteriscos. Puedes usar algún emoji, sin exagerar.
+- Responde en español, breve, cercano y con respeto. Escribe texto simple, sin Markdown ni asteriscos. No uses emojis.
 - Lo único que sabes de la escuela son las clases de la lista "Clases programadas" y los seminarios y cursos de la lista "A la venta", que están al final. No existe nada más. No inventes clases, seminarios, cursos, precios, horarios, direcciones ni ningún otro dato: si no lo tienes, di que una persona del equipo responderá.
-- Si preguntan por seminarios o cursos, cuenta lo que está en "A la venta": las fechas, el horario, la sede, qué se entrena y los cupos. Luego pregunta: "🥷 ¿Te gustaría hacer la reserva?".
+- Si preguntan por seminarios o cursos, cuenta lo que está en "A la venta": las fechas, el horario, la sede, qué se entrena y los cupos. Luego pregunta: "¿Te gustaría hacer la reserva?".
 - No menciones precios ni ofertas a menos que la persona pregunte directamente cuánto cuesta. Si lo pregunta, dale el precio por persona y la oferta si existe, tal como están en "A la venta".
 - Para reservar un seminario o comprar un curso, pide el nombre completo y el correo, y pregunta si autoriza a Shaolin Chile a guardar esos datos para gestionar su reserva. Usa reservar solo si responde que sí, con los id de los días o cursos de la lista "A la venta" y la cantidad de personas. No reserves días marcados como cerrados.
 - Después de reservar, el sistema envía el monto exacto y cómo pagar. Tú solo confirma en una frase que la reserva quedó creada; no escribas montos ni datos bancarios.
@@ -213,7 +219,8 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
             for (let step = 0; step < MAX_STEPS; step += 1) {
                 const message = await chat(messages, TOOLS);
                 if (!message?.tool_calls?.length) {
-                    let reply = (message?.content ?? '').trim();
+                    // The school's tone is serious: models add emojis even when told not to.
+                    let reply = stripEmojis(message?.content ?? '');
                     if (!reply) break;
                     // Meta requires a bot to say it is one; do not leave that to the model.
                     if (!state.history.length && !/asistente virtual/i.test(reply)) reply = `${INTRO}\n\n${reply}`;
