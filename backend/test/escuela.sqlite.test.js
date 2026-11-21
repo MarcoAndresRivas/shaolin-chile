@@ -52,7 +52,8 @@ test('the migration seeds the three sedes and three disciplines of the school', 
         const admin = await login('admin@x.cl', 'admin-pw');
         const sedes = (await call('GET', `${BASE}/sedes`, admin)).body;
         assert.deepEqual(sedes.map((s) => s.ciudad), ['Concepción', 'Santiago', 'Talca']);
-        assert.ok(sedes.every((s) => s.direccion === null && s.activa === true));
+        assert.ok(sedes.every((s) => s.direccion === null));
+        assert.deepEqual(sedes.map((s) => s.activa), [true, false, false], 'only Concepción stays active');
         const disciplinas = (await call('GET', `${BASE}/disciplinas`, admin)).body;
         assert.deepEqual(disciplinas.map((d) => d.nombre), ['Kung Fu Tradicional', 'Sanda (Boxeo Chino)', 'Tai Chi y Qi Gong']);
     });
