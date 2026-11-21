@@ -9,9 +9,10 @@ const BASE = import.meta.env.BASE_URL;
 const EMPTY_BUYER = { nombre: '', email: '', telefono: '', consentimiento: false };
 const MAX_TICKETS = 10;
 
-// Seminars by day and online courses, with their photo, price and offer; a
-// cart and the purchase, paid by transfer. Without the server it sends people
-// to WhatsApp, so nobody is left without a way to book.
+// Seminars by day and online courses with their photo; a cart and the purchase,
+// paid by transfer. Seminar prices and the offer show only in the checkout, at
+// the moment of paying. Without the server it sends people to WhatsApp, so
+// nobody is left without a way to book.
 export default function Ofertas({ whatsapp }) {
   const [catalog, setCatalog] = useState(null);
   const [loadError, setLoadError] = useState(false);
@@ -133,7 +134,6 @@ export default function Ofertas({ whatsapp }) {
             <div className="offer__body">
               <p className="eyebrow">Seminario</p>
               <h2>{seminario.titulo}</h2>
-              {seminario.oferta && <p className="offer__badge">{seminario.oferta}</p>}
               {seminario.descripcion && <p>{seminario.descripcion}</p>}
               <p className="muted">Sede: {seminario.sede ?? 'Por confirmar'}</p>
 
@@ -147,7 +147,7 @@ export default function Ofertas({ whatsapp }) {
                       <div>
                         <p className="day__name">{dayLabel(dia.fecha)}</p>
                         <p className="muted">
-                          {hoursLabel(dia)} · {formatPesos(dia.precio)} por persona ·{' '}
+                          {hoursLabel(dia)} ·{' '}
                           {dia.cerrado ? 'Inscripciones cerradas' : dia.cupo_disponible === 0 ? 'Sin cupos' : `${dia.cupo_disponible} cupos`}
                         </p>
                       </div>
@@ -164,7 +164,7 @@ export default function Ofertas({ whatsapp }) {
               </fieldset>
               {seminario.precio_pack && open.length === seminario.dias.length && open.length > 1 && (
                 <button className={`btn ${chosenAll ? 'btn--ghost' : 'btn--gold'}`} type="button" onClick={() => allDays(seminario, !chosenAll)}>
-                  {chosenAll ? 'Quitar todos los días' : `Quiero todos los días por ${formatPesos(seminario.precio_pack)}`}
+                  {chosenAll ? 'Quitar todos los días' : 'Quiero todos los días'}
                 </button>
               )}
               {seminario.video_url && (
