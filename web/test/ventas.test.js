@@ -128,3 +128,14 @@ test('the delivery form needs a choice, and an address for shipping', async () =
   assert.deepEqual(Object.keys(validateDelivery({ entrega: '' })), ['entrega']);
   assert.deepEqual(Object.keys(validateDelivery({ entrega: 'envio', direccion: ' ', comuna: '', region: 'B' })), ['direccion', 'comuna', 'region']);
 });
+
+test('the delivery form says when the address, comuna or region is too long for the server', async () => {
+  const { validateDelivery } = await import('../src/lib/ventas.js');
+  const errors = validateDelivery({ entrega: 'envio', direccion: 'x'.repeat(256), comuna: 'y'.repeat(101), region: 'z'.repeat(101) });
+  assert.deepEqual(errors, {
+    direccion: 'La dirección admite hasta 255 caracteres.',
+    comuna: 'La comuna admite hasta 100 caracteres.',
+    region: 'La región admite hasta 100 caracteres.',
+  });
+  assert.deepEqual(validateDelivery({ entrega: 'envio', direccion: 'x'.repeat(255), comuna: 'y'.repeat(100), region: 'z'.repeat(100) }), {});
+});
