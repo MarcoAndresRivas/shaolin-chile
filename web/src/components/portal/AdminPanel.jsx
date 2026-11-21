@@ -4,6 +4,7 @@ import FinancePanel from './FinancePanel.jsx';
 import GradesAdminPanel from './GradesAdminPanel.jsx';
 import LeadsPanel from './LeadsPanel.jsx';
 import LegacySchedulesPanel from './LegacySchedulesPanel.jsx';
+import ProductsPanel from './ProductsPanel.jsx';
 import SalesPanel from './SalesPanel.jsx';
 import SchoolPanel from './SchoolPanel.jsx';
 import UsersPanel from './UsersPanel.jsx';
@@ -23,7 +24,16 @@ export function adminTabs(onUnauthorized) {
       ),
     },
     { id: 'finanzas', label: 'Finanzas', content: <FinancePanel onUnauthorized={onUnauthorized} /> },
-    { id: 'ventas', label: 'Ventas', content: <SalesPanel onUnauthorized={onUnauthorized} /> },
+    {
+      id: 'ventas',
+      label: 'Ventas',
+      content: (
+        <>
+          <SalesPanel onUnauthorized={onUnauthorized} />
+          <ProductsPanel onUnauthorized={onUnauthorized} />
+        </>
+      ),
+    },
     {
       id: 'examenes',
       label: 'Exámenes y grados',
