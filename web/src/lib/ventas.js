@@ -7,6 +7,27 @@ const WEEKDAY = new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeri
 // "viernes, 4 de diciembre"
 export const dayLabel = (fecha) => WEEKDAY.format(new Date(`${fecha}T12:00:00Z`));
 
+const WEEKDAY_ONLY = new Intl.DateTimeFormat('es-CL', { weekday: 'long', timeZone: 'UTC' });
+const MONTH_ONLY = new Intl.DateTimeFormat('es-CL', { month: 'long', timeZone: 'UTC' });
+const AND = new Intl.ListFormat('es', { type: 'conjunction' });
+
+// The seminar the site announces: the first published one with a day still open.
+export function currentSeminar(catalog) {
+  return catalog?.seminarios?.find((s) => s.dias.some((d) => !d.cerrado)) ?? null;
+}
+
+// "viernes 4 y sábado 5 de diciembre", or each with its month when they differ.
+export function seminarDates(seminario) {
+  const days = seminario.dias.map((d) => {
+    const date = new Date(`${d.fecha}T12:00:00Z`);
+    return { day: `${WEEKDAY_ONLY.format(date)} ${date.getUTCDate()}`, month: MONTH_ONLY.format(date) };
+  });
+  const month = days[0]?.month;
+  return days.every((d) => d.month === month)
+    ? `${AND.format(days.map((d) => d.day))} de ${month}`
+    : AND.format(days.map((d) => `${d.day} de ${d.month}`));
+}
+
 export function hoursLabel(dia) {
   if (!dia.hora_inicio) return 'Horario por confirmar';
   return dia.hora_fin ? `${dia.hora_inicio} a ${dia.hora_fin}` : `Desde las ${dia.hora_inicio}`;

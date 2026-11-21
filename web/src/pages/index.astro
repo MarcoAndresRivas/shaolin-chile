@@ -2,6 +2,7 @@
 import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import TrialClassForm from '../components/TrialClassForm.jsx';
+import SeminarPopup from '../components/SeminarPopup.jsx';
 import {
   hero,
   history,
@@ -27,6 +28,7 @@ const historyImage = instagramImage('Bppn2h8lX4g');
 ---
 
 <Base title="Inicio" description={hero.description}>
+  <SeminarPopup client:load />
   <section class="hero">
     <Image
       class="hero__bg"
@@ -192,7 +194,7 @@ const historyImage = instagramImage('Bppn2h8lX4g');
       <TrialClassForm
         client:visible
         disciplines={disciplines.filter((d) => d.slug !== 'cursos-online').map((d) => d.name)}
-        locations={locations.map((l) => l.city)}
+        locations={['Concepción']} // the federation lists other schools, but trial classes are only in Concepción
         whatsapp={contact.whatsapp}
       />
     </div>
