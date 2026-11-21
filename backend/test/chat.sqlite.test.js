@@ -71,7 +71,7 @@ test('through the chat a person sees the classes, registers with consent and boo
 
         const first = await call('POST', CHAT, null, { mensaje: '¿Qué clases hay?' });
         const classes = seen[0][0].content.split('Clases programadas:\n')[1];
-        assert.match(classes, new RegExp(`^- id ${sesion.id}: \\S+ ${fecha}, de 19:00 a 20:30, ${disciplina.nombre.replace(/[()]/g, '\\$&')}, sede ${sede.ciudad}$`));
+        assert.match(classes, new RegExp(`^- \\S+ \\d+ de \\S+, de 19:00 a 20:30, ${disciplina.nombre.replace(/[()]/g, '\\$&')}, sede ${sede.ciudad} \\[id ${sesion.id}\\]$`));
         assert.deepEqual(await knex('conversaciones_asistente'), [], 'nothing is stored before the person agrees');
 
         const second = await call('POST', CHAT, null, { chat_id: first.body.chat_id, mensaje: 'Soy Juan Pérez, juan@example.com. Sí, autorizo.' });

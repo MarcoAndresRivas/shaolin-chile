@@ -47,6 +47,12 @@ test('the first answer always says it is a virtual assistant, and later ones do 
     assert.equal(await agent.handle(state, 'Gracias'), 'Claro.');
 });
 
+test('internal ids never reach the person, and the instructions say they are only for the tools', async () => {
+    const { agent, state, seen } = setup([say('Hola, soy el asistente virtual. Hay cupos el viernes 4 de diciembre [id 3] y el sábado 5 de diciembre [id 4].')]);
+    assert.equal(await agent.handle(state, 'Hola'), 'Hola, soy el asistente virtual. Hay cupos el viernes 4 de diciembre y el sábado 5 de diciembre.');
+    assert.match(seen[0][0].content, /nunca los menciones/);
+});
+
 const classesIn = (seen) => seen.at(-1)[0].content.split('Clases programadas:\n')[1];
 
 test('the model always receives the real upcoming classes, with their weekday, without having to ask', async () => {
@@ -56,10 +62,10 @@ test('the model always receives the real upcoming classes, with their weekday, w
     ];
     const { agent, state, seen } = setup([say('Hay Sanda el sábado.'), say('Sí.')], { 'GET /sesiones': { status: 200, body: sesiones } });
     await agent.handle(state, 'Hola');
-    assert.equal(classesIn(seen), '- id 7: sábado 2026-12-05, de 10:00 a 12:00, Sanda, sede Santiago\n- id 9: lunes 2026-12-07, de 19:00 a 20:30, Tai Chi, sede Talca');
+    assert.equal(classesIn(seen), '- sábado 5 de diciembre, de 10:00 a 12:00, Sanda, sede Santiago [id 7]\n- lunes 7 de diciembre, de 19:00 a 20:30, Tai Chi, sede Talca [id 9]');
     sesiones.pop();
     await agent.handle(state, '¿Y ahora?');
-    assert.equal(classesIn(seen), '- id 7: sábado 2026-12-05, de 10:00 a 12:00, Sanda, sede Santiago', 'the list is read again on every message');
+    assert.equal(classesIn(seen), '- sábado 5 de diciembre, de 10:00 a 12:00, Sanda, sede Santiago [id 7]', 'the list is read again on every message');
 });
 
 test('with no classes, or when they cannot be read, the model is told so instead of being left to guess', async () => {
@@ -273,13 +279,13 @@ test('the model receives the seminars and courses for sale with their seats, and
     await agent.handle(state, '¿Qué seminarios hay?');
     assert.equal(offersIn(seen), [
         '- Seminario "Seminario de diciembre", sede por confirmar.',
-        '  - día id 3: viernes 2026-12-04, horario por confirmar, 50 cupos disponibles',
-        '  - día id 4: sábado 2026-12-05, de 10:00 a 13:00, inscripciones cerradas',
-        '- Curso online id 8: "Curso de prueba", con acceso a los videos y descarga. Lecciones: Intro; Forma.',
+        '  - viernes 4 de diciembre, horario por confirmar, 50 cupos disponibles [id 3]',
+        '  - sábado 5 de diciembre, de 10:00 a 13:00, inscripciones cerradas [id 4]',
+        '- Curso online "Curso de prueba", con acceso a los videos y descarga. Lecciones: Intro; Forma. [id 8]',
         '',
         'Precios (dalos solo si la persona pregunta cuánto cuesta):',
-        '- Seminario "Seminario de diciembre": día id 3, $35.000 por persona; día id 4, $35.000 por persona. Oferta: los dos días por $59.000. Precio por persona si va a todos los días: $59.000.',
-        '- Curso online id 8: $25.000.',
+        '- Seminario "Seminario de diciembre": viernes 4 de diciembre, $35.000 por persona [id 3]; sábado 5 de diciembre, $35.000 por persona [id 4]. Oferta: los dos días por $59.000. Precio por persona si va a todos los días: $59.000.',
+        '- Curso online "Curso de prueba": $25.000 [id 8].',
     ].join('\n'));
 
     const down = setup([say('Te responderá una persona.')], { 'GET /ofertas': { status: 503, body: {} } });

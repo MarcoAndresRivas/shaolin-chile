@@ -14,6 +14,14 @@ const MAX_TEXT = 2000; // characters read from one incoming message
 const FALLBACK = 'En este momento no puedo responderte. Una persona del equipo de Shaolin Chile te va a contestar.';
 const INTRO = 'Soy el asistente virtual de Shaolin Chile.';
 const WEEKDAY = new Intl.DateTimeFormat('es-CL', { weekday: 'long', timeZone: 'UTC' });
+const DAY_MONTH = new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+// '2026-12-04' -> 'viernes 4 de diciembre', the way a person reads it.
+const readableDate = (fecha) => {
+    const date = new Date(`${fecha}T12:00:00Z`);
+    return `${WEEKDAY.format(date)} ${DAY_MONTH.format(date)}`;
+};
+// Ids go in the lists as "[id N]" for the tools; they are never shown to the person.
+const stripIds = (text) => text.replace(/\s*\[id \d+\]/g, '').trim();
 
 const CANALES = {
     whatsapp: 'por WhatsApp',
@@ -29,7 +37,7 @@ Reglas:
 - Lo único que sabes de la escuela son las clases de la lista "Clases programadas" y los seminarios y cursos de la lista "A la venta", que están al final. No existe nada más. No inventes clases, seminarios, cursos, precios, horarios, direcciones ni ningún otro dato: si no lo tienes, di que una persona del equipo responderá.
 - Si preguntan por seminarios o cursos, cuenta lo que está en "A la venta": las fechas, el horario, la sede, qué se entrena y los cupos. Luego pregunta: "🥷 ¿Te gustaría hacer la reserva?".
 - No menciones precios ni ofertas a menos que la persona pregunte directamente cuánto cuesta. Si lo pregunta, dale el precio por persona y la oferta si existe, tal como están en "A la venta".
-- Para reservar un seminario o comprar un curso, pide el nombre completo y el correo, y pregunta si autoriza a Shaolin Chile a guardar esos datos para gestionar su reserva. Usa reservar solo si responde que sí, con los id de los días o cursos de la lista "A la venta" y la cantidad de personas. No reserves días marcados como cerrados.
+- Para reservar un seminario o comprar un curso, pide el nombre completo y el correo, y pregunta si autoriza a Shaolin Chile a guardar esos datos para gestionar su reserva. Usa reservar solo si responde que sí, con los id de los días o cursos de la lista "A la venta" y la cantidad de personas. Los [id N] de las listas son solo para usar las herramientas: nunca los menciones a la persona. No reserves días marcados como cerrados.
 - Después de reservar, el sistema envía el monto exacto y cómo pagar. Tú solo confirma en una frase que la reserva quedó creada; no escribas montos ni datos bancarios.
 - Al mencionar una clase, copia el día, la fecha, el horario, la sede y la disciplina tal como están en la lista. Escribe las horas con números (por ejemplo 10:00), nunca con palabras.
 - Si preguntan qué clases hay, muestra las de la lista sin pedir antes más datos.
@@ -154,7 +162,7 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
             if (!body.length) return 'No hay clases programadas por ahora.';
             // The weekday comes from here, so the model does not have to work it out.
             return body.slice(0, 30)
-                .map((s) => `- id ${s.id}: ${WEEKDAY.format(new Date(`${s.fecha}T12:00:00Z`))} ${s.fecha}, de ${s.hora_inicio} a ${s.hora_fin}, ${s.disciplina}, sede ${s.sede}`)
+                .map((s) => `- ${readableDate(s.fecha)}, de ${s.hora_inicio} a ${s.hora_fin}, ${s.disciplina}, sede ${s.sede} [id ${s.id}]`)
                 .join('\n');
         } catch (error) {
             console.error('The assistant could not read the classes:', error.message);
@@ -177,13 +185,13 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
                 for (const d of dias) {
                     const hours = d.hora_inicio ? `de ${d.hora_inicio}${d.hora_fin ? ` a ${d.hora_fin}` : ''}` : 'horario por confirmar';
                     const seats = d.cerrado ? 'inscripciones cerradas' : `${d.cupo_disponible} cupos disponibles`;
-                    lines.push(`  - día id ${d.id}: ${WEEKDAY.format(new Date(`${d.fecha}T12:00:00Z`))} ${d.fecha}, ${hours}, ${seats}`);
+                    lines.push(`  - ${readableDate(d.fecha)}, ${hours}, ${seats} [id ${d.id}]`);
                 }
-                prices.push(`- Seminario "${s.titulo}": ${dias.map((d) => `día id ${d.id}, ${pesos(d.precio)} por persona`).join('; ')}.${s.oferta ? ` ${s.oferta}.` : ''}${s.precio_pack ? ` Precio por persona si va a todos los días: ${pesos(s.precio_pack)}.` : ''}`);
+                prices.push(`- Seminario "${s.titulo}": ${dias.map((d) => `${readableDate(d.fecha)}, ${pesos(d.precio)} por persona [id ${d.id}]`).join('; ')}.${s.oferta ? ` ${s.oferta}.` : ''}${s.precio_pack ? ` Precio por persona si va a todos los días: ${pesos(s.precio_pack)}.` : ''}`);
             }
             for (const c of body.cursos.slice(0, 10)) {
-                lines.push(`- Curso online id ${c.id}: "${c.titulo}", con acceso a los videos y descarga. Lecciones: ${c.lecciones.map((l) => l.titulo).join('; ') || 'por confirmar'}.`);
-                prices.push(`- Curso online id ${c.id}: ${pesos(c.precio)}.`);
+                lines.push(`- Curso online "${c.titulo}", con acceso a los videos y descarga. Lecciones: ${c.lecciones.map((l) => l.titulo).join('; ') || 'por confirmar'}. [id ${c.id}]`);
+                prices.push(`- Curso online "${c.titulo}": ${pesos(c.precio)} [id ${c.id}].`);
             }
             if (!lines.length) return 'No hay seminarios ni cursos a la venta por ahora.';
             return [...lines, '', 'Precios (dalos solo si la persona pregunta cuánto cuesta):', ...prices].join('\n');
@@ -213,7 +221,7 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
             for (let step = 0; step < MAX_STEPS; step += 1) {
                 const message = await chat(messages, TOOLS);
                 if (!message?.tool_calls?.length) {
-                    let reply = (message?.content ?? '').trim();
+                    let reply = stripIds(message?.content ?? '');
                     if (!reply) break;
                     // Meta requires a bot to say it is one; do not leave that to the model.
                     if (!state.history.length && !/asistente virtual/i.test(reply)) reply = `${INTRO}\n\n${reply}`;
