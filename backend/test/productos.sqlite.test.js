@@ -259,6 +259,7 @@ test('an order of products only speaks of an order, not of seats or enrolment', 
         const { body } = await call('POST', '/api/compras', null, buyer([{ producto_talla_id: tallaM, cantidad: 1 }]));
         assert.match(body.mensaje, /^🛍️ Para confirmar tu pedido, es necesario realizar una transferencia de \$12\.000, correspondiente al valor de Polera del evento \(talla M\)\. ✨/);
         assert.match(body.mensaje, /envíanos tu comprobante \+ Nombre Completo para confirmar tu pedido\./);
+        assert.doesNotMatch(body.mensaje, /💕/u);
         assert.match(body.mensaje, /Tu código de pedido es SC-/);
         assert.doesNotMatch(body.mensaje, /cupo|inscripción/);
     });

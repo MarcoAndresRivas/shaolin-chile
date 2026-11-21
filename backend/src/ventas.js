@@ -82,7 +82,7 @@ function reservationMessage({ codigo, total, concepto, canal = 'sitio', pago = {
             ? `🛍️ Para confirmar tu pedido, es necesario realizar una transferencia de ${amount}, correspondiente al valor de ${concepto}. ✨`
             : `🗓️ Para confirmar tu reserva y asegurar tu cupo, es necesario realizar una transferencia de ${amount}, correspondiente al valor de ${concepto}. ✨`,
         bank.length ? `Datos para la transferencia:\n${bank.join('\n')}` : 'Te enviaremos los datos para la transferencia.',
-        `Una vez realizada, envíanos tu comprobante + Nombre Completo${sendTo} para confirmar tu ${soloProductos ? 'pedido' : 'inscripción'}. 💕`,
+        `Una vez realizada, envíanos tu comprobante + Nombre Completo${sendTo} para confirmar tu ${soloProductos ? 'pedido' : 'inscripción'}.`,
         ...(entrega === 'retiro' ? [`Los productos se retiran en el seminario, sujetos a disponibilidad: retíralos en la mesa de venta con tu código de ${what}. 🥋`] : []),
         ...(entrega === 'envio' ? [`Enviaremos tu pedido a ${direccion}. El envío se paga al recibir. 📦`] : []),
         `Tu código de ${what} es ${codigo}.`,
