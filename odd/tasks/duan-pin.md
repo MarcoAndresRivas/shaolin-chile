@@ -17,7 +17,7 @@ Branch: `feat/duan-pin` (from `main`). Delivery strategy: ask-on-risk (stacked P
 | --- | --- | --- | --- | --- |
 | T1 | S1, S2, S3, S4 | inline | done | RED 6/6 → GREEN 7/7 (plus birth date endpoint); existing exam tests send the three parts; rollback test; backend 204/204; Risk items 1 (migration) and 3 (results API now requires the parts to pass; only consumer is the portal, updated in T3) → verifier at feature end |
 | T2 | S1, S3, S5 | inline | done | RED → GREEN 2/2; backend suite below |
-| T3 | S2, S4 | inline | pending | |
+| T3 | S2, S4 | inline | done | RED → GREEN (progress content, portal ladder load, 3 client endpoints); backend 208/208, web 57/57, build ok; browser flow 7/7 (load ladder, edit forms, pass refused without jury, pass recorded, student sees next level and missing birth date) |
 
 - T1: backend: grade columns (serie, nivel, etapa, grado de Pin, edad mínima, formas, teoría y combate requeridos); exam result columns (conducta, nota técnica, nota teórica, combate, evaluadores, observaciones); editing a grade; age in eligibility; results with the three parts.
 - T2: `npm run seed:duanpin` loads the 36 levels for Kung Fu Tradicional.
@@ -33,3 +33,5 @@ Route evidence: no Writer trigger (no parallel units, no context backstop); ever
 - L4: research. Official: Shi Yongxin, "少林功夫段品制100问" (https://www.toutiao.com/w/1682204533896205/): Duan 1–9 in 初/中/高段位, Pin 1–9; Pin names 拳士 (1–3), 拳师 (4–6), 名师, 大师, 宗师. China News 2020 (https://www.chinanews.com.cn/cul/2020/01-09/9055456.shtml): ages 7/10/13, Pin 16+ and one year after Duan 9, theory from Duan 4, staff from Duan 7, combat for Pin; certificate, insignia, belt and uniform per level; exam by the Temple's Duan Pin committee. Technique progression strike, kick (2), lock (4), body strike (5), throw (7). Not confirmed by an official source: scoring scale, pass marks, time between levels, forms per level. The official technical page blocks automated reads.
 - L5: current module (explorer map): grades per discipline with no data, eligibility by attended classes and months, exam with date and fee, result aprobado/reprobado/ausente, free-text techniques; no editing of grades; usuarios already stores fecha_nacimiento.
 - L6 (T1): the date of birth is stored in detalles_alumno, which no screen could set; added PUT /alumnos/:id/fecha-nacimiento (administration) so minimum ages can be checked.
+- L7 (T3): admin loads the ladder from the portal (POST /grados/duan-pin, 409 if the discipline already has grades); progress returns what to prepare for the next level.
+- L8 (verifier): blocker B1: on MySQL the date of birth comes back as a Date, so the age was NaN and nobody was eligible; fixed with src/dates.js isoDay (local date) plus unit test. Advisory: the rollback guard now checks every score column (test with a fail holding only nota_teoria). Other advisories (older monthsBetween/exam.fecha Date handling on MySQL, pre-existing) left as follow-up.

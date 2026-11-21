@@ -164,3 +164,22 @@ test('administration records a student date of birth, needed for the minimum age
         assert.equal((await call('PUT', `${BASE}/alumnos/99999/fecha-nacimiento`, admin, { fecha_nacimiento: '2014-03-20' })).status, 404);
     });
 });
+
+test('the progress says what to prepare for the next level', async () => {
+    await setup(async (ctx) => {
+        await grade(ctx, { orden: 1, nombre: '4.º Duan', serie: 'duan', nivel: 4, etapa: 'media', formas: 'Xiao Hong Quan', tecnicas: 'Llaves', requiere_teoria: true });
+        const { siguiente } = (await ctx.call('GET', `${BASE}/progreso/mio?alumno_id=${ctx.ana}`, ctx.admin)).body.disciplinas[0];
+        assert.deepEqual(siguiente, { id: siguiente.id, nombre: '4.º Duan', orden: 1, serie: 'duan', etapa: 'media', formas: 'Xiao Hong Quan', tecnicas: 'Llaves', requiere_teoria: true, requiere_combate: false });
+    });
+});
+
+test('administration loads the Duan Pin ladder from the portal, once', async () => {
+    await setup(async ({ call, login, admin, knex }) => {
+        assert.equal((await call('POST', `${BASE}/grados/duan-pin`, await login('ines@x.cl'))).status, 403);
+        const loaded = await call('POST', `${BASE}/grados/duan-pin`, admin);
+        assert.deepEqual([loaded.status, loaded.body.creados, loaded.body.message], [201, 36, 'Se cargaron 36 niveles Duan Pin en Kung Fu Tradicional.']);
+        const again = await call('POST', `${BASE}/grados/duan-pin`, admin);
+        assert.deepEqual([again.status, again.body.error], [409, 'Kung Fu Tradicional ya tiene grados: no se cambió nada.']);
+        assert.equal(Number((await knex('grados').count({ n: '*' }).first()).n), 36);
+    });
+});

@@ -51,7 +51,7 @@ exports.down = async function down(knex) {
         throw new Error('Refusing to roll back: grados holds Duan Pin levels.');
     }
     if ((await knex.schema.hasColumn('inscripciones_examen', 'evaluadores'))
-        && (await knex('inscripciones_examen').whereNotNull('evaluadores').orWhereNotNull('nota_tecnica').first())) {
+        && (await knex('inscripciones_examen').where((q) => { for (const [name] of INSCRIPCIONES) q.orWhereNotNull(name); }).first())) {
         throw new Error('Refusing to roll back: inscripciones_examen holds exam scores.');
     }
     await dropPresent(knex, 'inscripciones_examen', INSCRIPCIONES);
