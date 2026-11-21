@@ -41,15 +41,16 @@ export function offerImage(imagen, base = '') {
   return `${base.replace(/\/$/, '')}/ofertas/${imagen}`;
 }
 
-// cart: { days: { [diaId]: cantidad }, courses: [cursoId] }
-export const emptyCart = () => ({ days: {}, courses: [] });
+// cart: { days: { [diaId]: cantidad }, courses: [cursoId], products: { [tallaId]: cantidad } }
+export const emptyCart = () => ({ days: {}, courses: [], products: {} });
+
+const chosen = (counts = {}) => Object.entries(counts).filter(([, cantidad]) => cantidad > 0);
 
 export function cartItems(cart) {
   return [
-    ...Object.entries(cart.days)
-      .filter(([, cantidad]) => cantidad > 0)
-      .map(([id, cantidad]) => ({ seminario_dia_id: Number(id), cantidad })),
+    ...chosen(cart.days).map(([id, cantidad]) => ({ seminario_dia_id: Number(id), cantidad })),
     ...cart.courses.map((id) => ({ curso_id: id })),
+    ...chosen(cart.products).map(([id, cantidad]) => ({ producto_talla_id: Number(id), cantidad })),
   ];
 }
 
@@ -78,7 +79,101 @@ export function estimate(cart, catalog) {
     subtotal += curso.precio;
     lines.push({ key: `c${curso.id}`, label: curso.titulo, cantidad: 1, monto: curso.precio });
   }
+  for (const producto of catalog?.productos ?? []) {
+    for (const talla of producto.tallas) {
+      const cantidad = cart.products?.[talla.id] ?? 0;
+      if (cantidad < 1) continue;
+      subtotal += producto.precio * cantidad;
+      lines.push({ key: `p${talla.id}`, label: `${producto.titulo} (talla ${talla.talla})`, cantidad, monto: producto.precio * cantidad });
+    }
+  }
   return { lines, subtotal, descuento, total: subtotal - descuento };
+}
+
+const MAX_UNITS = 10; // units of one product size in one purchase, as the server allows
+
+// The store cart: { [tallaId]: cantidad } -> lines with photo, size and amount.
+export function storeLines(cart, productos) {
+  const lines = [];
+  for (const producto of productos) {
+    for (const talla of producto.tallas) {
+      const cantidad = cart[talla.id] ?? 0;
+      if (cantidad < 1) continue;
+      lines.push({
+        tallaId: talla.id, titulo: producto.titulo, talla: talla.talla, imagen: producto.imagen,
+        precio: producto.precio, cantidad, disponible: talla.disponible, monto: producto.precio * cantidad,
+        retiro: Boolean(producto.sugerido_seminario) && !producto.cerrado, // can be picked up at the seminar
+      });
+    }
+  }
+  return { lines, count: lines.reduce((sum, l) => sum + l.cantidad, 0), total: lines.reduce((sum, l) => sum + l.monto, 0) };
+}
+
+// A cart read back from the browser: only whole quantities of sizes still on sale, within stock.
+export function cleanCart(saved, productos) {
+  if (!saved || typeof saved !== 'object') return {};
+  const clean = {};
+  for (const producto of productos) {
+    for (const talla of producto.tallas) {
+      const cantidad = saved[talla.id];
+      if (!Number.isInteger(cantidad) || cantidad < 1) continue;
+      const allowed = Math.min(cantidad, talla.disponible, MAX_UNITS);
+      if (allowed > 0) clean[talla.id] = allowed;
+    }
+  }
+  return clean;
+}
+
+const productItems = (items) => items.filter((i) => i.tipo === 'producto').map(({ descripcion, cantidad }) => ({ descripcion, cantidad }));
+const byName = (a, b) => a.nombre.localeCompare(b.nombre, 'es');
+
+// Products to hand out at the seminar: each order not cancelled nor shipped, by buyer name.
+export function pickupList(compras) {
+  return compras
+    .filter((c) => c.estado !== 'anulada' && c.entrega !== 'envio')
+    .map(({ codigo, nombre, estado, items }) => ({ codigo, nombre, estado, items: productItems(items) }))
+    .filter((c) => c.items.length)
+    .sort(byName);
+}
+
+// Orders to ship: each not cancelled, with its address in one line.
+export function shippingList(compras) {
+  return compras
+    .filter((c) => c.estado !== 'anulada' && c.entrega === 'envio')
+    .map(({ codigo, nombre, estado, direccion, comuna, region, items }) => ({
+      codigo, nombre, estado, direccion: [direccion, comuna, region].filter(Boolean).join(', '), items: productItems(items),
+    }))
+    .filter((c) => c.items.length)
+    .sort(byName);
+}
+
+// The delivery form: { entrega, direccion?, comuna?, region? } -> errors by field.
+export function validateDelivery(values) {
+  const errors = {};
+  if (!['envio', 'retiro'].includes(values.entrega)) errors.entrega = 'Elige cómo recibir tu pedido.';
+  if (values.entrega === 'envio') {
+    // The same limits the server applies, so a long value gets its own message.
+    const direccion = (values.direccion ?? '').trim();
+    const comuna = (values.comuna ?? '').trim();
+    const region = (values.region ?? '').trim();
+    if (direccion.length < 3) errors.direccion = 'Escribe la calle y el número.';
+    else if (direccion.length > 255) errors.direccion = 'La dirección admite hasta 255 caracteres.';
+    if (comuna.length < 2) errors.comuna = 'Escribe la comuna.';
+    else if (comuna.length > 100) errors.comuna = 'La comuna admite hasta 100 caracteres.';
+    if (region.length < 2) errors.region = 'Escribe la región.';
+    else if (region.length > 100) errors.region = 'La región admite hasta 100 caracteres.';
+  }
+  return errors;
+}
+
+// How many of each product and size to buy, across every order not cancelled (shipped or picked up).
+export function pickupTotals(compras) {
+  const totals = new Map();
+  for (const { estado, items } of compras) {
+    if (estado === 'anulada') continue;
+    for (const { descripcion, cantidad } of productItems(items)) totals.set(descripcion, (totals.get(descripcion) ?? 0) + cantidad);
+  }
+  return [...totals].map(([descripcion, cantidad]) => ({ descripcion, cantidad })).sort((a, b) => a.descripcion.localeCompare(b.descripcion, 'es'));
 }
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

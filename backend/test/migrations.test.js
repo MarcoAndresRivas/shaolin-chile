@@ -527,6 +527,40 @@ test('a discipline cannot have two grades in the same position, nor a student th
     }
 });
 
+test('rolling back the delivery migration removes its columns, unless an order has a delivery', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [id] = await knex('compras').insert({ codigo: 'SC-1', nombre: 'A', email: 'a@x.cl', origen: 'sitio', consentimiento: true, subtotal: 1, total: 1, entrega: 'envio' });
+        await assert.rejects(rollBackThrough(knex, '20261121000013_entrega_productos.js'), /delivery/);
+        await knex('compras').where({ id }).update({ entrega: null });
+        await rollBackThrough(knex, '20261121000013_entrega_productos.js');
+        for (const column of ['entrega', 'direccion', 'comuna', 'region']) assert.equal(await knex.schema.hasColumn('compras', column), false, column);
+        assert.equal(await knex.schema.hasColumn('productos', 'sugerido_seminario'), false);
+        assert.ok(await knex.schema.hasTable('producto_tallas'), 'the products migration stays');
+    } finally {
+        await knex.destroy();
+    }
+});
+
+test('rolling back the products migration removes its tables and column, unless products exist', async () => {
+    const knex = memoryDb();
+    try {
+        await knex.migrate.latest();
+        const [id] = await knex('productos').insert({ titulo: 'Polera', precio: 12000 });
+        await assert.rejects(rollBackThrough(knex, '20261121000012_productos.js'), /productos/);
+        assert.ok(await knex.schema.hasTable('productos'));
+        await knex('productos').where({ id }).del();
+        await rollBackThrough(knex, '20261121000012_productos.js');
+        assert.equal(await knex.schema.hasTable('productos'), false);
+        assert.equal(await knex.schema.hasTable('producto_tallas'), false);
+        assert.equal(await knex.schema.hasColumn('compra_items', 'producto_talla_id'), false);
+        assert.ok(await knex.schema.hasTable('compras'), 'the sales migration stays');
+    } finally {
+        await knex.destroy();
+    }
+});
+
 test('rolling back the Duan Pin migration removes its columns, unless levels or exam scores exist', async () => {
     const knex = memoryDb();
     try {
@@ -575,7 +609,7 @@ test('rolling back the sales migration removes its tables, unless they hold sale
     try {
         await knex.migrate.latest();
         const [id] = await knex('seminarios').insert({ titulo: 'Seminario', estado: 'publicado' });
-        // Undoes the later migrations too (sedes, Duan Pin), down to the sales one.
+        // Undoes the later migrations too (sedes, products, Duan Pin), down to the sales one.
         await rollBackThrough(knex, '20261121000011_sedes_solo_concepcion.js');
         await assert.rejects(knex.migrate.down(), /seminarios/);
         await knex('seminarios').where({ id }).del();

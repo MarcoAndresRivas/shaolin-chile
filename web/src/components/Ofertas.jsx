@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api, appPath } from '../lib/client.js';
 import { formatPesos } from '../lib/money.js';
 import { cartItems, dayLabel, emptyCart, estimate, hoursLabel, offerImage, validateBuyer } from '../lib/ventas.js';
+import BuyerFields from './BuyerFields.jsx';
 import './TrialClassForm.css';
 import './Ofertas.css';
 
@@ -13,6 +14,7 @@ const MAX_TICKETS = 10;
 // paid by transfer. Seminar prices and the offer show only in the checkout, at
 // the moment of paying. Without the server it sends people to WhatsApp, so
 // nobody is left without a way to book.
+// Products are sold on their own page (Tienda.jsx); here a link points to it.
 export default function Ofertas({ whatsapp }) {
   const [catalog, setCatalog] = useState(null);
   const [loadError, setLoadError] = useState(false);
@@ -118,6 +120,8 @@ export default function Ofertas({ whatsapp }) {
     );
   }
 
+  const productos = catalog.productos ?? [];
+  const suggested = productos.filter((p) => p.sugerido_seminario && !p.cerrado);
   const nothing = !catalog.seminarios.length && !catalog.cursos.length;
 
   return (
@@ -206,6 +210,34 @@ export default function Ofertas({ whatsapp }) {
         );
       })}
 
+      {suggested.length > 0 && (
+        <section className="suggested" aria-labelledby="suggested-title">
+          <p className="eyebrow">Tienda</p>
+          <h2 id="suggested-title">Sugeridos para el seminario</h2>
+          <p className="muted">Resérvalos en la tienda y retíralos en el seminario, sujetos a disponibilidad. También tienen envío a todo Chile.</p>
+          <ul className="suggested__list">
+            {suggested.map((producto) => {
+              const image = offerImage(producto.imagen, BASE);
+              return (
+                <li key={producto.id}>
+                  <a className="suggested__item" href={appPath('tienda/')}>
+                    {image && <img src={image} alt="" loading="lazy" />}
+                    {producto.titulo}
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+          <a className="btn btn--ghost" href={appPath('tienda/')}>Ir a la tienda</a>
+        </section>
+      )}
+      {suggested.length === 0 && productos.length > 0 && (
+        <a className="shop__to-store" href={appPath('tienda/')}>
+          <span className="eyebrow">Tienda</span>
+          <strong>Implementos y vestimenta con envío a todo Chile →</strong>
+        </a>
+      )}
+
       {!nothing && (
         <form className="trial shop__checkout" onSubmit={submit} noValidate aria-labelledby="checkout-title">
           <h2 id="checkout-title">Tu reserva</h2>
@@ -235,40 +267,7 @@ export default function Ofertas({ whatsapp }) {
             </ul>
           )}
 
-          <div className="trial__row">
-            <label htmlFor="buy-nombre">Nombre completo</label>
-            <input id="buy-nombre" type="text" autoComplete="name" value={buyer.nombre} onChange={update('nombre')} aria-invalid={Boolean(errors.nombre)} />
-            {errors.nombre && <span className="trial__error">{errors.nombre}</span>}
-          </div>
-          <div className="trial__grid">
-            <div className="trial__row">
-              <label htmlFor="buy-email">Correo electrónico</label>
-              <input id="buy-email" type="email" autoComplete="email" value={buyer.email} onChange={update('email')} aria-invalid={Boolean(errors.email)} />
-              {errors.email && <span className="trial__error">{errors.email}</span>}
-            </div>
-            <div className="trial__row">
-              <label htmlFor="buy-telefono">Teléfono (opcional)</label>
-              <input id="buy-telefono" type="tel" autoComplete="tel" value={buyer.telefono} onChange={update('telefono')} aria-invalid={Boolean(errors.telefono)} />
-              {errors.telefono && <span className="trial__error">{errors.telefono}</span>}
-            </div>
-          </div>
-
-          {/* Hidden from people; bots tend to fill every field. */}
-          <div className="trial__trap" aria-hidden="true">
-            <label htmlFor="buy-website">No completar este campo</label>
-            <input id="buy-website" type="text" tabIndex={-1} autoComplete="off" value={trap} onChange={(e) => setTrap(e.target.value)} />
-          </div>
-
-          <div className="trial__row">
-            <label className="trial__consent">
-              <input type="checkbox" checked={buyer.consentimiento} onChange={update('consentimiento')} aria-invalid={Boolean(errors.consentimiento)} />
-              <span>
-                Acepto que Shaolin Chile guarde mis datos para gestionar mi compra, según la{' '}
-                <a href={appPath('privacidad/')} target="_blank" rel="noopener">política de privacidad</a>.
-              </span>
-            </label>
-            {errors.consentimiento && <span className="trial__error">{errors.consentimiento}</span>}
-          </div>
+          <BuyerFields buyer={buyer} errors={errors} update={update} trap={trap} setTrap={setTrap} />
 
           {failure && (
             <p className="trial__error" role="alert">

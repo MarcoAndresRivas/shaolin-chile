@@ -21,6 +21,11 @@ function isClosed(dia, now = new Date()) {
     return `${dia.fecha}T${dia.hora_inicio || '00:00'}` <= chileStamp(new Date(now.getTime() + CLOSE_BEFORE_MS));
 }
 
+// A product sells until the end of its presale closing day, Chile time.
+function presaleClosed(producto, now = new Date()) {
+    return Boolean(producto.cierre_preventa) && producto.cierre_preventa < chileStamp(now).slice(0, 10);
+}
+
 // lines: [{ seminario_id?, seminario_dia_id?, cantidad, precio_unitario }]
 // seminars: { [seminario_id]: { precio_pack, dias: [dia ids] } }
 // Buying every day of a seminar, the same number of tickets for each, costs
@@ -64,16 +69,24 @@ function bankLines(pago = {}) {
 
 // The message that asks for the transfer, in the school's own words. Instagram
 // and WhatsApp show *text* in bold; the site shows plain text.
-function reservationMessage({ codigo, total, concepto, canal = 'sitio', pago = {} }) {
+// `entrega`: how the products arrive, 'envio' (to `direccion`, shipping paid on delivery)
+// or 'retiro' (at the seminar, subject to stock); null when there are no products.
+// `soloProductos`: a store order, so it speaks of an order instead of seats and enrolment.
+function reservationMessage({ codigo, total, concepto, canal = 'sitio', pago = {}, entrega = null, direccion = null, soloProductos = false }) {
     const amount = canal === 'sitio' ? pesos(total) : `*${pesos(total)}*`;
     const bank = bankLines(pago);
     const sendTo = canal === 'sitio' && pago.comprobanteA ? ` ${pago.comprobanteA}` : '';
+    const what = soloProductos ? 'pedido' : 'reserva';
     return [
-        `🗓️ Para confirmar tu reserva y asegurar tu cupo, es necesario realizar una transferencia de ${amount}, correspondiente al valor de ${concepto}. ✨`,
+        soloProductos
+            ? `🛍️ Para confirmar tu pedido, es necesario realizar una transferencia de ${amount}, correspondiente al valor de ${concepto}. ✨`
+            : `🗓️ Para confirmar tu reserva y asegurar tu cupo, es necesario realizar una transferencia de ${amount}, correspondiente al valor de ${concepto}. ✨`,
         bank.length ? `Datos para la transferencia:\n${bank.join('\n')}` : 'Te enviaremos los datos para la transferencia.',
-        `Una vez realizada, envíanos tu comprobante + Nombre Completo${sendTo} para confirmar tu inscripción. 💕`,
-        `Tu código de reserva es ${codigo}.`,
+        `Una vez realizada, envíanos tu comprobante + Nombre Completo${sendTo} para confirmar tu ${soloProductos ? 'pedido' : 'inscripción'}. 💕`,
+        ...(entrega === 'retiro' ? [`Los productos se retiran en el seminario, sujetos a disponibilidad: retíralos en la mesa de venta con tu código de ${what}. 🥋`] : []),
+        ...(entrega === 'envio' ? [`Enviaremos tu pedido a ${direccion}. El envío se paga al recibir. 📦`] : []),
+        `Tu código de ${what} es ${codigo}.`,
     ].join('\n\n');
 }
 
-module.exports = { chileStamp, isClosed, priceOf, newCode, pesos, bankLines, reservationMessage, CLOSE_BEFORE_MS };
+module.exports = { chileStamp, isClosed, presaleClosed, priceOf, newCode, pesos, bankLines, reservationMessage, CLOSE_BEFORE_MS };

@@ -13,6 +13,7 @@
     "seed:alumno": "node seed_alumno.js",
     "seed:team": "node seed_custom_admins.js",
     "seed:ofertas": "node seed_ofertas.js",
+    "seed:productos": "node seed_productos.js",
     "seed:duanpin": "node seed_duanpin.js"
   },
   "keywords": [],

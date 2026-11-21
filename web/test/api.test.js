@@ -332,3 +332,23 @@ test('the chat is public: the first message starts a conversation and the chat i
   );
   assert.equal(calls[0].options.headers.Authorization, undefined);
 });
+
+test('the product endpoints use their routes and methods', async () => {
+    const { fetchImpl, calls } = fakeFetch(200, {});
+    const api = createApi({ baseUrl: '', fetchImpl, getToken: () => 'abc' });
+    await api.catalogoVentas();
+    await api.crearProducto({ titulo: 'Polera', precio: 12000 });
+    await api.actualizarProducto(4, { estado: 'publicado' });
+    await api.agregarTalla(4, 'M', 10);
+    await api.actualizarTalla(9, 12);
+    assert.deepEqual(
+        calls.map((c) => `${c.options.method} ${c.url} ${c.options.body ?? ''}`.trim()),
+        [
+            'GET /api/intranet/ventas/catalogo',
+            'POST /api/intranet/ventas/productos {"titulo":"Polera","precio":12000}',
+            'PUT /api/intranet/ventas/productos/4 {"estado":"publicado"}',
+            'POST /api/intranet/ventas/productos/4/tallas {"talla":"M","stock":10}',
+            'PUT /api/intranet/ventas/tallas/9 {"stock":12}',
+        ],
+    );
+});

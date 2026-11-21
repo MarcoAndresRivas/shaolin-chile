@@ -131,5 +131,10 @@ export function createApi({ baseUrl, fetchImpl = globalThis.fetch, getToken = ()
     compras: (estado) => request('GET', '/api/intranet/ventas/compras' + (estado ? `?estado=${estado}` : '')),
     validarCompra: (id) => request('PUT', `/api/intranet/ventas/compras/${id}/validar`),
     anularCompra: (id) => request('PUT', `/api/intranet/ventas/compras/${id}/anular`),
+    catalogoVentas: () => request('GET', '/api/intranet/ventas/catalogo'),
+    crearProducto: (producto) => request('POST', '/api/intranet/ventas/productos', producto),
+    actualizarProducto: (id, cambios) => request('PUT', `/api/intranet/ventas/productos/${id}`, cambios),
+    agregarTalla: (productoId, talla, stock) => request('POST', `/api/intranet/ventas/productos/${productoId}/tallas`, { talla, stock }),
+    actualizarTalla: (id, stock) => request('PUT', `/api/intranet/ventas/tallas/${id}`, { stock }),
   };
 }

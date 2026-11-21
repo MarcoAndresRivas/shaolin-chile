@@ -3,7 +3,7 @@
 // (with the course videos once it is paid). Administration: the catalog and
 // the purchases to validate or cancel.
 
-const { isClosed, priceOf, newCode, reservationMessage } = require('../src/ventas');
+const { isClosed, presaleClosed, priceOf, newCode, reservationMessage } = require('../src/ventas');
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE = /^[+\d][\d\s()-]{5,24}$/;
@@ -14,6 +14,7 @@ const ESTADOS_OFERTA = ['borrador', 'publicado', 'cerrado'];
 const ESTADOS_COMPRA = ['pendiente', 'pagada', 'anulada'];
 const MAX_ITEMS = 20;
 const MAX_TICKETS = 10; // tickets per day in one purchase
+const MAX_UNITS = 10; // units of one product size in one purchase
 
 const bad = (res, message) => res.status(400).json({ error: message });
 const notFound = (res, message) => res.status(404).json({ error: message });
@@ -59,6 +60,13 @@ async function loadCatalog(db, now = new Date()) {
             cursos.map((c) => c.id),
         )
         : [[]];
+    const [productos] = await db.execute("SELECT id, titulo, descripcion, imagen, precio, cierre_preventa, sugerido_seminario FROM productos WHERE estado = 'publicado' ORDER BY id");
+    const [tallas] = productos.length
+        ? await db.execute(
+            `SELECT id, producto_id, talla, stock, vendidos FROM producto_tallas WHERE producto_id IN (${placeholders(productos)}) ORDER BY id`,
+            productos.map((p) => p.id),
+        )
+        : [[]];
 
     return {
         seminarios: seminarios.map((s) => ({
@@ -68,6 +76,13 @@ async function loadCatalog(db, now = new Date()) {
         cursos: cursos.map((c) => ({
             ...c,
             lecciones: lecciones.filter((l) => l.curso_id === c.id).map(({ orden, titulo, duracion }) => ({ orden, titulo, duracion })),
+        })),
+        // What is left of each size, never the stock or what each buyer took.
+        productos: productos.map((p) => ({
+            ...p,
+            sugerido_seminario: Boolean(p.sugerido_seminario),
+            cerrado: presaleClosed(p, now), // closes the pickup at the seminar; shipping stays open
+            tallas: tallas.filter((t) => t.producto_id === p.id).map((t) => ({ id: t.id, talla: t.talla, disponible: Math.max(0, t.stock - t.vendidos) })),
         })),
     };
 }
@@ -91,14 +106,16 @@ exports.getOfertas = async (req, res) => {
     }
 };
 
-// items: [{ seminario_dia_id, cantidad }] or [{ curso_id }]. The same day or
-// course twice is added up. Returns { days: Map, courses: Set } or an error text.
+// items: [{ seminario_dia_id, cantidad }], [{ curso_id }] or [{ producto_talla_id, cantidad }].
+// The same day, course or size twice is added up.
+// Returns { days: Map, courses: Set, sizes: Map } or an error text.
 function readItems(items) {
     if (!Array.isArray(items) || items.length < 1 || items.length > MAX_ITEMS) {
         return `Elige entre 1 y ${MAX_ITEMS} productos (items).`;
     }
     const days = new Map();
     const courses = new Set();
+    const sizes = new Map();
     for (const item of items) {
         if (item?.seminario_dia_id !== undefined) {
             const cantidad = item.cantidad ?? 1;
@@ -109,11 +126,17 @@ function readItems(items) {
         } else if (item?.curso_id !== undefined) {
             if (!isId(item.curso_id)) return 'curso_id debe ser un número entero.';
             courses.add(item.curso_id);
+        } else if (item?.producto_talla_id !== undefined) {
+            const cantidad = item.cantidad ?? 1;
+            if (!isId(item.producto_talla_id)) return 'producto_talla_id debe ser un número entero.';
+            if (!Number.isInteger(cantidad) || cantidad < 1) return 'cantidad debe ser un número entero mayor que 0.';
+            sizes.set(item.producto_talla_id, (sizes.get(item.producto_talla_id) ?? 0) + cantidad);
+            if (sizes.get(item.producto_talla_id) > MAX_UNITS) return `Puedes comprar hasta ${MAX_UNITS} unidades por talla en una compra.`;
         } else {
-            return 'Cada producto debe indicar seminario_dia_id o curso_id.';
+            return 'Cada producto debe indicar seminario_dia_id, curso_id o producto_talla_id.';
         }
     }
-    return { days, courses };
+    return { days, courses, sizes };
 }
 
 const weekday = new Intl.DateTimeFormat('es-CL', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' });
@@ -143,6 +166,21 @@ function conceptOf(lines) {
     }));
 }
 
+const ENTREGAS = ['envio', 'retiro'];
+
+// How an order with products is delivered: shipped to an address or picked up at the seminar.
+function readDelivery(body) {
+    if (!ENTREGAS.includes(body.entrega)) return 'Elige cómo recibir tus productos (entrega): envio o retiro.';
+    if (body.entrega === 'retiro') return { entrega: 'retiro', direccion: null, comuna: null, region: null };
+    const direccion = text(body.direccion);
+    const comuna = text(body.comuna);
+    const region = text(body.region);
+    if (direccion.length < 3 || direccion.length > 255 || comuna.length < 2 || comuna.length > 100 || region.length < 2 || region.length > 100) {
+        return 'Para el envío indica dirección, comuna y región.';
+    }
+    return { entrega: 'envio', direccion, comuna, region };
+}
+
 // Shared by the site and the assistant: `origen` is the channel the person bought from.
 async function createPurchase(db, config, body, now = new Date()) {
     const nombre = text(body.nombre);
@@ -157,9 +195,12 @@ async function createPurchase(db, config, body, now = new Date()) {
     if (!ORIGINS.includes(origen)) return { status: 400, error: `El origen no es válido (origen). Opciones: ${ORIGINS.join(', ')}.` };
     const items = readItems(body.items);
     if (typeof items === 'string') return { status: 400, error: items };
+    const delivery = items.sizes.size ? readDelivery(body) : { entrega: null, direccion: null, comuna: null, region: null };
+    if (typeof delivery === 'string') return { status: 400, error: delivery };
 
     const dayIds = [...items.days.keys()];
     const courseIds = [...items.courses];
+    const sizeIds = [...items.sizes.keys()];
     let connection;
     try {
         connection = await db.getConnection();
@@ -177,11 +218,22 @@ async function createPurchase(db, config, body, now = new Date()) {
         const [cursos] = courseIds.length
             ? await connection.execute(`SELECT id, titulo, precio FROM cursos WHERE id IN (${placeholders(courseIds)}) AND estado = 'publicado'`, courseIds)
             : [[]];
+        const [tallas] = sizeIds.length
+            ? await connection.execute(
+                `SELECT t.id, t.talla, t.stock, t.vendidos, p.titulo, p.precio, p.cierre_preventa, p.sugerido_seminario
+                 FROM producto_tallas t JOIN productos p ON p.id = t.producto_id
+                 WHERE t.id IN (${placeholders(sizeIds)}) AND p.estado = 'publicado'
+                 ORDER BY t.id`,
+                sizeIds,
+            )
+            : [[]];
         const fail = async (status, error) => {
             await connection.rollback();
             return { status, error };
         };
-        if (dias.length !== dayIds.length || cursos.length !== courseIds.length) return fail(400, 'Uno de los productos no existe o ya no está a la venta.');
+        if (dias.length !== dayIds.length || cursos.length !== courseIds.length || tallas.length !== sizeIds.length) {
+            return fail(400, 'Uno de los productos no existe o ya no está a la venta.');
+        }
 
         const lines = [];
         for (const dia of dias) {
@@ -197,12 +249,31 @@ async function createPurchase(db, config, body, now = new Date()) {
                 return fail(409, `No quedan cupos suficientes para el ${dayLabel(dia.fecha)}: quedan ${left}.`);
             }
             lines.push({
-                tipo: 'seminario_dia', seminario_id: dia.seminario_id, seminario_dia_id: dia.id, curso_id: null,
+                tipo: 'seminario_dia', seminario_id: dia.seminario_id, seminario_dia_id: dia.id, curso_id: null, producto_talla_id: null,
                 descripcion: `${dia.titulo} (${dayLabel(dia.fecha)})`, cantidad, precio_unitario: dia.precio, titulo: dia.titulo, fecha: dia.fecha,
             });
         }
         for (const curso of cursos) {
-            lines.push({ tipo: 'curso', seminario_dia_id: null, curso_id: curso.id, descripcion: curso.titulo, cantidad: 1, precio_unitario: curso.precio });
+            lines.push({ tipo: 'curso', seminario_dia_id: null, curso_id: curso.id, producto_talla_id: null, descripcion: curso.titulo, cantidad: 1, precio_unitario: curso.precio });
+        }
+        for (const talla of tallas) {
+            // Pickup is only for seminar suggestions, until the presale closes; shipping is always open.
+            if (delivery.entrega === 'retiro' && !talla.sugerido_seminario) return fail(400, `${talla.titulo} no se puede retirar en el seminario: elige envío.`);
+            if (delivery.entrega === 'retiro' && presaleClosed(talla, now)) return fail(409, `La preventa de ${talla.titulo} ya cerró.`);
+            const cantidad = items.sizes.get(talla.id);
+            // Same guard as the seats: only succeeds while there is stock.
+            const [taken] = await connection.execute(
+                'UPDATE producto_tallas SET vendidos = vendidos + ? WHERE id = ? AND vendidos + ? <= stock',
+                [cantidad, talla.id, cantidad],
+            );
+            if (taken.affectedRows === 0) {
+                const left = Math.max(0, talla.stock - talla.vendidos);
+                return fail(409, `No queda stock suficiente de ${talla.titulo} en talla ${talla.talla}: quedan ${left}.`);
+            }
+            lines.push({
+                tipo: 'producto', seminario_dia_id: null, curso_id: null, producto_talla_id: talla.id,
+                descripcion: `${talla.titulo} (talla ${talla.talla})`, cantidad, precio_unitario: talla.precio,
+            });
         }
 
         // The pack price needs every day of the seminar, so read them all.
@@ -218,14 +289,14 @@ async function createPurchase(db, config, body, now = new Date()) {
 
         const codigo = newCode();
         const [created] = await connection.execute(
-            `INSERT INTO compras (codigo, nombre, email, telefono, origen, consentimiento, consentimiento_fecha, subtotal, descuento, total)
-             VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, ?, ?, ?)`,
-            [codigo, nombre, email, telefono || null, origen, subtotal, descuento, total],
+            `INSERT INTO compras (codigo, nombre, email, telefono, origen, consentimiento, consentimiento_fecha, subtotal, descuento, total, entrega, direccion, comuna, region)
+             VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, ?, ?, ?, ?, ?, ?, ?)`,
+            [codigo, nombre, email, telefono || null, origen, subtotal, descuento, total, delivery.entrega, delivery.direccion, delivery.comuna, delivery.region],
         );
         for (const line of lines) {
             await connection.execute(
-                'INSERT INTO compra_items (compra_id, tipo, seminario_dia_id, curso_id, descripcion, cantidad, precio_unitario) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                [created.insertId, line.tipo, line.seminario_dia_id, line.curso_id, line.descripcion, line.cantidad, line.precio_unitario],
+                'INSERT INTO compra_items (compra_id, tipo, seminario_dia_id, curso_id, producto_talla_id, descripcion, cantidad, precio_unitario) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                [created.insertId, line.tipo, line.seminario_dia_id, line.curso_id, line.producto_talla_id, line.descripcion, line.cantidad, line.precio_unitario],
             );
         }
         await connection.commit();
@@ -240,7 +311,7 @@ async function createPurchase(db, config, body, now = new Date()) {
                 descuento,
                 total,
                 items: lines.map(({ descripcion, cantidad, precio_unitario: precio }) => ({ descripcion, cantidad, precio })),
-                mensaje: reservationMessage({ codigo, total, concepto, canal: origen, pago: config.pago }),
+                mensaje: reservationMessage({ codigo, total, concepto, canal: origen, pago: config.pago, entrega: delivery.entrega, direccion: delivery.entrega === 'envio' ? `${delivery.direccion}, ${delivery.comuna}, ${delivery.region}` : null, soloProductos: lines.every((line) => line.tipo === 'producto') }),
                 pago: publicPago(config.pago),
             },
         };
@@ -323,13 +394,13 @@ exports.getCompras = async (req, res) => {
     if (estado && !ESTADOS_COMPRA.includes(estado)) return bad(res, `estado no es válido. Opciones: ${ESTADOS_COMPRA.join(', ')}.`);
     try {
         const [compras] = await req.db.execute(
-            `SELECT id, codigo, nombre, email, telefono, origen, subtotal, descuento, total, estado, referencia_pago, fecha_informe, fecha_creacion, fecha_validacion
+            `SELECT id, codigo, nombre, email, telefono, origen, subtotal, descuento, total, estado, entrega, direccion, comuna, region, referencia_pago, fecha_informe, fecha_creacion, fecha_validacion
              FROM compras ${estado ? 'WHERE estado = ?' : ''} ORDER BY fecha_creacion DESC, id DESC LIMIT 200`,
             estado ? [estado] : [],
         );
         const [items] = compras.length
             ? await req.db.execute(
-                `SELECT compra_id, descripcion, cantidad, precio_unitario AS precio FROM compra_items WHERE compra_id IN (${placeholders(compras)}) ORDER BY id`,
+                `SELECT compra_id, tipo, descripcion, cantidad, precio_unitario AS precio FROM compra_items WHERE compra_id IN (${placeholders(compras)}) ORDER BY id`,
                 compras.map((c) => c.id),
             )
             : [[]];
@@ -352,7 +423,7 @@ exports.validarCompra = async (req, res) => {
     }
 };
 
-// Cancelling gives the seats back.
+// Cancelling gives the seats and the product stock back.
 exports.anularCompra = async (req, res) => {
     let connection;
     try {
@@ -367,8 +438,12 @@ exports.anularCompra = async (req, res) => {
         for (const item of items) {
             await connection.execute('UPDATE seminario_dias SET vendidos = vendidos - ? WHERE id = ? AND vendidos >= ?', [item.cantidad, item.seminario_dia_id, item.cantidad]);
         }
+        const [products] = await connection.execute("SELECT producto_talla_id, cantidad FROM compra_items WHERE compra_id = ? AND tipo = 'producto'", [req.params.id]);
+        for (const item of products) {
+            await connection.execute('UPDATE producto_tallas SET vendidos = vendidos - ? WHERE id = ? AND vendidos >= ?', [item.cantidad, item.producto_talla_id, item.cantidad]);
+        }
         await connection.commit();
-        res.json({ message: 'Compra anulada. Los cupos quedaron libres.' });
+        res.json({ message: products.length ? 'Compra anulada. Los cupos y el stock quedaron libres.' : 'Compra anulada. Los cupos quedaron libres.' });
     } catch (error) {
         if (connection) await connection.rollback().catch(() => {});
         serverError('Error cancelling compra:', error, res);
@@ -384,9 +459,12 @@ exports.getCatalogoAdmin = async (req, res) => {
         const [dias] = await req.db.execute('SELECT * FROM seminario_dias ORDER BY fecha, hora_inicio, id');
         const [cursos] = await req.db.execute('SELECT * FROM cursos ORDER BY id DESC');
         const [lecciones] = await req.db.execute('SELECT * FROM curso_lecciones ORDER BY orden, id');
+        const [productos] = await req.db.execute('SELECT * FROM productos ORDER BY id DESC');
+        const [tallas] = await req.db.execute('SELECT * FROM producto_tallas ORDER BY id');
         res.json({
             seminarios: seminarios.map((s) => ({ ...s, dias: dias.filter((d) => d.seminario_id === s.id) })),
             cursos: cursos.map((c) => ({ ...c, lecciones: lecciones.filter((l) => l.curso_id === c.id).map((l) => ({ ...l, descargable: Boolean(l.descargable) })) })),
+            productos: productos.map((p) => ({ ...p, tallas: tallas.filter((t) => t.producto_id === p.id) })),
         });
     } catch (error) {
         serverError('Error fetching the sales catalog:', error, res);
@@ -444,10 +522,23 @@ async function updateRow(db, table, id, values) {
     return result.affectedRows > 0;
 }
 
-const saveOffer = (table, priceField) => async (req, res) => {
+// A product's presale closing date: undefined keeps it, null clears it.
+function readPresale(body, out) {
+    if (body.cierre_preventa === undefined) return null;
+    if (body.cierre_preventa !== null && (typeof body.cierre_preventa !== 'string' || !DATE.test(body.cierre_preventa))) {
+        return 'cierre_preventa debe tener el formato AAAA-MM-DD.';
+    }
+    out.cierre_preventa = body.cierre_preventa;
+    return null;
+}
+
+// `extra(body, out)` reads the fields only one kind of offer has; returns an error text or null.
+const saveOffer = (table, priceField, extra = () => null) => async (req, res) => {
     const creating = req.method === 'POST';
     const { out, error } = readOffer(req.body ?? {}, { creating, priceField });
     if (error) return bad(res, error);
+    const extraError = extra(req.body ?? {}, out);
+    if (extraError) return bad(res, extraError);
     try {
         if (creating) return res.status(201).json({ message: 'Creado.', id: await insertRow(req.db, table, out) });
         if (!(await updateRow(req.db, table, req.params.id, out))) return notFound(res, 'No encontrado.');
@@ -458,6 +549,48 @@ const saveOffer = (table, priceField) => async (req, res) => {
 };
 exports.saveSeminario = saveOffer('seminarios', 'precio_pack');
 exports.saveCurso = saveOffer('cursos', 'precio');
+// Product-only fields: the presale date and whether it is suggested for the seminar.
+function readProductExtras(body, out) {
+    const error = readPresale(body, out);
+    if (error) return error;
+    if (body.sugerido_seminario === undefined) return null;
+    if (typeof body.sugerido_seminario !== 'boolean') return 'sugerido_seminario debe ser true o false.';
+    out.sugerido_seminario = body.sugerido_seminario ? 1 : 0;
+    return null;
+}
+exports.saveProducto = saveOffer('productos', 'precio', readProductExtras);
+
+exports.addTalla = async (req, res) => {
+    const talla = text(req.body?.talla);
+    const { stock } = req.body ?? {};
+    if (talla.length < 1 || talla.length > 20) return bad(res, 'talla debe tener entre 1 y 20 caracteres.');
+    if (!Number.isInteger(stock) || stock < 0) return bad(res, 'stock debe ser un número entero de 0 o más.');
+    try {
+        const [product] = await req.db.execute('SELECT id FROM productos WHERE id = ?', [req.params.id]);
+        if (!product.length) return notFound(res, 'Producto no encontrado.');
+        const [same] = await req.db.execute('SELECT id FROM producto_tallas WHERE producto_id = ? AND talla = ?', [product[0].id, talla]);
+        if (same.length) return conflict(res, `Ese producto ya tiene la talla ${talla}.`);
+        const id = await insertRow(req.db, 'producto_tallas', { producto_id: product[0].id, talla, stock });
+        res.status(201).json({ message: 'Talla agregada.', id });
+    } catch (error) {
+        serverError('Error adding producto talla:', error, res);
+    }
+};
+
+// The stock of a size can grow or shrink, but never below what was already sold.
+exports.updateTalla = async (req, res) => {
+    const { stock } = req.body ?? {};
+    if (!Number.isInteger(stock) || stock < 0) return bad(res, 'stock debe ser un número entero de 0 o más.');
+    try {
+        const [result] = await req.db.execute('UPDATE producto_tallas SET stock = ? WHERE id = ? AND vendidos <= ?', [stock, req.params.id, stock]);
+        if (result.affectedRows > 0) return res.json({ message: 'Stock actualizado.' });
+        const [rows] = await req.db.execute('SELECT vendidos FROM producto_tallas WHERE id = ?', [req.params.id]);
+        if (!rows.length) return notFound(res, 'Talla no encontrada.');
+        conflict(res, `Ya se vendieron ${rows[0].vendidos} unidades de esa talla: el stock no puede ser menor.`);
+    } catch (error) {
+        serverError('Error updating producto talla:', error, res);
+    }
+};
 
 exports.addDia = async (req, res) => {
     const { fecha, hora_inicio: inicio = null, hora_fin: fin = null, precio, cupo } = req.body ?? {};
