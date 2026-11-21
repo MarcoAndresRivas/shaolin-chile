@@ -27,7 +27,8 @@ Reglas:
 - En tu primer mensaje preséntate como asistente virtual.
 - Responde en español, breve, cercano y con respeto. Escribe texto simple, sin Markdown ni asteriscos. Puedes usar algún emoji, sin exagerar.
 - Lo único que sabes de la escuela son las clases de la lista "Clases programadas" y los seminarios y cursos de la lista "A la venta", que están al final. No existe nada más. No inventes clases, seminarios, cursos, precios, horarios, direcciones ni ningún otro dato: si no lo tienes, di que una persona del equipo responderá.
-- Si preguntan por seminarios o cursos, cuenta lo que está en "A la venta": el precio por persona, la oferta si existe y los cupos. Luego pregunta: "🥷 ¿Te gustaría hacer la reserva?".
+- Si preguntan por seminarios o cursos, cuenta lo que está en "A la venta": las fechas, el horario, la sede, qué se entrena y los cupos. Luego pregunta: "🥷 ¿Te gustaría hacer la reserva?".
+- No menciones precios ni ofertas a menos que la persona pregunte directamente cuánto cuesta. Si lo pregunta, dale el precio por persona y la oferta si existe, tal como están en "A la venta".
 - Para reservar un seminario o comprar un curso, pide el nombre completo y el correo, y pregunta si autoriza a Shaolin Chile a guardar esos datos para gestionar su reserva. Usa reservar solo si responde que sí, con los id de los días o cursos de la lista "A la venta" y la cantidad de personas. No reserves días marcados como cerrados.
 - Después de reservar, el sistema envía el monto exacto y cómo pagar. Tú solo confirma en una frase que la reserva quedó creada; no escribas montos ni datos bancarios.
 - Al mencionar una clase, copia el día, la fecha, el horario, la sede y la disciplina tal como están en la lista. Escribe las horas con números (por ejemplo 10:00), nunca con palabras.
@@ -167,19 +168,25 @@ function createAgent({ chat, api, canal, now = () => new Date() }) {
         try {
             const { status, body } = await api('GET', '/ofertas');
             if (status >= 400 || !Array.isArray(body?.seminarios) || !Array.isArray(body?.cursos)) return unknown;
+            // Prices go in their own block, apart from the rest, so the model gives them only when asked.
             const lines = [];
+            const prices = [];
             for (const s of body.seminarios.slice(0, 10)) {
-                lines.push(`- Seminario "${s.titulo}", sede ${s.sede ?? 'por confirmar'}.${s.oferta ? ` ${s.oferta}.` : ''}${s.precio_pack ? ` Precio por persona si va a todos los días: ${pesos(s.precio_pack)}.` : ''}`);
-                for (const d of s.dias.slice(0, 10)) {
+                const dias = s.dias.slice(0, 10);
+                lines.push(`- Seminario "${s.titulo}", sede ${s.sede ?? 'por confirmar'}.`);
+                for (const d of dias) {
                     const hours = d.hora_inicio ? `de ${d.hora_inicio}${d.hora_fin ? ` a ${d.hora_fin}` : ''}` : 'horario por confirmar';
                     const seats = d.cerrado ? 'inscripciones cerradas' : `${d.cupo_disponible} cupos disponibles`;
-                    lines.push(`  - día id ${d.id}: ${WEEKDAY.format(new Date(`${d.fecha}T12:00:00Z`))} ${d.fecha}, ${hours}, ${pesos(d.precio)} por persona, ${seats}`);
+                    lines.push(`  - día id ${d.id}: ${WEEKDAY.format(new Date(`${d.fecha}T12:00:00Z`))} ${d.fecha}, ${hours}, ${seats}`);
                 }
+                prices.push(`- Seminario "${s.titulo}": ${dias.map((d) => `día id ${d.id}, ${pesos(d.precio)} por persona`).join('; ')}.${s.oferta ? ` ${s.oferta}.` : ''}${s.precio_pack ? ` Precio por persona si va a todos los días: ${pesos(s.precio_pack)}.` : ''}`);
             }
             for (const c of body.cursos.slice(0, 10)) {
-                lines.push(`- Curso online id ${c.id}: "${c.titulo}", ${pesos(c.precio)}, con acceso a los videos y descarga. Lecciones: ${c.lecciones.map((l) => l.titulo).join('; ') || 'por confirmar'}.`);
+                lines.push(`- Curso online id ${c.id}: "${c.titulo}", con acceso a los videos y descarga. Lecciones: ${c.lecciones.map((l) => l.titulo).join('; ') || 'por confirmar'}.`);
+                prices.push(`- Curso online id ${c.id}: ${pesos(c.precio)}.`);
             }
-            return lines.length ? lines.join('\n') : 'No hay seminarios ni cursos a la venta por ahora.';
+            if (!lines.length) return 'No hay seminarios ni cursos a la venta por ahora.';
+            return [...lines, '', 'Precios (dalos solo si la persona pregunta cuánto cuesta):', ...prices].join('\n');
         } catch (error) {
             console.error('The assistant could not read the offers:', error.message);
             return unknown;
