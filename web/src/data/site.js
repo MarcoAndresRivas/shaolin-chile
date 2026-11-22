@@ -24,8 +24,8 @@ export const contact = {
 
 export const hero = {
   eyebrow: 'Tradición & Disciplina en Chile',
-  titleLine1: 'Domina tu cuerpo',
-  titleLine2: 'y tu mente',
+  titleLine1: 'Mindfulness',
+  titleLine2: 'y defensa funcional',
   description:
     'Descubre el poder del auténtico Kung Fu. Entrenamiento físico y mental para todas las edades.',
   primaryCta: 'Comienza tu viaje',
