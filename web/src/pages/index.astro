@@ -5,6 +5,7 @@ import TrialClassForm from '../components/TrialClassForm.jsx';
 import SeminarPopup from '../components/SeminarPopup.jsx';
 import {
   hero,
+  association,
   history,
   disciplines,
   disciplinesHead,
@@ -59,6 +60,9 @@ const historyImage = instagramImage('Bppn2h8lX4g');
         <ul class="highlights">
           {history.highlights.map((text) => <li>{text}</li>)}
         </ul>
+        <a class="btn btn--ghost association-link" href={association.url} target="_blank" rel="noopener">
+          Conoce la {association.name} · {association.handle}
+        </a>
       </div>
       <figure class="split__media">
         <Image src={historyImage} alt="Practicante junto a un monje con túnica naranja" widths={[400, 682]} sizes="(max-width: 860px) 100vw, 45vw" />
@@ -272,6 +276,11 @@ const historyImage = instagramImage('Bppn2h8lX4g');
     border-radius: var(--radius);
     border: 1px solid var(--border);
     width: 100%;
+  }
+
+  .association-link {
+    margin-top: 28px;
+    text-align: center;
   }
 
   .highlights {

@@ -32,17 +32,26 @@ export const hero = {
   secondaryCta: 'Ver disciplinas',
 };
 
+// The international association the school belongs to; the home page is built around this lineage.
+export const association = {
+  name: 'Asociación Internacional Shaolin Chan',
+  handle: '@shaolin_chan_internacional',
+  url: 'https://www.instagram.com/shaolin_chan_internacional/',
+};
+
 export const history = {
-  eyebrow: 'Nuestra Filosofía y Linaje',
+  eyebrow: 'Nuestro Linaje',
   title: 'El Camino del Shaolin en Chile',
   highlights: [
-    'Instructores avalados a nivel internacional',
+    'Parte de la Asociación Internacional Shaolin Chan',
+    'Enseñanzas del Gran Maestro Shi De Yang, del Templo Shaolin',
     'Conexión directa con China y la sede central en Argentina',
+    'Instructores avalados a nivel internacional',
     'Parte de la Federación Chilena de Shaolin',
     'Clases adaptadas para todas las edades y niveles',
   ],
   paragraphs: [
-    'Formamos parte de una prestigiosa Asociación Internacional de Kung Fu, con conexión directa a China y sede central para toda Latinoamérica ubicada en Argentina. Somos los representantes oficiales encargados de preservar y transmitir el aprendizaje tradicional de las artes marciales chinas.',
+    'Somos parte de la Asociación Internacional Shaolin Chan, que reúne a las escuelas que siguen las enseñanzas del Gran Maestro Shi De Yang, del Templo Shaolin. Con conexión directa a China y sede central para toda Latinoamérica en Argentina, somos los representantes oficiales encargados de preservar y transmitir el aprendizaje tradicional de las artes marciales chinas.',
     'Nuestro objetivo principal es forjar el carácter, la disciplina y mejorar integralmente la salud física y mental de nuestros alumnos bajo estándares internacionales. Ya sea que busques dominar técnicas de defensa personal o encontrar un equilibrio interior, nuestro linaje de maestros te guiará paso a paso.',
   ],
 };
